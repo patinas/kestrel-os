@@ -1,35 +1,52 @@
-base
-linux
-linux-firmware
-intel-ucode
-amd-ucode
-mkinitcpio
-mkinitcpio-archiso
-squashfs-tools
-# graphics: open drivers for AMD/Intel/old NVIDIA (NVK via mesa), nvidia-open added in a later milestone
-mesa
-vulkan-radeon
-vulkan-intel
-vulkan-nouveau
-libva-mesa-driver
-xf86-input-libinput
-# shell: Wayland kiosk compositor + Chromium
-cage
-chromium
-noto-fonts
-ttf-liberation
 # audio, network, bluetooth
-pipewire
-pipewire-pulse
-wireplumber
-networkmanager
-iwd
+# graphics: open drivers for AMD/Intel/old NVIDIA (NVK via mesa), nvidia-open added in a later milestone
+# hardware support extras
+# misc
+# shell: Wayland kiosk compositor + Chromium
+alsa-firmware
+amd-ucode
+arch-install-scripts
+base
 bluez
 bluez-utils
-# hardware support extras
-sof-firmware
-alsa-firmware
+cage
+chromium
+dosfstools
+e2fsprogs
+egl-wayland
+erofs-utils
 fwupd
-# misc
-sudo
+gamemode
+gamescope
+intel-ucode
+iwd
+lib32-mesa
+lib32-nvidia-utils
+lib32-vulkan-intel
+lib32-vulkan-nouveau
+lib32-vulkan-radeon
+libva-mesa-driver
+linux
+linux-firmware
+mangohud
+mesa
+mkinitcpio
+mkinitcpio-archiso
 nano
+networkmanager
+noto-fonts
+nvidia-open
+nvidia-utils
+parted
+pipewire
+pipewire-pulse
+sof-firmware
+squashfs-tools
+steam
+sudo
+ttf-liberation
+vulkan-intel
+vulkan-nouveau
+vulkan-radeon
+wireplumber
+xf86-input-libinput

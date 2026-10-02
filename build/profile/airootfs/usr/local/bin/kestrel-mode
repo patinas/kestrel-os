@@ -1,0 +1,9 @@
+#!/bin/sh
+# kestrel-mode gaming|desktop : choose the session started on the next login, then restart the session.
+case "$1" in
+  gaming) echo gaming > "$HOME/.kestrel-mode" ;;
+  desktop) rm -f "$HOME/.kestrel-mode" ;;
+  *) echo "usage: kestrel-mode gaming|desktop"; exit 1 ;;
+esac
+pkill -u "$(id -u)" -x cage 2>/dev/null || true
+pkill -u "$(id -u)" -x gamescope 2>/dev/null || true

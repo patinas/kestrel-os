@@ -1,0 +1,4 @@
+#!/bin/sh
+# Steam gaming mode: gamescope runs Steam Big Picture directly on the display (like Steam Deck).
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+exec gamescope -e -f -- steam -tenfoot -steamos3
