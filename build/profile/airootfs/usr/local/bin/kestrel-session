@@ -1,16 +1,20 @@
 #!/bin/sh
+# Kestrel session launcher (replaces milestone 1 version): desktop kiosk by default, gaming mode if requested.
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export WLR_NO_HARDWARE_CURSORS=1
-if systemd-detect-virt --vm >/dev/null 2>&1; then
- export WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1
+if [ -n "$(systemd-detect-virt --vm 2>/dev/null | grep -v none)" ]; then
+  export WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1
+fi
+if [ "$(cat /run/kestrel-gpu 2>/dev/null)" = nvidia-open ]; then
+  export GBM_BACKEND=nvidia-drm __GLX_VENDOR_LIBRARY_NAME=nvidia WLR_NO_HARDWARE_CURSORS=1
 fi
 while true; do
- if [ -f "$HOME/.kestrel-mode" ]; then
-  /usr/local/bin/kestrel-gaming-session
- else
-  cage -s -- chromium --kiosk --no-first-run --no-default-browser-check \
-   --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chromium" \
-   --app=file:///usr/share/kestrel/shell/index.html
- fi
- sleep 2
+  if [ -f "$HOME/.kestrel-mode" ]; then
+    /usr/local/bin/kestrel-gaming-session
+  else
+    cage -s -- chromium --kiosk --no-first-run --no-default-browser-check --disable-infobars \
+      --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chromium" \
+      --app=file:///usr/share/kestrel/shell/index.html
+  fi
+  sleep 1
 done

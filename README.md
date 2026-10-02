@@ -1,67 +1,36 @@
 # Kestrel OS
 
-A minimal, polished, browser-first operating system for any PC - old or new -
-with native discrete-GPU support, so the same machine can also play games.
+An open-source browser-first OS prototype, licensed under GPL-3.0.
 
-Kestrel OS is open source (GPL-3.0) and in early design. Nothing here is ready
-to install yet.
+## Current status
 
-## Why
+The x86_64 live ISO boots to a Chromium/Cage shell in QEMU. The experimental installer has populated both root slots on a disposable 24 GiB qcow2 disk. A separate UEFI boot, with no ISO or external kernel/initramfs, reached the shell from default slot A.
 
-ChromeOS Flex showed that a browser-first OS can bring old computers back to
-life. But it has hard limits:
+This is a VM-tested alpha, not an OS ready for real installation. The installer refuses disks unless it detects QEMU/KVM, QEMU DMI and a virtio disk with the exact serial `KESTREL_TEST_ONLY`. Do not weaken these guards to install on a real machine.
 
-- Google only guarantees it on certified models, and it runs on Intel/AMD PCs
-  only - no ARM.
-- Open Chromium OS forks such as FydeOS officially do not support NVIDIA
-  graphics; the advice is to turn the discrete GPU off.
-- There is no real gaming story.
+Not verified:
+- Slot B boot, signed update application, boot-count fallback or automatic rollback.
+- Steam/gamescope, NVIDIA acceleration or real hardware compatibility.
+- ARM/Pi boot, verified root images, production lockdown or browser/network interaction.
 
-Kestrel OS keeps what makes ChromeOS good - one clean shell, automatic safe
-updates, fast boot, nothing to maintain - and removes those limits.
+The live image includes gaming packages. The installed system currently installs the smaller browser package set, so live gaming packages do not prove installed gaming support. The shell footer still reads "alpha live image" on installed boots.
 
-## What makes it different from ChromeOS Flex
+See [the test record](docs/TESTING.md) for evidence, constraints and reproduction notes.
 
-| | ChromeOS Flex | Kestrel OS |
-|---|---|---|
-| License | Proprietary | GPL-3.0 |
-| CPUs | Intel/AMD x86_64 | x86_64 and ARM64 (Raspberry Pi 4/5 and others) |
-| NVIDIA GPUs | Not a goal | First-class: `nvidia-open` + Mesa NVK fallback |
-| AMD / Intel GPUs | Yes | Yes, latest Mesa |
-| Gaming | No | Separate Steam + Proton mode on Valve's gamescope |
-| Hardware | Certified list | As wide as Linux itself: all common Wi-Fi, Bluetooth, audio and GPU hardware, auto-detected |
-| Updates | A/B, automatic | A/B, automatic (systemd-sysupdate) |
-| Lockdown | Read-only, verified, no root | Same model: read-only verified image, no root, sandboxed apps, opt-in developer mode |
+## Goals
 
-## Principles
-
-1. **Polish is a requirement, not a nice-to-have.** One shell, one design
-   system, no desktop clutter. If a feature can't be made to look and feel
-   finished, it doesn't ship.
-2. **Works on anything.** Target: a 10-year-old PC with 2 GB RAM runs the
-   browser session smoothly.
-3. **Hardware just works.** Wi-Fi, Bluetooth, audio, GPU, touchpad and
-   suspend are detected and set up on first boot. No terminal needed.
-4. **Games when you want them.** The gaming mode only uses resources while it
-   runs.
-5. **Nothing to maintain.** Read-only system image, automatic A/B updates,
-   instant rollback.
+A small browser shell, broad Linux hardware support and an optional gaming session. Read-only root slots, signed updates and health-gated rollback are intended parts of the design. These goals are not claims about the current prototype.
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
-- [Hardware support strategy](docs/HARDWARE.md)
-- [Design system and polish rules](docs/DESIGN.md)
-- [ARM and Raspberry Pi](docs/ARM.md)
-- [Architecture decisions](docs/adr/)
-- [Lockdown (ChromeOS-style)](docs/LOCKDOWN.md)
+- [Hardware strategy](docs/HARDWARE.md)
+- [Design](docs/DESIGN.md)
+- [ARM proposals](docs/ARM.md)
+- [Update proposal](docs/UPDATES.md)
+- [Lockdown proposal](docs/LOCKDOWN.md)
 - [Repository layout](docs/LAYOUT.md)
-
-## Status
-
-Phase 1 (research) is done. Phase 2 (foundations) has started: architecture,
-build-system decision and repository layout. First bootable image is the next
-milestone - see [ROADMAP.md](ROADMAP.md).
+- [Roadmap](ROADMAP.md)
 
 ## License
 

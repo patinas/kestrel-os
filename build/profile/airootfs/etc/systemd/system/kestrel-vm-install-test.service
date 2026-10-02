@@ -1,0 +1,15 @@
+[Unit]
+Description=Opt-in blank QEMU disk installer test
+ConditionKernelCommandLine=kestrel.install-test
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+Environment=KESTREL_ALLOW_VM_INSTALL=yes
+Environment="KESTREL_CONFIRM=ERASE /dev/vda"
+ExecStart=/usr/bin/bash /usr/local/lib/kestrel/install.sh /dev/vda
+StandardOutput=journal+console
+StandardError=journal+console
+TimeoutStartSec=1800
+[Install]
+WantedBy=multi-user.target

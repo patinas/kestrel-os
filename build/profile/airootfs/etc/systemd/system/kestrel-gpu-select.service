@@ -1,0 +1,9 @@
+[Unit]
+Description=Kestrel GPU stack selection
+Before=getty@tty1.service
+After=systemd-modules-load.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/kestrel-gpu-select
+[Install]
+WantedBy=multi-user.target

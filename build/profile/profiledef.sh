@@ -15,6 +15,9 @@ airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '3' '-b' '1M')
 declare -A file_permissions=(
   ["/usr/local/bin/kestrel-mode"]="0:0:755"
   ["/usr/local/bin/kestrel-gaming-session"]="0:0:755"
+  ["/usr/local/bin/kestrel-gpu-select"]="0:0:755"
+  ["/usr/local/lib/kestrel/install.sh"]="0:0:755"
+  ["/usr/local/lib/kestrel/update.sh"]="0:0:755"
   ["/usr/local/bin/kestrel-session"]="0:0:755"
   ["/usr/local/bin/kestrel-firstboot"]="0:0:755"
 )

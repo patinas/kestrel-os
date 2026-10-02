@@ -1,5 +1,5 @@
 # Update server and health-check design
-Status: proposed design, not implemented or verified. M1 is an x86_64 live ISO only.
+Status: proposed design. The experimental VM installer and default slot A boot have passed; signed updates and rollback have not been tested. The health target and bless-boot wiring described below are absent. See TESTING.md.
 
 
 Free and static: updates are files on GitHub Releases (or any static host). No server code to run.

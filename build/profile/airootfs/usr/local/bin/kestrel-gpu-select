@@ -1,0 +1,12 @@
+#!/bin/sh
+# Runs as ROOT from kestrel-gpu-select.service at boot; writes /run/kestrel-gpu for the session to read.
+out=mesa
+if lspci -nn | grep -qi 'nvidia'; then
+  # Turing (RTX 16/20) and newer expose GSP firmware and work with nvidia-open (heuristic: device id prefixes 1e,1f,20-28).
+  if lspci -nn | grep -Eiq 'NVIDIA.*\[10de:(1e|1f|2[0-8])'; then
+    if modprobe nvidia_drm modeset=1 2>/dev/null; then out=nvidia-open; else out=nouveau-nvk; fi
+  else
+    out=nouveau-nvk
+  fi
+fi
+echo "$out" > /run/kestrel-gpu; chmod 644 /run/kestrel-gpu

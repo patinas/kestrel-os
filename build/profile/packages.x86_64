@@ -30,6 +30,7 @@ linux
 linux-firmware
 mangohud
 mesa
+minisign
 mkinitcpio
 mkinitcpio-archiso
 nano
@@ -40,6 +41,7 @@ nvidia-utils
 parted
 pipewire
 pipewire-pulse
+rsync
 sof-firmware
 squashfs-tools
 steam
