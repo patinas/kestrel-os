@@ -1,0 +1,5 @@
+NAME="Kestrel OS"
+PRETTY_NAME="Kestrel OS (alpha)"
+ID=kestrel
+ID_LIKE=arch
+HOME_URL="https://github.com/patinas/kestrel-os"

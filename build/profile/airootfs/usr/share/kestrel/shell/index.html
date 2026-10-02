@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Kestrel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0e1116;--fg:#e8ecf1;--dim:#8b95a3;--acc:#5ab0ff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,"Noto Sans",sans-serif;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;padding:14px 24px;color:var(--dim)}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+h1{font-weight:300;font-size:56px;margin:0;letter-spacing:.08em}
+form{width:min(640px,86vw)}
+input{width:100%;padding:16px 22px;border-radius:999px;border:1px solid #2a313c;background:#161b22;color:var(--fg);font-size:18px;outline:none}
+input:focus{border-color:var(--acc)}
+.tiles{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.tiles a{width:120px;padding:18px 0;text-align:center;border-radius:16px;background:#161b22;color:var(--fg);text-decoration:none}
+.tiles a:hover{background:#1f2630}
+footer{padding:12px;text-align:center;color:var(--dim);font-size:13px}
+</style></head><body>
+<header><span>Kestrel OS</span><span id="clock"></span></header>
+<main><h1>kestrel</h1>
+<form onsubmit="go(event)"><input id="q" autofocus placeholder="Search or enter address"></form>
+<div class="tiles">
+<a href="https://duckduckgo.com">Search</a><a href="https://mail.google.com">Mail</a>
+<a href="https://www.youtube.com">Video</a><a href="https://store.steampowered.com">Games</a></div></main>
+<footer>alpha live image</footer>
+<script>
+function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
+location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
+function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+t();setInterval(t,15000)
+</script></body></html>

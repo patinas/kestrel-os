@@ -1,0 +1,35 @@
+base
+linux
+linux-firmware
+intel-ucode
+amd-ucode
+mkinitcpio
+mkinitcpio-archiso
+squashfs-tools
+# graphics: open drivers for AMD/Intel/old NVIDIA (NVK via mesa), nvidia-open added in a later milestone
+mesa
+vulkan-radeon
+vulkan-intel
+vulkan-nouveau
+libva-mesa-driver
+xf86-input-libinput
+# shell: Wayland kiosk compositor + Chromium
+cage
+chromium
+noto-fonts
+ttf-liberation
+# audio, network, bluetooth
+pipewire
+pipewire-pulse
+wireplumber
+networkmanager
+iwd
+bluez
+bluez-utils
+# hardware support extras
+sof-firmware
+alsa-firmware
+fwupd
+# misc
+sudo
+nano

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Kestrel OS session: cage (single-app Wayland compositor) running Chromium in kiosk mode.
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export WLR_NO_HARDWARE_CURSORS=1
+# In VMs without a GPU, fall back to software rendering so the shell still shows.
+if [ -n "$(systemd-detect-virt --vm 2>/dev/null | grep -v none)" ]; then
+  export WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1
+fi
+exec cage -s -- chromium \
+  --kiosk --no-first-run --no-default-browser-check --disable-infobars \
+  --ozone-platform=wayland --enable-features=UseOzonePlatform \
+  --user-data-dir="$HOME/.config/kestrel-chromium" \
+  --app=file:///usr/share/kestrel/shell/index.html

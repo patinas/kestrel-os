@@ -1,0 +1,4 @@
+build/out/
+build/work/
+build/cache/
+build/*.log
