@@ -73,6 +73,7 @@ arch-chroot "$T" passwd -d kestrel
 arch-chroot "$T" systemctl enable NetworkManager bluetooth kestrel-gpu-select.service kestrel-firstboot.service kestrel-health.service
 # kestrel-health.service is RequiredBy=boot-complete.target; verify the enablement link exists
 [ -L "$T/etc/systemd/system/boot-complete.target.requires/kestrel-health.service" ] || die "health gate not enabled"
+[ -L "$T/etc/systemd/system/multi-user.target.wants/kestrel-health.service" ] || die "health gate not enabled for counter-less boots"
 # systemd-bless-boot is pulled in by its generator when the loader sets boot counting; make sure it is not masked
 [ "$(readlink "$T/etc/systemd/system/systemd-bless-boot.service" 2>/dev/null)" != /dev/null ] || die "systemd-bless-boot masked"
 # installed footer text (the live image says "alpha live image")

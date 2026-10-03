@@ -1,10 +1,12 @@
 [Unit]
 Description=Kestrel boot health gate (blocks systemd-bless-boot until healthy)
-After=multi-user.target getty@tty1.service kestrel-gpu-select.service
+After=getty@tty1.service kestrel-gpu-select.service
 Before=boot-complete.target
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 TimeoutStartSec=300
 ExecStart=/usr/local/lib/kestrel/health-check.sh
 [Install]
 RequiredBy=boot-complete.target
+WantedBy=multi-user.target

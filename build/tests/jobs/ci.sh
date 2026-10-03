@@ -11,7 +11,12 @@ stage=$(cat $ST/stage 2>/dev/null || echo 0)
 slot=$(sed -n 's/.*kestrel\.slot=\([AB]\).*/\1/p' /proc/cmdline)
 ENT=/boot/loader/entries
 ls /boot >/dev/null            # trigger ESP automount
-fail(){ say "CI_FAIL $*"; exit 1; }
+fail(){
+  say "CI_DIAGNOSTIC failure: $*"
+  systemctl --no-pager status kestrel-health.service boot-complete.target systemd-bless-boot.service getty@tty1.service > /dev/ttyS0 2>&1 || true
+  journalctl -b --no-pager -u kestrel-health.service -u systemd-bless-boot.service -u getty@tty1.service | tail -n 80 > /dev/ttyS0 2>&1 || true
+  say "CI_FAIL $*"; exit 1;
+}
 health_ok(){ journalctl -b --no-pager -u kestrel-health.service | grep -q 'kestrel-health: OK'; }
 health_failed(){ journalctl -b --no-pager -u kestrel-health.service | grep -q 'kestrel-health: FAIL'; }
 wait_for(){ # wait_for <seconds> <cmd...>

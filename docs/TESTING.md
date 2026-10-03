@@ -71,3 +71,9 @@ Automatic rollback, three injected unhealthy boots, and a corrected signed-updat
 ### Public CI diagnostics, 2026-10-03
 
 Runs 37110324059 and 37111246448 both completed a full install and installed slot A boot on KVM. Their journals show the 60-second health gate passed, then systemd blessed A. Neither run reached a completed bad-signature test or a B boot. Run 2 stopped at a diagnostic `ls` before invoking the verifier. Serial login was active while the job held a serial output descriptor; missing ordinary output suggests a getty reset invalidated that descriptor. The CI-only harness now masks serial-getty on ttyS0 and reopens the serial device for critical diagnostics. This explanation and the adjusted harness require a new CI run; no updater behavior was changed by this fix.
+
+### Public CI run 3, 2026-10-03
+
+https://github.com/patinas/kestrel-os/actions/runs/37114709251 (e46bba6) failed after 44m16s on KVM. It completed real corrupted-signature rejection without slot or entry writes, signed A-to-B update, B health/blessing, signed B-to-A update, A health/blessing, and three induced unhealthy B boots that stayed unblessed. B reached +0-3 and systemd-boot selected the counter-less known-good A. The final assertion failed because fallback A never logged health OK within the test window. Healthy fallback was not proved.
+
+The health service was enabled only through boot-complete.target, which the blessing generator pulls in for counted boots. Counter-less fallback has no such trigger. The revised service is also wanted by multi-user.target on every boot, with ordering before that target to avoid a cycle, and remains active after success. The installer checks both enablement links. This source fix requires another end-to-end CI run; run 3 is not a pass. Failure diagnostics now include service status and guest journals.
