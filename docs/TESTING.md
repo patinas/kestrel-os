@@ -1,6 +1,6 @@
 # VM test record
 
-Tests completed October 2-3, 2026. These are local QEMU results, not hardware certification.
+Tests completed October 2-3, 2026. These are local and public-runner QEMU results, not hardware certification. The CI run 4 section below is the latest end-to-end result.
 
 ## Live ISO
 
@@ -46,7 +46,7 @@ The test containers use one CPU, a 3 GiB RAM limit, low CPU/I/O priority and dis
 - The shell footer incorrectly labels the installed system as a live image.
 - No ARM build, real hardware, GPU acceleration, gaming, suspend, audio, Wi-Fi or network interaction test is recorded.
 
-## Revision 3 test progress (October 3)
+## Revision 3 local test progress (October 3, historical)
 
 The revised full-package installer completed a 552-package transaction on a new 40 GiB disposable QEMU disk with 12 GiB root slots (62% root usage). Installed A boot was read-only, had Steam/gamescope/minisign/nvidia-open and the Kestrel library scripts, and showed the corrected installed footer. In the test harness only, initial A was armed with three boot attempts. The same Cage/Chromium processes survived the 60-second health check; boot-complete.target completed, systemd-bless-boot marked the boot good at attempt 1, and A's counter was removed.
 
@@ -66,7 +66,7 @@ Automatic rollback, three injected unhealthy boots, and a corrected signed-updat
 
 ## CI harness (manual workflow)
 
-`.github/workflows/vm-test.yml` runs the full install, boot, health/bless, bad-signature, signed A->B->A update and induced-unhealthy rollback sequence on a public runner. See `build/tests/ci/README.md`. Not run yet; results will be recorded here.
+`.github/workflows/vm-test.yml` runs the full install, boot, health/bless, bad-signature, signed A->B->A update and induced-unhealthy rollback sequence on a public runner. See `build/tests/ci/README.md`. Run results are recorded below; run 4 passed.
 
 ### Public CI diagnostics, 2026-10-03
 
@@ -77,3 +77,20 @@ Runs 37110324059 and 37111246448 both completed a full install and installed slo
 https://github.com/patinas/kestrel-os/actions/runs/37114709251 (e46bba6) failed after 44m16s on KVM. It completed real corrupted-signature rejection without slot or entry writes, signed A-to-B update, B health/blessing, signed B-to-A update, A health/blessing, and three induced unhealthy B boots that stayed unblessed. B reached +0-3 and systemd-boot selected the counter-less known-good A. The final assertion failed because fallback A never logged health OK within the test window. Healthy fallback was not proved.
 
 The health service was enabled only through boot-complete.target, which the blessing generator pulls in for counted boots. Counter-less fallback has no such trigger. The revised service is also wanted by multi-user.target on every boot, with ordering before that target to avoid a cycle, and remains active after success. The installer checks both enablement links. This source fix requires another end-to-end CI run; run 3 is not a pass. Failure diagnostics now include service status and guest journals.
+
+### Public CI run 4 passed, 2026-10-03
+
+Run: https://github.com/patinas/kestrel-os/actions/runs/37118001480
+Job: https://github.com/patinas/kestrel-os/actions/runs/37118001480/job/111188450230
+Tested source: `4ca0a57a5b51ccc6bfdc7873e2369a7988a3728a`. Total duration: 23m42s. KVM was available. No artifacts were uploaded; evidence is in job logs and the job summary.
+
+The run built the live ISO and installed to a disposable 40 GiB qcow2 with 12 GiB root slots. Disk-only boots completed this sequence:
+
+- Installed slot A booted read-only, passed the 60-second same-process Cage/Chromium health gate and was blessed.
+- A corrupted detached signature failed the real verifier. Boot-entry hashes and inactive-slot UUID stayed unchanged. The verifier runs before any slot write.
+- A test-key signed image updated B while preserving known-good A. B booted, passed health and was blessed.
+- A test-key signed image updated A from B. A booted, passed health and was blessed.
+- A signed update armed B with three tries and an explicit fault-injection kernel argument. Each B boot killed Chromium during the health hold, failed health and remained unblessed.
+- The B entry exhausted its counter. systemd-boot selected known-good A without the crash argument. A logged health OK; the harness logged `CI_STEP fallback_to_known_good_A_after_3_failed_tries`, `CI_DONE_OK`, and stage 4 poweroff. The runner reported success.
+
+The CI health check observes real processes, not mocked Cage/Chromium names. The test overlay extends startup waits, adds a test-job service and disables the serial login. The failure injection is test-only. No guest screenshots were retained in this run, so its result proves the boot/update/health/fallback sequence, not visual UI behavior. Real hardware, GPU/gaming, ARM, browser interaction, production signing keys and release distribution remain unverified. There is still no downloadable release.
