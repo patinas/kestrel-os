@@ -63,3 +63,7 @@ A subsequent signed B-to-A write using the corrected extractor failed before arm
 The second TV degradation occurred at 09:45:10 CEST despite the lower-priority setup: the one-minute guard got HTTP 000/no segments and stopped the guest/container at that first failed probe. The recheck after stopping returned HTTP 200/four segments. All test guests/container and test wakes are stopped. No further VM load is permitted on this shared TV host. No host disk or host package change was made.
 
 Automatic rollback, three injected unhealthy boots, and a corrected signed-update boot without rescue remain unverified. Test signing keys are local and disposable, not release keys. They are not included in source publication.
+
+## CI harness (manual workflow)
+
+`.github/workflows/vm-test.yml` runs the full install, boot, health/bless, bad-signature, signed A->B->A update and induced-unhealthy rollback sequence on a public runner. See `build/tests/ci/README.md`. Not run yet; results will be recorded here.

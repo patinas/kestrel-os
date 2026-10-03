@@ -1,0 +1,35 @@
+name: vm-test
+# Manual only. Public ubuntu runner, no secrets, no artifact upload: evidence goes to the job log and step summary.
+on:
+  workflow_dispatch:
+    inputs:
+      allow_tcg:
+        description: "Run without /dev/kvm (software emulation, several times slower)"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: vm-test
+  cancel-in-progress: false
+jobs:
+  vm-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      KESTREL_CI_ALLOW_TCG: ${{ inputs.allow_tcg }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host setup (disk, KVM, packages)
+        run: build/tests/ci/00-host.sh
+      - name: Build live ISO
+        run: build/tests/ci/01-build-iso.sh
+      - name: Prepare VM inputs
+        run: build/tests/ci/02-prepare.sh
+      - name: Install to disposable qcow2 (live ISO guest, overlay over read-only 9p)
+        run: build/tests/ci/03-install.sh
+      - name: Boot/health/update/rollback sequence
+        run: build/tests/ci/04-sequence.sh
+      - name: Summary
+        if: always()
+        run: build/tests/ci/05-summary.sh
