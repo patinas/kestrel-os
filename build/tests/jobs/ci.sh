@@ -50,8 +50,14 @@ s=l[1]; i=10; l[1]=s[:i]+("B" if s[i]=="A" else "A")+s[i+1:]; open(p,"w").write(
 PY
    before=$(sha256sum $ENT/*.conf | sha256sum); uuid=$(blkid -s UUID -o value /dev/disk/by-label/rootB)
    export KESTREL_ALLOW_VM_UPDATE=yes
-   if kestrel-update $d/root.tar.zst $d/root.tar.zst.minisig > $d/bad.log 2>&1; then fail "bad signature accepted"; fi
-   cat $d/bad.log; grep -q "signature verification FAILED" $d/bad.log || fail "rejection message missing"
+   say "CI_DIAGNOSTIC signature files and updater"
+   ls -l "$d" /usr/local/bin/kestrel-update /usr/local/lib/kestrel/update.sh
+   rc=0
+   kestrel-update "$d/root.tar.zst" "$d/root.tar.zst.minisig" > "$d/bad.log" 2>&1 || rc=$?
+   say "CI_DIAGNOSTIC bad-signature exit=$rc log=$d/bad.log"
+   [ "$rc" -ne 0 ] || fail "bad signature accepted"
+   if [ -r "$d/bad.log" ]; then cat "$d/bad.log"; else fail "bad-signature log missing"; fi
+   if ! grep -q "signature verification FAILED" "$d/bad.log"; then fail "rejection message missing (exit=$rc)"; fi
    [ "$before" = "$(sha256sum $ENT/*.conf | sha256sum)" ] || fail "entries changed after bad signature"
    [ "$uuid" = "$(blkid -s UUID -o value /dev/disk/by-label/rootB)" ] || fail "rootB rewritten after bad signature"
    say "CI_STEP bad_signature_rejected_no_writes"
