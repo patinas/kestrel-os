@@ -4,7 +4,7 @@
 set -Eeuo pipefail
 say(){ printf '%s\n' "$*" > /dev/ttyS0; }
 trap 'say "CI_FAIL line $LINENO (slot=${slot:-?} stage=${stage:-?})"; journalctl -b --no-pager -u kestrel-health.service -u systemd-bless-boot.service | tail -n 40 > /dev/ttyS0; ls -l /boot/loader/entries > /dev/ttyS0 2>&1' ERR
-exec >>/dev/ttyS0 2>&1
+exec >/dev/ttyS0 2>&1
 T=/run/kestrel-test; KEY=$T/out/test-keys/test.key; WAIT=$(cat $T/ci-wait)
 ST=/var/lib/kestrel-ci; mkdir -p $ST
 stage=$(cat $ST/stage 2>/dev/null || echo 0)
@@ -51,12 +51,12 @@ PY
    before=$(sha256sum $ENT/*.conf | sha256sum); uuid=$(blkid -s UUID -o value /dev/disk/by-label/rootB)
    export KESTREL_ALLOW_VM_UPDATE=yes
    say "CI_DIAGNOSTIC signature files and updater"
-   ls -l "$d" /usr/local/bin/kestrel-update /usr/local/lib/kestrel/update.sh
+   ls -l "$d" /usr/local/bin/kestrel-update /usr/local/lib/kestrel/update.sh > /dev/ttyS0 2>&1 || fail "signature files/updater listing failed"
    rc=0
    kestrel-update "$d/root.tar.zst" "$d/root.tar.zst.minisig" > "$d/bad.log" 2>&1 || rc=$?
    say "CI_DIAGNOSTIC bad-signature exit=$rc log=$d/bad.log"
    [ "$rc" -ne 0 ] || fail "bad signature accepted"
-   if [ -r "$d/bad.log" ]; then cat "$d/bad.log"; else fail "bad-signature log missing"; fi
+   if [ -r "$d/bad.log" ]; then cat "$d/bad.log" > /dev/ttyS0; else fail "bad-signature log missing"; fi
    if ! grep -q "signature verification FAILED" "$d/bad.log"; then fail "rejection message missing (exit=$rc)"; fi
    [ "$before" = "$(sha256sum $ENT/*.conf | sha256sum)" ] || fail "entries changed after bad signature"
    [ "$uuid" = "$(blkid -s UUID -o value /dev/disk/by-label/rootB)" ] || fail "rootB rewritten after bad signature"

@@ -67,3 +67,7 @@ Automatic rollback, three injected unhealthy boots, and a corrected signed-updat
 ## CI harness (manual workflow)
 
 `.github/workflows/vm-test.yml` runs the full install, boot, health/bless, bad-signature, signed A->B->A update and induced-unhealthy rollback sequence on a public runner. See `build/tests/ci/README.md`. Not run yet; results will be recorded here.
+
+### Public CI diagnostics, 2026-10-03
+
+Runs 37110324059 and 37111246448 both completed a full install and installed slot A boot on KVM. Their journals show the 60-second health gate passed, then systemd blessed A. Neither run reached a completed bad-signature test or a B boot. Run 2 stopped at a diagnostic `ls` before invoking the verifier. Serial login was active while the job held a serial output descriptor; missing ordinary output suggests a getty reset invalidated that descriptor. The CI-only harness now masks serial-getty on ttyS0 and reopens the serial device for critical diagnostics. This explanation and the adjusted harness require a new CI run; no updater behavior was changed by this fix.

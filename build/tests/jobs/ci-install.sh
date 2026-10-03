@@ -19,6 +19,8 @@ for s in A B; do
   # test overlay (job service, run-job.sh, health drop-in); cp -a keeps its symlink
   cp -a $S/tests/overlay/. /run/testroot/
   chmod 755 /run/testroot/usr/local/lib/kestrel-test/run-job.sh
+  # No interactive serial login in CI. Getty resets can invalidate a job's open tty fd.
+  ln -sfn /dev/null /run/testroot/etc/systemd/system/serial-getty@ttyS0.service
   umount /run/testroot
 done
 mount /dev/disk/by-label/KESTRELESP /run/testesp
