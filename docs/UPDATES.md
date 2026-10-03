@@ -1,5 +1,5 @@
 # Update server and health-check design
-Status: proposed design. The experimental VM installer and default slot A boot have passed; signed updates and rollback have not been tested. The health target and bless-boot wiring described below are absent. See TESTING.md.
+Status: proposed distribution/rollback design. The experimental VM installer, installed A health/blessing and rescue-repaired B health/blessing passed. Signature rejection and an inactive-slot write passed. A corrected end-to-end signed-update boot and automatic rollback are not verified. The implemented gate is kestrel-health.service, required before boot-complete.target, not the proposed target below. See TESTING.md.
 
 
 Free and static: updates are files on GitHub Releases (or any static host). No server code to run.

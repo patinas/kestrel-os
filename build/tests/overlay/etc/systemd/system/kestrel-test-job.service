@@ -1,0 +1,12 @@
+[Unit]
+Description=Disposable QEMU test job (test overlay only)
+ConditionKernelCommandLine=kestrel.test-job
+After=multi-user.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/kestrel-test/run-job.sh
+StandardOutput=journal+console
+StandardError=journal+console
+TimeoutStartSec=1800
+[Install]
+WantedBy=multi-user.target

@@ -37,7 +37,7 @@ Both slots were populated, but only default slot A boot was tested. This test do
 
 The test containers use one CPU, a 3 GiB RAM limit, low CPU/I/O priority and disk-backed work. QEMU gets 2 GiB RAM. Only `/dev/kvm` is passed into these test containers; host block devices are not exposed. No host packages were installed for these tests.
 
-## Known gaps
+## Known gaps at the earlier M2 test (superseded where noted below)
 
 - `kestrel-health.target` and health-gated `systemd-bless-boot` wiring are absent. Automatic rollback is not verified.
 - No update signing key or release distribution pipeline has been established.
@@ -45,3 +45,21 @@ The test containers use one CPU, a 3 GiB RAM limit, low CPU/I/O priority and dis
 - The NVIDIA device-ID heuristic is unverified and is not a compatibility guarantee.
 - The shell footer incorrectly labels the installed system as a live image.
 - No ARM build, real hardware, GPU acceleration, gaming, suspend, audio, Wi-Fi or network interaction test is recorded.
+
+## Revision 3 test progress (October 3)
+
+The revised full-package installer completed a 552-package transaction on a new 40 GiB disposable QEMU disk with 12 GiB root slots (62% root usage). Installed A boot was read-only, had Steam/gamescope/minisign/nvidia-open and the Kestrel library scripts, and showed the corrected installed footer. In the test harness only, initial A was armed with three boot attempts. The same Cage/Chromium processes survived the 60-second health check; boot-complete.target completed, systemd-bless-boot marked the boot good at attempt 1, and A's counter was removed.
+
+A corrupted detached signature was rejected by the actual signature verifier before boot-entry changes. A valid test-key signed image was written to B, preserving A and arming B+3 version 3. B boot then failed with a black screen and repeated early systemd starts. A live rescue inspection verified that the test image omitted /run and /tmp entirely. Source fixes retain those mountpoint directories in the image and create them defensively during extraction. A later rescue repair proved those missing directories mattered; the corrected extraction path still has no successful end-to-end boot test.
+
+Other source corrections normalize executable modes/ownership (firstboot was copied as 0644 and failed with 203/EXEC), make the updater's lib.sh lookup symlink-safe, and restrict temporary ESP mount permissions. Update packing now streams tar into one zstd worker onto the data partition instead of staging an uncompressed root in RAM.
+
+The first TV degradation occurred at 01:37:04 CEST: HTTP 000/no segments under VM load. Tests stopped; a recheck returned HTTP 200/four segments. The next morning tests resumed under one CPU, nice 19, idle I/O, 2 GiB guest RAM and a 3 GiB container limit with a one-minute playback guard.
+
+At 09:33, the live rescue guest created B's missing /run and /tmp directories, fixed executable modes and copied the symlink-safe updater. B's entry then had one try left after two earlier failed boots. The disk-only B boot reached the shell with rootB read-only; the same Cage/Chromium processes passed the 60-second health check. systemd-bless-boot marked attempt 3 good and removed the counter. The screenshot was inspected visually and showed the installed footer. This proves rescue-repaired B boot and blessing, not the corrected signed-update path.
+
+A subsequent signed B-to-A write using the corrected extractor failed before arming A: permission normalization followed the absolute kestrel-update symlink into the running read-only root. Source-only fixes now use find -type f to avoid following symlinks. These final fixes have syntax checks but no VM proof. The known-good B entry remains; A's entry was retired before the failed write.
+
+The second TV degradation occurred at 09:45:10 CEST despite the lower-priority setup: the one-minute guard got HTTP 000/no segments and stopped the guest/container at that first failed probe. The recheck after stopping returned HTTP 200/four segments. All test guests/container and test wakes are stopped. No further VM load is permitted on this shared TV host. No host disk or host package change was made.
+
+Automatic rollback, three injected unhealthy boots, and a corrected signed-update boot without rescue remain unverified. Test signing keys are local and disposable, not release keys. They are not included in source publication.

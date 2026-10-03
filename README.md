@@ -4,18 +4,15 @@ An open-source browser-first OS prototype, licensed under GPL-3.0.
 
 ## Current status
 
-The x86_64 live ISO boots to a Chromium/Cage shell in QEMU. The experimental installer has populated both root slots on a disposable 24 GiB qcow2 disk. A separate UEFI boot, with no ISO or external kernel/initramfs, reached the shell from default slot A.
+The x86_64 live ISO and installed browser shell boot in QEMU. The revised installer populated full-package root slots on a disposable 40 GiB disk. Installed A passed a 60-second same-process browser/compositor health gate and systemd-bless-boot removed its boot counter. A test-key signed update was written to B; B only booted successfully after a live rescue repair of missing runtime directories and executable modes. Repaired B also passed health/blessing.
 
-This is a VM-tested alpha, not an OS ready for real installation. The installer refuses disks unless it detects QEMU/KVM, QEMU DMI and a virtio disk with the exact serial `KESTREL_TEST_ONLY`. Do not weaken these guards to install on a real machine.
+This is a VM-tested alpha, not an OS ready for real installation. The installer requires QEMU/KVM, QEMU DMI and a virtio disk with the exact serial `KESTREL_TEST_ONLY`. Do not weaken these guards to install on a real machine.
 
-Not verified:
-- Slot B boot, signed update application, boot-count fallback or automatic rollback.
-- Steam/gamescope, NVIDIA acceleration or real hardware compatibility.
-- ARM/Pi boot, verified root images, production lockdown or browser/network interaction.
+The corrected end-to-end signed-update path and automatic rollback are not verified. Testing on the shared TV host stopped after two playback timeouts under VM load, including one with nice 19, idle I/O and a one-minute guard. No further VM tests are permitted on that host.
 
-The live image includes gaming packages. The installed system currently installs the smaller browser package set, so live gaming packages do not prove installed gaming support. The shell footer still reads "alpha live image" on installed boots.
+The installed package list includes Steam/gamescope and GPU packages. Package presence does not prove gaming or acceleration. ARM/Pi boot, real hardware, verified root images, production lockdown and browser/network interaction remain untested. No downloadable release is published.
 
-See [the test record](docs/TESTING.md) for evidence, constraints and reproduction notes.
+See [the test record](docs/TESTING.md) for observed results, failures and source-only fixes.
 
 ## Goals
 
