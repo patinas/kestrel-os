@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: browser-ui-test
+  group: browser-ui-test-${{ github.sha }}
   cancel-in-progress: false
 jobs:
   test:
