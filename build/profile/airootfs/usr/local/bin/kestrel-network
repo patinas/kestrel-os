@@ -14,6 +14,7 @@ class Wifi(Gtk.Window):
   row=Gtk.Box(spacing=8);self.box.pack_start(row,False,False,0)
   for name,fn in [('Refresh networks',self.scan),('Wi-Fi on/off',self.toggle),('Disconnect',self.disconnect)]:
    b=Gtk.Button(label=name);b.connect('clicked',lambda _,f=fn:f());row.pack_start(b,True,True,0)
+  self.actions=list(row.get_children())
   self.list=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);scroll=Gtk.ScrolledWindow();scroll.add(self.list);self.box.pack_start(scroll,True,True,0)
   self.hint=Gtk.Label(label='Pick a network to connect. Passwords are not saved in this alpha.\nSaved networks can be removed below.');self.hint.set_line_wrap(True);self.box.pack_start(self.hint,False,False,0)
   b=Gtk.Button(label='Close');b.connect('clicked',lambda _:self.destroy());self.box.pack_start(b,False,False,0)
@@ -38,7 +39,10 @@ class Wifi(Gtk.Window):
   try:
    for child in self.list.get_children():child.destroy()
    devices=self.manager().GetDevices();self.dev=next((str(x) for x in devices if int(self.prop(x,D,'DeviceType'))==2),None)
-   if not self.dev:self.status.set_text('No Wi-Fi adapter found. You can use a wired connection.');return True
+   for b in self.actions:b.set_sensitive(bool(self.dev))
+   if not self.dev:
+    self.status.set_text('No Wi-Fi adapter found. You can use a wired connection.');self.hint.set_text('A Wi-Fi adapter is needed to see nearby networks.\nYou can close this window and keep using your wired connection.');return True
+   self.hint.set_text('Pick a network to connect. Passwords are not saved in this alpha.\nSaved networks can be connected or removed below.')
    enabled=bool(self.prop(BASE,BUS,'WirelessEnabled'));state=int(self.prop(self.dev,D,'State'));active=str(self.prop(self.dev,W,'ActiveAccessPoint'))
    self.status.set_text('Wi-Fi is off. Use Wi-Fi on/off to turn it on.' if not enabled else {100:'Connected',40:'Connecting...',50:'Connecting...',60:'Waiting for password...',70:'Getting an address...',120:'Connection failed. Try again.'}.get(state,'Choose a Wi-Fi network'))
    seen=set()

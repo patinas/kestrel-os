@@ -75,7 +75,15 @@ key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
 def live_audio():
  req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
  return json.load(urllib.request.urlopen(req,timeout=30))['audio']
-# Panel layout changed to slider: keyboard activates focused real All settings.
+# Genuine QMP mouse coordinates grounded in sourcee881015 1280x800 full frame.
+# Panel x911..1271 y282..735, mute y530, slider x995..1251, bottom Close y704.
+before=live_audio();guest_click(1190,530);after=live_audio();record('Quick slider mouse effect',before!=after);shot('quick-mouse-slider')
+before=live_audio();guest_click(946,530);after=live_audio();record('Quick mute mouse effect',('MUTED' in before)!=('MUTED' in after));shot('quick-mouse-mute');guest_click(946,530)
+guest_click(1000,385);shot('quick-mouse-network');key('alt','f4')
+guest_click(1180,385);shot('quick-mouse-bluetooth');key('alt','f4')
+guest_click(1085,704);shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
+# Keyboard activates the focused real All settings.
+
 key('ret');time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
@@ -107,7 +115,7 @@ click('button[onclick="location.href=\'https://www.google.com\'"]');time.sleep(3
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
 # Every unsupported effect remains blocked rather than fabricated as a test pass.
-for control in ['Quick panel slider/mute mouse','New quick-panel Close mouse','Quick panel Close pixel review','Shelf launcher/clock pixel review','Shelf launcher/clock mouse','Launcher Browser tile mouse','Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
+for control in ['New quick-panel Close mouse','Quick panel Close pixel review','Shelf launcher/clock pixel review','Shelf launcher/clock mouse','Launcher Browser tile mouse','Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
  results.append({'control':control,'result':'UNVERIFIED'})
 cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(4);shot('settings-after-controls')
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
