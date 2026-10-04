@@ -1,6 +1,6 @@
 <labwc_config>
  <core><decoration>server</decoration></core>
- <theme><name>Clearlooks-3.4</name><titleLayout>icon:iconify,max,close</titleLayout><showTitle>yes</showTitle><cornerRadius>12</cornerRadius></theme>
+ <theme><name>Clearlooks-3.4</name><titleLayout>icon:iconify,max,close</titleLayout><showTitle>yes</showTitle><cornerRadius>16</cornerRadius></theme>
  <keyboard><default />
   <keybind key="W-Return"><action name="Execute" command="/usr/local/bin/kestrel-terminal" /></keybind>
   <keybind key="W-space"><action name="Execute" command="/usr/local/bin/kestrel-launcher" /></keybind>

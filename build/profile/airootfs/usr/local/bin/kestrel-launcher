@@ -29,6 +29,6 @@ class Launcher(Gtk.Window):
  def key(self,_,event):
   if event.keyval==Gdk.KEY_Escape:self.close()
 Gtk.Settings.get_default().set_property('gtk-icon-theme-name','Papirus')
-provider=Gtk.CssProvider();provider.load_from_data(b'* {font-family: Noto Sans;font-size:14px;} window {background:#eef3fb;color:#233044;border-radius:16px;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:8px;} button:hover {background:#cddcf1;} entry {border-radius:28px;padding:8px 16px;} button:focus {border-color:#4680bc;} button:active {background:#abc5e8;}')
+provider=Gtk.CssProvider();provider.load_from_data(b'* {font-family: Noto Sans;font-size:14px;} window {background:#eef3fb;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:8px;} button:hover {background:#cddcf1;} entry {border-radius:28px;padding:8px 16px;} button:focus {border-color:#4680bc;} button:active {background:#abc5e8;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Launcher();Gtk.main()
