@@ -4,17 +4,39 @@ import http.server,json,os,secrets,subprocess
 from pathlib import Path
 TOKEN=secrets.token_urlsafe(32)
 PAGE=Path('/usr/share/kestrel/shell/index.html').read_text().replace('BRIDGE_TOKEN',TOKEN)
+def readcmd(args):
+ try:return subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=4).stdout.strip()[:3000]
+ except Exception:return 'Not available'
+def status():
+ batteries=list(Path('/sys/class/power_supply').glob('BAT*/capacity'))
+ return {'enabled':Path('/var/lib/kestrel/terminal-enabled').exists(),
+ 'network':readcmd(['nmcli','-t','-f','DEVICE,TYPE,STATE,CONNECTION','device']),
+ 'bluetooth':readcmd(['bluetoothctl','show']),
+ 'audio':readcmd(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']),
+ 'battery':batteries[0].read_text().strip()+'%' if batteries else 'No battery',
+ 'gpu':Path('/run/kestrel-gpu').read_text().strip() if Path('/run/kestrel-gpu').exists() else 'Not available',
+ 'mode':'gaming' if Path.home().joinpath('.kestrel-mode').exists() else 'desktop',
+ 'slot':readcmd(['findmnt','-no','SOURCE,OPTIONS','/']),
+ 'version':Path('/etc/os-release').read_text()}
 ORIGIN='http://127.0.0.1:8765'
 class Handler(http.server.BaseHTTPRequestHandler):
  def do_GET(self):
   if self.headers.get('Host')!='127.0.0.1:8765': self.send_error(403);return
   if self.path=='/': data=PAGE.encode();kind='text/html'
-  elif self.path=='/status': data=json.dumps({'enabled':Path('/var/lib/kestrel/terminal-enabled').exists()}).encode();kind='application/json'
+  elif self.path=='/status': data=json.dumps(status()).encode();kind='application/json'
   else:self.send_error(404);return
   self.send_response(200);self.send_header('Content-Type',kind);self.send_header('Cache-Control','no-store');self.send_header('X-Frame-Options','DENY');self.end_headers();self.wfile.write(data)
  def do_POST(self):
   if self.headers.get('Host')!='127.0.0.1:8765' or self.headers.get('Origin')!=ORIGIN or self.headers.get('X-Kestrel-Token')!=TOKEN:self.send_error(403);return
-  if self.path=='/enable':subprocess.Popen(['foot','sh','-c','sudo /usr/local/bin/kestrel-advanced-toggle enable; printf "Press Enter to close"; read reply'])
+  if self.path=='/network':subprocess.Popen(['foot','nmtui'])
+  elif self.path=='/bluetooth':subprocess.Popen(['foot','bluetoothctl'])
+  elif self.path=='/volume-up':subprocess.run(['wpctl','set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@','5%+'])
+  elif self.path=='/volume-down':subprocess.run(['wpctl','set-volume','@DEFAULT_AUDIO_SINK@','5%-'])
+  elif self.path=='/mute':subprocess.run(['wpctl','set-mute','@DEFAULT_AUDIO_SINK@','toggle'])
+  elif self.path=='/chrome-refresh':subprocess.Popen(['foot','sh','-c','kestrel-chrome-setup --update; printf "Press Enter to close"; read reply'])
+  elif self.path=='/mode-gaming':subprocess.Popen(['kestrel-mode','gaming'])
+  elif self.path=='/mode-desktop':subprocess.Popen(['kestrel-mode','desktop'])
+  elif self.path=='/enable':subprocess.Popen(['foot','sh','-c','sudo /usr/local/bin/kestrel-advanced-toggle enable; printf "Press Enter to close"; read reply'])
   elif self.path=='/disable':subprocess.run(['sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True)
   elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot','bash','-c','printf "Advanced terminal. Install packages with: sudo kestrel-packages -S package\nInstalled packages use a development container; live packages use RAM.\n"; exec bash'])
   else:self.send_error(403);return
