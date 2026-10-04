@@ -16,7 +16,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
   if self.headers.get('Host')!='127.0.0.1:8765' or self.headers.get('Origin')!=ORIGIN or self.headers.get('X-Kestrel-Token')!=TOKEN:self.send_error(403);return
   if self.path=='/enable':subprocess.Popen(['foot','sh','-c','sudo /usr/local/bin/kestrel-advanced-toggle enable; printf "Press Enter to close"; read reply'])
   elif self.path=='/disable':subprocess.run(['sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True)
-  elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot'])
+  elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot','bash','-c','printf "Advanced terminal. Install packages with: sudo kestrel-packages -S package\nInstalled packages use a development container; live packages use RAM.\n"; exec bash'])
   else:self.send_error(403);return
   self.send_response(204);self.end_headers()
 http.server.HTTPServer(('127.0.0.1',8765),Handler).serve_forever()

@@ -13,14 +13,19 @@ def key(*keys):
  cmd('send-key',{'keys':[{'type':'qcode','data':k} for k in keys],'hold-time':100});time.sleep(.3)
 def text(t):
  keys={' ':'spc','-':'minus',';':'semicolon','/':'slash','.':'dot','=':'equal'}
- for c in t:key(keys.get(c,c))
+ for c in t:
+  if c.isupper():key('shift',c.lower())
+  else:key(keys.get(c,c))
 def shot(n):cmd('screendump',{'filename':str(v/('iso-'+n+'.ppm'))})
-cmd('qmp_capabilities');shot('shell')
+cmd('qmp_capabilities');shot('chrome-terms')
+# Owner accepted Google's terms in authenticated WhatsApp Oct4 12:40:57.
+# This test types into a disposable guest only. ISO never has an auto-consent flag.
+text('ACCEPT');key('ret');time.sleep(180);shot('shell')
 text('kestrel os');shot('search-input');key('ret');time.sleep(25);shot('search-query-result')
 key('alt','left');time.sleep(5);key('ctrl','a');key('backspace')
 # Each shortcut is reached with genuine keyboard focus and Enter. External pages may block CI IPs.
 for count,name in enumerate(['search','mail','video','games'],1):
- key('ctrl','l');text('file:///usr/share/kestrel/shell/index.html');key('ret');time.sleep(5)
+ key('ctrl','l');text('http://127.0.0.1:8765');key('ret');time.sleep(5)
  for _ in range(count):key('tab')
  shot(name+'-focus');key('ret');time.sleep(30);shot(name+'-destination')
  key('alt','left');time.sleep(5);shot(name+'-back')

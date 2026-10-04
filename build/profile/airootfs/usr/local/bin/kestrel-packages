@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Run via sudo after enabling Advanced. Never remount the A/B root.
+set -euo pipefail
+[ "$EUID" = 0 ] || { echo 'Use: sudo kestrel-packages [pacman arguments]'; exit 1; }
+[ -e /var/lib/kestrel/terminal-enabled ] || { echo 'Enable advanced settings first'; exit 1; }
+if ! findmnt -no OPTIONS / | grep -qw ro; then
+  echo 'Live overlay: package changes disappear at reboot.'
+  exec pacman "$@"
+fi
+D=/var/lib/kestrel/devroot
+if [ ! -x "$D/usr/bin/pacman" ]; then
+  echo 'Preparing writable Arch development container. Packages stay here, not in Kestrel root.'
+  mkdir -p "$D"
+  pacstrap -c "$D" base
+fi
+exec systemd-nspawn --quiet --directory="$D" --resolv-conf=bind-host /usr/bin/pacman "$@"
