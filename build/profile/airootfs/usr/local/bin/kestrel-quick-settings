@@ -6,7 +6,7 @@ from gi.repository import Gtk,Gdk,GLib
 GLib.set_prgname("kestrel-quick-settings")
 class Panel(Gtk.Window):
  def __init__(self):
-  super().__init__(title='Kestrel quick settings');self.set_default_size(380,420);self.set_resizable(False);self.set_keep_above(True)
+  super().__init__(title='Kestrel quick settings');self.set_default_size(400,420);self.set_resizable(False);self.set_keep_above(True)
   box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=14);box.set_border_width(22);self.add(box)
   def label(text):
    l=Gtk.Label(label=text);l.set_xalign(0);l.set_line_wrap(True);box.pack_start(l,False,False,0);return l
@@ -19,7 +19,8 @@ class Panel(Gtk.Window):
   def button(parent,text,fn):
    b=Gtk.Button(label=text);b.connect('clicked',lambda _:fn());parent.pack_start(b,True,True,0)
   button(row,'Network',lambda:subprocess.Popen(['foot','nmtui']))
-  button(row,'Bluetooth',lambda:subprocess.Popen(['foot','bluetoothctl']))
+  if 'Controller ' in read(['bluetoothctl','show']):button(row,'Bluetooth',lambda:subprocess.Popen(['foot','bluetoothctl']))
+  else:label('Bluetooth: no adapter detected')
   self.volume=label(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
   def audio(args):
    subprocess.run(['wpctl']+args,stderr=subprocess.DEVNULL);self.volume.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
@@ -33,4 +34,6 @@ class Panel(Gtk.Window):
    subprocess.Popen(['kestrel-settings']);self.close()
   all_button=Gtk.Button(label='All settings');all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus())
   button(box,'Close',lambda:self.close());self.connect('destroy',Gtk.main_quit)
+provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:14px;padding:10px;} button:hover {background:#cddcf1;} button:focus {border-color:#4680bc;}')
+Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Panel().show_all();Gtk.main()

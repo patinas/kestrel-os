@@ -22,17 +22,14 @@ qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
-for image in "$VM"/ui-*.ppm; do
- name=$(basename "$image" .ppm)
- convert "$image" -resize 960x600 -quality 48 "$VM/$name.jpg"
- done
- montage "$VM"/ui-click-*.jpg "$VM"/ui-maximized-urlbar.jpg "$VM"/ui-launcher-grid.jpg "$VM"/ui-quick-settings.jpg "$VM"/ui-snap-left.jpg -font DejaVu-Sans -set label '%f' -label '%f' -pointsize 15 -tile 2x -geometry +4+18 "$VM/contact.jpg"
- convert "$VM/contact.jpg" -crop 1928x1854 +repage -quality 65 "$VM/sheet-%02d.jpg"
- for image in "$VM"/sheet-*.jpg; do
- echo "UI_EVIDENCE_BEGIN $(basename "$image")"
- base64 -w 800 "$image"
- echo "UI_EVIDENCE_END $(basename "$image")"
- done
+for name in maximized-urlbar launcher-grid click-launcher-search quick-settings click-all-settings-result click-network click-advanced-off; do
+ image="$VM/ui-$name.ppm"
+ [ -f "$image" ] || continue
+ convert "$image" -quality 48 "$VM/ui-$name.jpg"
+ echo "UI_EVIDENCE_BEGIN ui-$name.jpg"
+ base64 -w 800 "$VM/ui-$name.jpg"
+ echo "UI_EVIDENCE_END ui-$name.jpg"
+done
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!

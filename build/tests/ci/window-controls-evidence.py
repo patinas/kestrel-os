@@ -26,6 +26,7 @@ for _ in range(120):
  except Exception as error:print(type(error).__name__,str(error),flush=True)
  time.sleep(2)
 if not ready:raise RuntimeError('Chrome readiness failed')
+print('WAYBAR_DIAGNOSTIC',json.dumps({'running':state.get('waybar_running'),'log':state.get('waybar_log')}),flush=True)
 time.sleep(8);shot('maximized-urlbar')
 key('ctrl','n');time.sleep(6);shot('second-window')
 key('alt','tab');time.sleep(2);shot('alt-tab-previous')
@@ -77,7 +78,7 @@ pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
 page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'])
 ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
-record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
+record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
 for button in ['volume-up','volume-down','mute']:
  before=js("document.querySelector('#audio-state').textContent");click('button[onclick="callBridge(\'/'+button+'\')"]');js('refresh()');time.sleep(2)
  record('Settings '+button,js("document.querySelector('#audio-state').textContent")!=before);shot('click-'+button)
@@ -91,6 +92,9 @@ record('Network state displayed',bool(js("document.querySelector('#network-state
 record('Bluetooth unavailable truthful',js("document.querySelector('#bluetooth-state').textContent.includes('No Bluetooth')"))
 # Actual clicks launch bounded network/bluetooth tools. Capture and close, no device mutations.
 for button in ['network','bluetooth']:
+
+ if button=='bluetooth' and js("document.querySelector('button[onclick=\"callBridge(\\\'/bluetooth\\\')\"]').disabled"):
+  shot('click-bluetooth-unavailable');record('Bluetooth setup disabled without hardware',True);continue
  click('button[onclick="callBridge(\'/'+button+'\')"]');time.sleep(3);shot('click-'+button);key('alt','f4');results.append({'control':'Settings '+button+' setup','result':'PIXEL_REVIEW'})
 click('button[onclick="document.getElementById(\'settings\').close()"]');record('Settings close',not js("document.querySelector('#settings').open"));shot('click-settings-closed')
 # Launcher search via real keys, no script-generated result.
@@ -98,7 +102,7 @@ key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-sear
 # Every unsupported effect remains blocked rather than fabricated as a test pass.
 for control in ['PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
  results.append({'control':control,'result':'UNVERIFIED'})
-v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));print('CONTROL_RESULTS',json.dumps(results),flush=True)
+v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
 
 if any(x['result']=='FAIL' for x in results):raise RuntimeError('A control assertion failed; inspect CONTROL_RESULTS')

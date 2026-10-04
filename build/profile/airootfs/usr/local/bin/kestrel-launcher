@@ -13,7 +13,7 @@ class Launcher(Gtk.Window):
   scroll=Gtk.ScrolledWindow();box.pack_start(scroll,True,True,0)
   self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(3);self.grid.set_max_children_per_line(7);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
   self.items=[]
-  basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Quick settings','preferences-system',['kestrel-quick-settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
+  basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))
   # Chrome-created desktop entries retain their app-id/standalone-window command.
   for app in Gio.AppInfo.get_all():
@@ -29,4 +29,6 @@ class Launcher(Gtk.Window):
  def key(self,_,event):
   if event.keyval==Gdk.KEY_Escape:self.close()
 Gtk.Settings.get_default().set_property('gtk-icon-theme-name','Papirus')
+provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#eef3fb;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:18px;padding:12px;} button:hover {background:#cddcf1;} entry {border-radius:18px;padding:12px;}')
+Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Launcher();Gtk.main()
