@@ -11,14 +11,15 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 4096 -smp 4 \
  -drive if=pflash,format=raw,readonly=on,file="$code" \
  -drive if=pflash,format=raw,file="$VM/ISO_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
- -netdev user,id=n -device virtio-net,netdev=n -display none \
+ -netdev user,id=n -device virtio-net,netdev=n -device ich9-intel-hda -device hda-duplex -display none \
  -serial "file:$VM/iso-serial.log" -qmp "unix:$VM/iso-qmp.sock,server=on,wait=off" &
 pid=$!
 trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT
 sleep 150
 python3 "$REPO/build/tests/ci/iso-evidence.py" "$VM"
-for name in iso-shell iso-search-input iso-search-launcher iso-search-page; do
- convert "$VM/$name.ppm" "$VM/$name.png"
+for image in "$VM"/iso-*.ppm; do
+ name=$(basename "$image" .ppm)
+ convert "$image" "$VM/$name.png"
  echo "ISO_EVIDENCE_BEGIN $name.png"
  base64 -w 100 "$VM/$name.png"
  echo "ISO_EVIDENCE_END $name.png"
