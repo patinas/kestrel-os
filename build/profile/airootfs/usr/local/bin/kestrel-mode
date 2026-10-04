@@ -1,7 +1,7 @@
 #!/bin/sh
 # kestrel-mode gaming|desktop: set the next session type and restart the current compositor.
 case "$1" in
-  gaming) echo gaming > "$HOME/.kestrel-mode" ;;
+  gaming) [ -x /usr/bin/steam ] || { echo "Steam was not selected at installation; gaming mode unavailable" >&2; exit 1; }; echo gaming > "$HOME/.kestrel-mode" ;;
   desktop) rm -f "$HOME/.kestrel-mode" ;;
   *) echo "usage: kestrel-mode gaming|desktop" >&2; exit 1 ;;
 esac

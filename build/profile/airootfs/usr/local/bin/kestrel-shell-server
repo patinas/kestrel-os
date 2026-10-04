@@ -15,6 +15,7 @@ def status():
  'audio':readcmd(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']),
  'battery':batteries[0].read_text().strip()+'%' if batteries else 'No battery',
  'gpu':Path('/run/kestrel-gpu').read_text().strip() if Path('/run/kestrel-gpu').exists() else 'Not available',
+ 'steam':Path('/usr/bin/steam').exists(),
  'mode':'gaming' if Path.home().joinpath('.kestrel-mode').exists() else 'desktop',
  'slot':readcmd(['findmnt','-no','SOURCE,OPTIONS','/']),
  'version':Path('/etc/os-release').read_text()}
