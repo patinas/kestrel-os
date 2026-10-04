@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 /usr/local/bin/kestrel-shell-server &
 swaybg -i /usr/share/kestrel/wallpaper.png -m fill &
+if [ -e /dev/virtio-ports/kestrel-ci-check ]; then socat TCP-LISTEN:9233,bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:9222 & fi
 waybar -c /etc/kestrel/waybar/config.json -s /etc/kestrel/waybar/style.css &
 /usr/local/bin/kestrel-browser &
 wait

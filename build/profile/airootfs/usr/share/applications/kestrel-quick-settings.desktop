@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Quick settings
+Icon=kestrel-settings
+Exec=kestrel-quick-settings
+NoDisplay=true
+StartupWMClass=kestrel-quick-settings

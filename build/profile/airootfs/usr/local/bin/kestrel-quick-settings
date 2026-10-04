@@ -29,6 +29,8 @@ class Panel(Gtk.Window):
   button(row,'Volume +',lambda:audio(['set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@','5%+']))
   caps=list(Path('/sys/class/power_supply').glob('BAT*/capacity'));label('Battery: '+(caps[0].read_text().strip()+'%' if caps else 'No battery detected'))
   label('Display brightness control is not available in this alpha.')
-  button(box,'All settings',lambda:subprocess.Popen(['/usr/local/bin/kestrel-browser','http://127.0.0.1:8765']))
+  def all_settings():
+   subprocess.Popen(['kestrel-settings']);self.close()
+  button(box,'All settings',all_settings)
   button(box,'Close',lambda:self.close());self.connect('destroy',Gtk.main_quit)
 Panel().show_all();Gtk.main()

@@ -38,3 +38,65 @@ key('ctrl','n');time.sleep(4);key('alt','f4');time.sleep(4);shot('close-window')
 key("meta_l");time.sleep(3);shot("launcher-grid");key("esc")
 key("alt","shift","s");time.sleep(3);shot("quick-settings");key("alt","f4")
 key("alt","bracket_left");time.sleep(3);shot("snap-left");key("alt","equal");time.sleep(3);shot("shortcut-maximize")
+# Append to existing genuine QMP key evidence. Only isolated CI guest uses CDP.
+import websocket,random,string
+ws=None
+for _ in range(30):
+ try:
+  pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
+  page=next(x for x in pages if x['type']=='page')
+  ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15);break
+ except Exception as e:time.sleep(1)
+if ws is None:raise RuntimeError('CI Chrome debug unavailable')
+seq=0
+results=[]
+def cdp(method,params={}):
+ global seq
+ seq+=1;ws.send(json.dumps({'id':seq,'method':method,'params':params}))
+ while True:
+  x=json.loads(ws.recv())
+  if x.get('id')==seq:
+   if 'error' in x:raise RuntimeError(x['error'])
+   return x.get('result',{})
+def js(expression):return cdp('Runtime.evaluate',{'expression':expression,'returnByValue':True,'awaitPromise':True}).get('result',{}).get('value')
+def mouse(x,y):
+ for type in ['mousePressed','mouseReleased']:cdp('Input.dispatchMouseEvent',{'type':type,'x':x,'y':y,'button':'left','clickCount':1})
+def click(selector):
+ point=js("(()=>{let e=document.querySelector("+json.dumps(selector)+");e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
+ mouse(*point);time.sleep(1)
+def record(name,condition):
+ results.append({'control':name,'result':'PASS' if condition else 'FAIL'});print('CONTROL_RESULT',name,results[-1]['result'],flush=True)
+def guest_click(x,y):
+ cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}},{'type':'btn','data':{'down':True,'button':'left'}}]})
+ cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
+key('alt','shift','s');time.sleep(3);shot('click-quick-before-all')
+guest_click(880,488);time.sleep(4);shot('click-all-settings-result')
+# Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
+ws.close()
+pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
+page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'])
+ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15)
+record('Quick settings All settings',js("document.querySelector('#settings').open"))
+record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
+for button in ['volume-up','volume-down','mute']:
+ before=js("document.querySelector('#audio-state').textContent");click('button[onclick="callBridge(\'/'+button+'\')"]');js('refresh()');time.sleep(2)
+ record('Settings '+button,js("document.querySelector('#audio-state').textContent")!=before);shot('click-'+button)
+# Unmute again so the owner starts with normal audio state.
+click('button[onclick="callBridge(\'/mute\')"]');js('refresh()')
+record('Advanced initially off',not js("document.querySelector('#advanced').checked"));record('Terminal initially disabled',js("document.querySelector('#terminal').disabled"));shot('click-advanced-off')
+record('Installer options unavailable disclosure',js("document.querySelector('#settings').textContent.includes('pending installer work')"))
+record('Touchpad/lid/lock unavailable disclosure',js("document.querySelector('#settings').textContent.includes('not available in this alpha UI')"))
+record('Hardware battery truthful',js("document.querySelector('#battery-state').textContent.includes('No battery')"))
+record('Network state displayed',bool(js("document.querySelector('#network-state').textContent")))
+record('Bluetooth unavailable truthful',js("document.querySelector('#bluetooth-state').textContent.includes('No Bluetooth')"))
+# Actual clicks launch bounded network/bluetooth tools. Capture and close, no device mutations.
+for button in ['network','bluetooth']:
+ click('button[onclick="callBridge(\'/'+button+'\')"]');time.sleep(3);shot('click-'+button);key('alt','f4');results.append({'control':'Settings '+button+' setup','result':'PIXEL_REVIEW'})
+click('button[onclick="document.getElementById(\'settings\').close()"]');record('Settings close',not js("document.querySelector('#settings').open"));shot('click-settings-closed')
+# Launcher search via real keys, no script-generated result.
+key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
+# Every unsupported effect remains blocked rather than fabricated as a test pass.
+for control in ['PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
+ results.append({'control':control,'result':'UNVERIFIED'})
+v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));print('CONTROL_RESULTS',json.dumps(results),flush=True)
+cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Google Chrome
+Icon=kestrel-browser
+Exec=kestrel-browser
+NoDisplay=true
+StartupWMClass=google-chrome

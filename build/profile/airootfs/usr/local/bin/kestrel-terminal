@@ -2,5 +2,5 @@
 if [ -f /var/lib/kestrel/terminal-enabled ]; then
  exec foot bash
 else
- exec /usr/local/bin/kestrel-browser http://127.0.0.1:8765
+ exec /usr/local/bin/kestrel-browser http://127.0.0.1:8765/#settings
 fi

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Kestrel apps
+Icon=kestrel-launcher
+Exec=kestrel-launcher
+NoDisplay=true
+StartupWMClass=kestrel-launcher

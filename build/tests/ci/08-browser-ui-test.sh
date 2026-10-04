@@ -2,7 +2,7 @@
 # One-user, disposable Kestrel UI test. Never a general desktop service.
 . "$(dirname "$0")/env.sh"
 [ "$ACCEL" = kvm ] || { echo 'KVM required'; exit 1; }
-sudo apt-get install -y --no-install-recommends novnc websockify imagemagick
+sudo apt-get install -y --no-install-recommends novnc websockify imagemagick python3-websocket
 curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2026.9.3/cloudflared-linux-amd64 -o "$CI_DIR/cloudflared"
 echo "77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2  $CI_DIR/cloudflared" | sha256sum -c -
 chmod 755 "$CI_DIR/cloudflared"
@@ -15,7 +15,7 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -drive if=pflash,format=raw,readonly=on,file="$code" \
  -drive if=pflash,format=raw,file="$VM/UI_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
- -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765 -device virtio-net,netdev=n \
+ -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765,hostfwd=tcp:127.0.0.1:19222-:9233 -device virtio-net,netdev=n \
  -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent \
  -device virtio-serial-pci -chardev null,id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check -vnc 127.0.0.1:1 -display none -serial "file:$VM/ui-serial.log" -qmp "unix:$VM/ui-qmp.sock,server=on,wait=off" &
 qemu_pid=$!
@@ -23,11 +23,15 @@ trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM"
 for image in "$VM"/ui-*.ppm; do
  name=$(basename "$image" .ppm)
- convert "$image" -quality 52 "$VM/$name.jpg"
- echo "UI_EVIDENCE_BEGIN $name.jpg"
- base64 -w 800 "$VM/$name.jpg"
- echo "UI_EVIDENCE_END $name.jpg"
-done
+ convert "$image" -resize 960x600 -quality 48 "$VM/$name.jpg"
+ done
+ montage "$VM"/ui-click-*.jpg "$VM"/ui-maximized-urlbar.jpg "$VM"/ui-launcher-grid.jpg "$VM"/ui-quick-settings.jpg "$VM"/ui-snap-left.jpg -set label '%f' -label '%f' -pointsize 15 -tile 2x -geometry +4+18 "$VM/contact.jpg"
+ convert "$VM/contact.jpg" -crop 1928x1854 +repage -quality 65 "$VM/sheet-%02d.jpg"
+ for image in "$VM"/sheet-*.jpg; do
+ echo "UI_EVIDENCE_BEGIN $(basename "$image")"
+ base64 -w 800 "$image"
+ echo "UI_EVIDENCE_END $(basename "$image")"
+ done
 websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!
 # Cloudflare email PIN protects HTTP AND WebSocket before they reach loopback.

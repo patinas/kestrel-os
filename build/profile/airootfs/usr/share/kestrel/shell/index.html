@@ -37,5 +37,6 @@ async function refresh(){let s=await(await fetch('/status')).json();document.get
 function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
 location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
 function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+if(location.hash==='#settings')document.getElementById('settings').showModal();
 t();setInterval(t,15000)
 </script></body></html>

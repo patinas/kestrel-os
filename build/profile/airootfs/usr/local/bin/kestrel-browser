@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-exec "$HOME/.local/share/kestrel/chrome/current/opt/google/chrome/chrome" --no-first-run --no-default-browser-check --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" --homepage=https://www.google.com --start-maximized "${1:-https://www.google.com}"
+DEBUG=()
+if [ -e /dev/virtio-ports/kestrel-ci-check ]; then DEBUG=(--remote-debugging-port=9222 --remote-allow-origins=http://localhost); fi
+exec "$HOME/.local/share/kestrel/chrome/current/opt/google/chrome/chrome" "${DEBUG[@]}" --no-first-run --no-default-browser-check --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" --homepage=https://www.google.com --start-maximized "${1:-https://www.google.com}"

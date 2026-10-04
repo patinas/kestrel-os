@@ -99,3 +99,5 @@ slurp
 libnotify
 playerctl
 brightnessctl
+
+socat
