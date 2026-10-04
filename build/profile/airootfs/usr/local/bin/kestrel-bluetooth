@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+import gi,subprocess
+gi.require_version('Gtk','3.0')
+from gi.repository import Gtk
+try:
+ import dbus
+ bus=dbus.SystemBus();objects=dbus.Interface(bus.get_object('org.bluez','/'),'org.freedesktop.DBus.ObjectManager').GetManagedObjects();adapter=any('org.bluez.Adapter1' in x for x in objects.values())
+except Exception:adapter=False
+if adapter:subprocess.Popen(['blueman-manager'])
+else:
+ d=Gtk.MessageDialog(message_type=Gtk.MessageType.INFO,buttons=Gtk.ButtonsType.CLOSE,text='No Bluetooth adapter found')
+ d.format_secondary_text('Bluetooth devices cannot connect yet. If your computer has Bluetooth, check that it is enabled or plug in a USB Bluetooth adapter.');d.run();d.destroy()

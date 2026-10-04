@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Graphical Wi-Fi picker. Passwords stay in memory, never command arguments/logs."""
+import gi,dbus,uuid,threading
+from dbus.mainloop.glib import DBusGMainLoop
+gi.require_version('Gtk','3.0')
+from gi.repository import Gtk,GLib,Gdk
+DBusGMainLoop(set_as_default=True)
+BUS='org.freedesktop.NetworkManager';BASE='/org/freedesktop/NetworkManager';D='org.freedesktop.NetworkManager.Device';W=D+'.Wireless';AP=BUS+'.AccessPoint';C=BUS+'.Settings.Connection';P='org.freedesktop.DBus.Properties'
+class Wifi(Gtk.Window):
+ def __init__(self):
+  super().__init__(title='Wi-Fi');self.set_default_size(520,560);self.bus=dbus.SystemBus();self.dev=None
+  self.box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=12);self.box.set_border_width(24);self.add(self.box)
+  self.status=Gtk.Label(label='Reading Wi-Fi...');self.status.set_line_wrap(True);self.box.pack_start(self.status,False,False,0)
+  row=Gtk.Box(spacing=8);self.box.pack_start(row,False,False,0)
+  for name,fn in [('Refresh networks',self.scan),('Wi-Fi on/off',self.toggle),('Disconnect',self.disconnect)]:
+   b=Gtk.Button(label=name);b.connect('clicked',lambda _,f=fn:f());row.pack_start(b,True,True,0)
+  self.list=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);scroll=Gtk.ScrolledWindow();scroll.add(self.list);self.box.pack_start(scroll,True,True,0)
+  self.hint=Gtk.Label(label='Pick a network to connect. Passwords are not saved in this alpha.\nSaved networks can be removed below.');self.hint.set_line_wrap(True);self.box.pack_start(self.hint,False,False,0)
+  b=Gtk.Button(label='Close');b.connect('clicked',lambda _:self.destroy());self.box.pack_start(b,False,False,0)
+  self.connect('destroy',Gtk.main_quit);self.show_all();self.refresh();GLib.timeout_add_seconds(5,self.refresh)
+ def obj(self,path):return self.bus.get_object(BUS,path)
+ def prop(self,path,iface,key):return dbus.Interface(self.obj(path),P).Get(iface,key)
+ def manager(self):return dbus.Interface(self.obj(BASE),BUS)
+ def work(self,fn,success='Request sent. Checking connection...'):
+  def run():
+   try:fn();GLib.idle_add(self.status.set_text,success)
+   except Exception:GLib.idle_add(self.status.set_text,'Could not complete that request. Check Wi-Fi is on, then try again.')
+   GLib.idle_add(self.refresh)
+  threading.Thread(target=run,daemon=True).start()
+ def scan(self):
+  if self.dev:self.work(lambda:dbus.Interface(self.obj(self.dev),W).RequestScan(dbus.Dictionary({},signature='sv')),'Searching for networks...');GLib.timeout_add_seconds(3,self.refresh)
+ def toggle(self):self.work(lambda:dbus.Interface(self.obj(BASE),P).Set(BUS,'WirelessEnabled',dbus.Boolean(not self.prop(BASE,BUS,'WirelessEnabled'))))
+ def disconnect(self):
+  if self.dev:self.work(lambda:dbus.Interface(self.obj(self.dev),D).Disconnect(),'Disconnected.')
+ def button(self,text,fn):
+  b=Gtk.Button(label=text);b.get_child().set_line_wrap(True);b.connect('clicked',lambda _:fn());self.list.pack_start(b,False,False,0)
+ def refresh(self):
+  try:
+   for child in self.list.get_children():child.destroy()
+   devices=self.manager().GetDevices();self.dev=next((str(x) for x in devices if int(self.prop(x,D,'DeviceType'))==2),None)
+   if not self.dev:self.status.set_text('No Wi-Fi adapter found. You can use a wired connection.');return True
+   enabled=bool(self.prop(BASE,BUS,'WirelessEnabled'));state=int(self.prop(self.dev,D,'State'));active=str(self.prop(self.dev,W,'ActiveAccessPoint'))
+   self.status.set_text('Wi-Fi is off. Use Wi-Fi on/off to turn it on.' if not enabled else {100:'Connected',40:'Connecting...',50:'Connecting...',60:'Waiting for password...',70:'Getting an address...',120:'Connection failed. Try again.'}.get(state,'Choose a Wi-Fi network'))
+   seen=set()
+   if enabled:
+    aps=dbus.Interface(self.obj(self.dev),W).GetAccessPoints();ordered=sorted(aps,key=lambda x:int(self.prop(x,AP,'Strength')),reverse=True)
+    for path in ordered:
+     ssid=bytes(self.prop(path,AP,'Ssid'));name=ssid.decode('utf-8','replace')
+     if not ssid or ssid in seen:continue
+     seen.add(ssid);flags=int(self.prop(path,AP,'Flags'));wpa=int(self.prop(path,AP,'WpaFlags'));rsn=int(self.prop(path,AP,'RsnFlags'));locked=bool(flags&1 or wpa or rsn)
+     text=name+'  '+str(int(self.prop(path,AP,'Strength')))+'%'+('  Connected' if str(path)==active else '')+('  Password required' if locked else '  Open network')
+     self.button(text,lambda p=str(path),s=ssid,n=name,l=locked,r=(wpa|rsn):self.connect_ap(p,s,n,l,r))
+    if not seen:self.button('No networks found. Refresh networks to scan again.',self.scan)
+   self.list.pack_start(Gtk.Label(label='Saved networks'),False,False,8)
+   settings=dbus.Interface(self.obj(BASE+'/Settings'),BUS+'.Settings')
+   for path in settings.ListConnections():
+    con=dbus.Interface(self.obj(path),C);s=con.GetSettings()
+    if str(s['connection']['type'])=='802-11-wireless':
+     name=str(s['connection']['id']);self.button('Forget '+name,lambda p=str(path),n=name:self.forget(p,n))
+   self.list.show_all()
+  except Exception:self.status.set_text('Network service is unavailable. Try again in a moment.')
+  return True
+ def forget(self,path,name):
+  d=Gtk.MessageDialog(transient_for=self,modal=True,message_type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL,text='Forget '+name+'?');d.format_secondary_text('This removes its saved network settings.');ok=d.run()==Gtk.ResponseType.OK;d.destroy()
+  if ok:self.work(lambda:dbus.Interface(self.obj(path),C).Delete(),'Saved network removed.')
+ def connect_ap(self,path,ssid,name,locked,flags):
+  # Enterprise/WEP need full profile editor; do not pretend a PSK is sufficient.
+  if locked and not(flags&0x100 or flags&0x400):self.status.set_text('This network needs advanced security settings. Personal WPA/WPA2/WPA3 networks are supported here.');return
+  password=''
+  if locked:
+   d=Gtk.Dialog(title='Connect to '+name,transient_for=self,modal=True);d.add_buttons('Cancel',Gtk.ResponseType.CANCEL,'Connect',Gtk.ResponseType.OK)
+   box=d.get_content_area();box.set_border_width(20);box.set_spacing(12);box.add(Gtk.Label(label='Enter the Wi-Fi password. It is not saved.'))
+   entry=Gtk.Entry();entry.set_visibility(False);entry.set_input_purpose(Gtk.InputPurpose.PASSWORD);entry.set_activates_default(True);box.add(entry);d.set_default_response(Gtk.ResponseType.OK);d.show_all();result=d.run();password=entry.get_text();entry.set_text('');d.destroy()
+   if result!=Gtk.ResponseType.OK:return
+   if not password:self.status.set_text('Enter a password to connect.');return
+  settings={'connection':{'type':'802-11-wireless','uuid':str(uuid.uuid4()),'id':name,'autoconnect':False},'802-11-wireless':{'ssid':dbus.ByteArray(ssid),'mode':'infrastructure'},'ipv4':{'method':'auto'},'ipv6':{'method':'auto'}}
+  if locked:settings['802-11-wireless-security']={'key-mgmt':'sae' if flags&0x400 and not flags&0x100 else 'wpa-psk','psk':password,'psk-flags':dbus.UInt32(2)}
+  self.status.set_text('Connecting to '+name+'...');dev=self.dev
+  self.work(lambda:self.manager().AddAndActivateConnection(settings,dev,path))
+provider=Gtk.CssProvider();provider.load_from_data(b'*{font-family:Noto Sans;font-size:14px} window{background:#f3f6fc;color:#233044} button{background:#e2eaf6;border-radius:12px;padding:10px} button:hover{background:#d8e3f2} button:focus{border-color:#4680bc}')
+Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+Wifi();Gtk.main()

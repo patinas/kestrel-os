@@ -101,3 +101,7 @@ playerctl
 brightnessctl
 
 socat
+
+# Native graphical wireless settings
+blueman
+python-dbus

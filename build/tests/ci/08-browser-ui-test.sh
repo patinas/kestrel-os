@@ -22,7 +22,7 @@ qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
-for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-volume-down quick-mouse-mute quick-mouse-volume-up click-all-settings-result settings-after-controls click-settings-closed click-network click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
+for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-volume-down quick-mouse-mute quick-mouse-volume-up click-all-settings-result settings-after-controls click-settings-closed click-network click-bluetooth click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue
  convert "$image" -quality 48 "$VM/ui-$name.jpg"

@@ -20,10 +20,10 @@ class Panel(Gtk.Window):
   grid=Gtk.Grid(column_spacing=8,row_spacing=8);outer.pack_start(grid,False,False,0)
   def button(text,fn,w=-1,h=48):
    b=Gtk.Button(label=text);b.set_size_request(w,h);b.connect('clicked',lambda _:fn());return b
-  grid.attach(button('Network\nSettings',lambda:subprocess.Popen(['foot','nmtui']),168,64),0,0,1,1)
-  bt=button('Bluetooth\nNo adapter',lambda:subprocess.Popen(['foot','bluetoothctl']),168,64)
+  grid.attach(button('Network\nSettings',lambda:subprocess.Popen(['kestrel-network']),168,64),0,0,1,1)
+  bt=button('Bluetooth\nNo adapter',lambda:subprocess.Popen(['kestrel-bluetooth']),168,64)
   if 'Controller ' in read(['bluetoothctl','show']):bt.set_label('Bluetooth\nSettings')
-  else:bt.set_sensitive(False)
+  else:bt.set_tooltip_text('No Bluetooth adapter detected. Click for help.')
   grid.attach(bt,1,0,1,1)
   net=read(['nmcli','-t','-f','DEVICE,STATE,CONNECTION','device']);label(net)
   self.audio=label(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
