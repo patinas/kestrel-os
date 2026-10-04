@@ -11,8 +11,8 @@ def cmd(name,args=None):
   if 'return' in r:return r
 cmd('qmp_capabilities'); cmd('screendump',{'filename':str(v/'iso-shell.ppm')})
 def key(*keys):
- cmd('send-key',{'keys':[{'type':'qcode','data':k} for k in keys]}); time.sleep(.12)
-key('ctrl','alt','f2'); time.sleep(3)
+ cmd('send-key',{'keys':[{'type':'qcode','data':k} for k in keys], 'hold-time':80}); time.sleep(.25)
+key('ctrl','alt','f2'); time.sleep(8)
 for k in ['k','e','s','t','r','e','l','ret']: key(k)
 time.sleep(3)
 # No shell writes: show running session processes and live ISO kernel cmdline.
