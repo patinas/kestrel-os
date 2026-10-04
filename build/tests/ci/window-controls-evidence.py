@@ -84,7 +84,10 @@ guest_click(1180,385);shot('quick-mouse-bluetooth');key('alt','f4')
 guest_click(1085,704);shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
 # Keyboard activates the focused real All settings.
 
-guest_click(1085,646);time.sleep(6);shot('click-all-settings-result')
+guest_click(1085,646);time.sleep(2);shot('click-all-settings-first')
+# First click may activate a newly mapped GTK window. Capture both attempts.
+guest_click(1085,646);time.sleep(8);shot('click-all-settings-result')
+print('SETTINGS_TARGETS_AFTER_MOUSE',json.dumps([{'id':p['id'],'url':p.get('url','')} for p in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))]),flush=True)
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
