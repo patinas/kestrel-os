@@ -4,6 +4,7 @@ amd-ucode
 arch-install-scripts
 at-spi2-core
 base
+blueman
 bluez
 bluez-utils
 brightnessctl
@@ -68,6 +69,7 @@ pipewire
 pipewire-pulse
 playerctl
 python
+python-dbus
 python-gobject
 rpm-tools
 rsync
