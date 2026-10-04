@@ -14,7 +14,10 @@ exec docker run --name kestrel-iso-build --rm --privileged --cpus=1 --memory=3g 
   pacstrap -C /src/profile/pacman.conf -c -G -M /src/work/x86_64/airootfs "${pkgs[@]}" --debug > /src/package-install.log 2>&1
   touch /src/work/base._make_packages
   pacman -S --noconfirm archiso
-  cp -a /usr/share/archiso/configs/releng/efiboot/. /src/profile/efiboot/
+  # Stock loader assets fill gaps, never overwrite source-controlled Kestrel entries.
+  cp -an /usr/share/archiso/configs/releng/efiboot/. /src/profile/efiboot/
+  grep -q "cow_spacesize=75%" /src/profile/efiboot/loader/entries/01-archiso-linux.conf
+  grep -q "cow_spacesize=75%" /src/profile/efiboot/loader/entries/02-archiso-speech-linux.conf
   mkdir -p /src/profile/airootfs/etc/mkinitcpio.conf.d /src/profile/airootfs/etc/mkinitcpio.d
   mapfile -t pkgs < <(grep -v "^[[:space:]]*#" /src/profile/packages.x86_64 | sed "/^[[:space:]]*$/d")
   cp -a /src/profile/airootfs/. /src/work/x86_64/airootfs/

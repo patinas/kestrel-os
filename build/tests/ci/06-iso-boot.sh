@@ -19,6 +19,7 @@ trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT
 sleep 150
 rc=0
 python3 "$REPO/build/tests/ci/iso-evidence.py" "$VM" || rc=$?
+kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
 for image in "$VM"/iso-*.ppm; do
  name=$(basename "$image" .ppm)
  convert "$image" "$VM/$name.png"
