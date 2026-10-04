@@ -17,7 +17,7 @@ class Launcher(Gtk.Window):
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))
   # Chrome-created desktop entries retain their app-id/standalone-window command.
   for app in Gio.AppInfo.get_all():
-   if app.should_show():self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
+   if app.should_show() and app.get_id().startswith('chrome-') and '--app-id=' in (app.get_commandline() or ''):self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
   self.grid.set_filter_func(lambda child:self.search.get_text().lower() in child.name.lower());self.search.connect('search-changed',lambda _:self.grid.invalidate_filter())
   self.show_all();self.search.grab_focus()
  def add_app(self,name,icon,fn):
