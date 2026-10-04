@@ -80,9 +80,14 @@ page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'] and 
 ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
+def live_audio():
+ req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
+ return json.load(urllib.request.urlopen(req,timeout=30))['audio']
 for button in ['volume-up','volume-down','mute']:
+ actual_before=live_audio()
  before=js("document.querySelector('#audio-state').textContent");click('button[onclick="callBridge(\'/'+button+'\')"]');js('refresh()');time.sleep(2)
- record('Settings '+button,js("document.querySelector('#audio-state').textContent")!=before);shot('click-'+button)
+ actual_after=live_audio();print('AUDIO_EFFECT',button,repr(actual_before),repr(actual_after),flush=True)
+ record('Settings '+button+' effect',actual_before!=actual_after);js('refresh()');record('Settings '+button+' display',actual_after==js("document.querySelector('#audio-state').textContent"));shot('click-'+button)
 # Unmute again so the owner starts with normal audio state.
 click('button[onclick="callBridge(\'/mute\')"]');js('refresh()')
 record('Advanced initially off',not js("document.querySelector('#advanced').checked"));record('Terminal initially disabled',js("document.querySelector('#terminal').disabled"));shot('click-advanced-off')
