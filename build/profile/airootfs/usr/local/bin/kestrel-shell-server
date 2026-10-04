@@ -9,7 +9,8 @@ def readcmd(args):
  except Exception:return 'Not available'
 def status():
  batteries=list(Path('/sys/class/power_supply').glob('BAT*/capacity'))
- return {'enabled':Path('/var/lib/kestrel/terminal-enabled').exists(),
+ return {'chrome_running':subprocess.run(['pgrep','-u',str(os.getuid()),'-x','chrome'],stdout=subprocess.DEVNULL).returncode==0,
+ 'enabled':Path('/var/lib/kestrel/terminal-enabled').exists(),
  'network':readcmd(['nmcli','-t','-f','DEVICE,TYPE,STATE,CONNECTION','device']),
  'bluetooth':readcmd(['bluetoothctl','show']),
  'bluetooth_connections':readcmd(['bluetoothctl','devices','Connected']),

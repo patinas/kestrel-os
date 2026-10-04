@@ -1,4 +1,4 @@
-import json,socket,sys,time
+import json,socket,sys,time,urllib.request
 from pathlib import Path
 v=Path(sys.argv[1]);s=socket.socket(socket.AF_UNIX);s.connect(str(v/'iso-qmp.sock'));f=s.makefile('rw');f.readline()
 def cmd(name,args=None):
@@ -21,7 +21,19 @@ def shot(n):cmd('screendump',{'filename':str(v/('iso-'+n+'.ppm'))})
 cmd('qmp_capabilities');shot('chrome-terms')
 # Owner accepted Google's terms in authenticated WhatsApp Oct4 12:40:57.
 # This test types into a disposable guest only. ISO never has an auto-consent flag.
-text('ACCEPT');key('ret');time.sleep(180);shot('shell')
+text('ACCEPT');key('ret')
+# Host-forwarded readiness is a real guest HTTP/process assertion, not a timed guess.
+ready=False
+for _ in range(180):
+ try:
+  req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
+  with urllib.request.urlopen(req,timeout=3) as r: state=json.load(r)
+  if state.get('chrome_running'):ready=True;break
+ except Exception:pass
+ time.sleep(2)
+shot('shell')
+if not ready:raise RuntimeError('Chrome/guest shell server failed readiness gate')
+time.sleep(5)
 text('kestrel os');shot('search-input');key('ret');time.sleep(25);shot('search-query-result')
 key('alt','left');time.sleep(5);key('ctrl','a');key('backspace')
 # Each shortcut is reached with genuine keyboard focus and Enter. External pages may block CI IPs.

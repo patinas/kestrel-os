@@ -9,6 +9,9 @@ if [ ! -f "$D/terms-accepted" ]; then
   date -Is > "$D/terms-accepted"
 fi
 [ "${1:-}" != --update ] && [ -x "$D/current/opt/google/chrome/chrome" ] && exit 0
+# Fail before a partial extraction if the live RAM overlay is too small.
+free=$(df -Pk "$D" | awk 'NR==2{print $4}')
+[ "$free" -gt 900000 ] || { echo 'Chrome needs at least 900 MB writable space. Boot live USB with 4 GB+ RAM and cow_spacesize=75%.'; exit 1; }
 T=$(mktemp -d "$D/setup.XXXXXX"); trap 'rm -rf "$T"' EXIT
 curl --fail --location --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 240 -o "$T/chrome.rpm" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 curl --fail --location --proto '=https' --tlsv1.2 --max-time 40 -o "$T/google.pub" https://dl.google.com/linux/linux_signing_key.pub
