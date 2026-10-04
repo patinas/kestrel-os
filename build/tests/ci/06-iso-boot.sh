@@ -12,6 +12,7 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -drive if=pflash,format=raw,file="$VM/ISO_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
  -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765 -device virtio-net,netdev=n -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent -display none \
+ -device virtio-serial-pci -chardev null,id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check \
  -serial "file:$VM/iso-serial.log" -qmp "unix:$VM/iso-qmp.sock,server=on,wait=off" &
 pid=$!
 trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT

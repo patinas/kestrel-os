@@ -44,4 +44,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
   elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot','bash','-c','printf "Advanced terminal. Install packages with: sudo kestrel-packages -S package\nInstalled packages use a development container; live packages use RAM.\n"; exec bash'])
   else:self.send_error(403);return
   self.send_response(204);self.end_headers()
-http.server.HTTPServer(('127.0.0.1',8765),Handler).serve_forever()
+# Disposable CI guest only: QEMU exposes a named virtio port for host-forwarded checks.
+BIND='0.0.0.0' if Path('/dev/virtio-ports/kestrel-ci-check').exists() else '127.0.0.1'
+http.server.HTTPServer((BIND,8765),Handler).serve_forever()
