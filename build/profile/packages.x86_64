@@ -88,3 +88,14 @@ foot
 python
 
 libarchive
+
+wofi
+swaybg
+python-gobject
+
+papirus-icon-theme
+grim
+slurp
+libnotify
+playerctl
+brightnessctl

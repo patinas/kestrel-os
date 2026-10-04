@@ -1,8 +1,77 @@
 {
- "layer":"top", "position":"bottom", "height":36,
- "modules-left":["custom/browser","custom/settings","wlr/taskbar"], "modules-right":["clock"],
- "custom/browser":{"format":"Kestrel","on-click":"/usr/local/bin/kestrel-browser","tooltip-format":"Open browser / Settings"},
- "custom/settings":{"format":"Settings","on-click":"/usr/local/bin/kestrel-browser http://127.0.0.1:8765","tooltip-format":"Kestrel device and advanced settings"},
- "wlr/taskbar":{"format":"{title}","tooltip-format":"{title}","on-click":"activate","on-click-middle":"close"},
- "clock":{"format":"{:%H:%M}"}
+  "layer": "top",
+  "position": "bottom",
+  "height": 52,
+  "modules-left": [
+    "custom/launcher"
+  ],
+  "modules-center": [
+    "custom/browser",
+    "custom/mail",
+    "custom/video",
+    "custom/settings",
+    "wlr/taskbar"
+  ],
+  "modules-right": [
+    "pulseaudio",
+    "network",
+    "battery",
+    "clock"
+  ],
+  "custom/launcher": {
+    "format": "\u25cb",
+    "tooltip-format": "Search apps (Super+Space)",
+    "on-click": "kestrel-launcher"
+  },
+  "custom/browser": {
+    "format": "\u25c9",
+    "tooltip-format": "Browser",
+    "on-click": "kestrel-browser"
+  },
+  "custom/mail": {
+    "format": "\u2709",
+    "tooltip-format": "Mail",
+    "on-click": "kestrel-browser https://mail.google.com"
+  },
+  "custom/video": {
+    "format": "\u25b7",
+    "tooltip-format": "Video",
+    "on-click": "kestrel-browser https://www.youtube.com"
+  },
+  "custom/settings": {
+    "format": "\u2699",
+    "tooltip-format": "Settings",
+    "on-click": "kestrel-browser http://127.0.0.1:8765"
+  },
+  "wlr/taskbar": {
+    "format": "{icon}",
+    "icon-size": 26,
+    "tooltip-format": "{title}",
+    "on-click": "activate",
+    "on-click-middle": "close"
+  },
+  "network": {
+    "format-wifi": "Wi-Fi",
+    "format-ethernet": "Wired",
+    "format-disconnected": "Offline",
+    "tooltip-format": "{ifname}: {ipaddr}",
+    "on-click": "kestrel-quick-settings"
+  },
+  "pulseaudio": {
+    "format": "{volume}%",
+    "format-muted": "Muted",
+    "on-click": "kestrel-quick-settings"
+  },
+  "battery": {
+    "format": "{capacity}%",
+    "tooltip-format": "{status}"
+  },
+  "clock": {
+    "format": "{:%H:%M}",
+    "tooltip-format": "Quick settings",
+    "on-click": "kestrel-quick-settings"
+  },
+  "margin-bottom": 8,
+  "margin-left": 12,
+  "margin-right": 12
 }

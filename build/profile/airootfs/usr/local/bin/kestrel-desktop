@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 /usr/local/bin/kestrel-shell-server &
+swaybg -i /usr/share/kestrel/wallpaper.png -m fill &
 waybar -c /etc/kestrel/waybar/config.json -s /etc/kestrel/waybar/style.css &
 /usr/local/bin/kestrel-browser &
 wait

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+case "${1:-}" in
+ up) exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
+ down) exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
+ mute) exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+ play) exec playerctl play-pause ;;
+ next) exec playerctl next ;;
+ previous) exec playerctl previous ;;
+ bright-up) exec brightnessctl set +5% ;;
+ bright-down) exec brightnessctl set 5%- ;;
+esac

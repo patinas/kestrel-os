@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+import gi,subprocess
+from pathlib import Path
+gi.require_version('Gtk','3.0')
+from gi.repository import Gtk,Gdk,GLib
+GLib.set_prgname("kestrel-quick-settings")
+class Panel(Gtk.Window):
+ def __init__(self):
+  super().__init__(title='Kestrel quick settings');self.set_default_size(380,420);self.set_resizable(False);self.set_keep_above(True)
+  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=14);box.set_border_width(22);self.add(box)
+  def label(text):
+   l=Gtk.Label(label=text);l.set_xalign(0);l.set_line_wrap(True);box.pack_start(l,False,False,0);return l
+  def read(args):
+   try:return subprocess.check_output(args,text=True,stderr=subprocess.DEVNULL,timeout=5).strip()
+   except:return 'Unavailable'
+  label('Quick settings')
+  label(read(['nmcli','-t','-f','DEVICE,STATE,CONNECTION','device']))
+  row=Gtk.Box(spacing=8);box.pack_start(row,False,False,0)
+  def button(parent,text,fn):
+   b=Gtk.Button(label=text);b.connect('clicked',lambda _:fn());parent.pack_start(b,True,True,0)
+  button(row,'Network',lambda:subprocess.Popen(['foot','nmtui']))
+  button(row,'Bluetooth',lambda:subprocess.Popen(['foot','bluetoothctl']))
+  self.volume=label(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
+  def audio(args):
+   subprocess.run(['wpctl']+args,stderr=subprocess.DEVNULL);self.volume.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
+  row=Gtk.Box(spacing=8);box.pack_start(row,False,False,0)
+  button(row,'Volume -',lambda:audio(['set-volume','@DEFAULT_AUDIO_SINK@','5%-']))
+  button(row,'Mute',lambda:audio(['set-mute','@DEFAULT_AUDIO_SINK@','toggle']))
+  button(row,'Volume +',lambda:audio(['set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@','5%+']))
+  caps=list(Path('/sys/class/power_supply').glob('BAT*/capacity'));label('Battery: '+(caps[0].read_text().strip()+'%' if caps else 'No battery detected'))
+  label('Display brightness control is not available in this alpha.')
+  button(box,'All settings',lambda:subprocess.Popen(['/usr/local/bin/kestrel-browser','http://127.0.0.1:8765']))
+  button(box,'Close',lambda:self.close());self.connect('destroy',Gtk.main_quit)
+Panel().show_all();Gtk.main()

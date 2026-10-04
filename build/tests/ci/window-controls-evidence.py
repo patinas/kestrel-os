@@ -34,3 +34,7 @@ key('alt','tab');time.sleep(3);shot('restored')
 key('alt','f10');time.sleep(3);shot('unmaximized')
 key('alt','f10');time.sleep(3);shot('maximized-controls')
 key('ctrl','n');time.sleep(4);key('alt','f4');time.sleep(4);shot('close-window')
+
+key("meta_l");time.sleep(3);shot("launcher-grid");key("esc")
+key("alt","shift","s");time.sleep(3);shot("quick-settings");key("alt","f4")
+key("alt","bracket_left");time.sleep(3);shot("snap-left");key("alt","equal");time.sleep(3);shot("shortcut-maximize")

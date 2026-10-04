@@ -23,10 +23,10 @@ trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM"
 for image in "$VM"/ui-*.ppm; do
  name=$(basename "$image" .ppm)
- convert "$image" "$VM/$name.png"
- echo "UI_EVIDENCE_BEGIN $name.png"
- base64 -w 100 "$VM/$name.png"
- echo "UI_EVIDENCE_END $name.png"
+ convert "$image" -quality 72 "$VM/$name.jpg"
+ echo "UI_EVIDENCE_BEGIN $name.jpg"
+ base64 -w 2000 "$VM/$name.jpg"
+ echo "UI_EVIDENCE_END $name.jpg"
 done
 websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!
