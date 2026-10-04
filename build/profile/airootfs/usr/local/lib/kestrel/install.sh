@@ -25,8 +25,24 @@ R1=513; R2=$(( R1 + ROOT_GIB*1024 )); R3=$(( R2 + ROOT_GIB*1024 ))
 # Preflight before touching the disk: package list, pacman.conf (multilib + signatures), overlay files
 PKGLIST="$SRC/usr/share/kestrel/packages.installed.txt"
 [ -r "$PKGLIST" ] || die "missing $PKGLIST"
+# Launchers are explicit installer choices; no proprietary Steam binary in base ISO.
+GAMES=${KESTREL_GAME_LAUNCHERS:-none}
+if [ "${KESTREL_INTERACTIVE:-no}" = yes ]; then
+  printf 'Optional game launchers (none/steam/lutris/both), default none: '
+  read -r GAMES; GAMES=${GAMES:-none}
+fi
+case "$GAMES" in
+ none) EXTRA=;;
+ lutris) EXTRA=lutris;;
+ steam|both)
+  printf 'Steam is proprietary. Read https://store.steampowered.com/subscriber_agreement/ before using it.\n'
+  [ "${KESTREL_STEAM_TERMS_ACCEPTED:-no}" = yes ] || die 'Steam selection requires explicit KESTREL_STEAM_TERMS_ACCEPTED=yes from the local user'
+  EXTRA=steam; [ "$GAMES" != both ] || EXTRA="steam lutris";;
+ *) die 'launcher choices: none/steam/lutris/both';;
+esac
 PKGS=$(grep -vE '^\s*(#|$)' "$PKGLIST" | sort -u | tr '\n' ' ')
 [ -n "$PKGS" ] || die "empty package list"
+PKGS="$PKGS $EXTRA"
 PCONF=${KESTREL_PACMAN_CONF:-/etc/pacman.conf}
 grep -Eq '^\[multilib\]' "$PCONF" || die "$PCONF has no [multilib] section"
 grep -Eq '^SigLevel *= *Required' "$PCONF" || die "$PCONF does not require package signatures"
@@ -50,6 +66,9 @@ pacman-key --populate archlinux
 # one transaction, full authoritative list, signatures required, multilib enabled
 # shellcheck disable=SC2086
 pacstrap -C "$PCONF" "$T" $PKGS
+mkdir -p "$T/usr/share/kestrel"
+printf "%s\n" "$GAMES" > "$T/usr/share/kestrel/game-launchers.selected"
+arch-chroot "$T" pacman -Qq > "$T/usr/share/kestrel/packages.actual.txt"
 cp "$PCONF" "$T/etc/pacman.conf"; cp /etc/pacman.d/mirrorlist "$T/etc/pacman.d/mirrorlist"
 USED=$(df --output=pcent "$T" | tail -1 | tr -dc 0-9)
 echo "root slot usage after install: ${USED}% of ${ROOT_GIB} GiB"

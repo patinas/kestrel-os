@@ -65,7 +65,6 @@ python
 rpm-tools
 rsync
 sof-firmware
-steam
 sudo
 ttf-liberation
 vulkan-intel

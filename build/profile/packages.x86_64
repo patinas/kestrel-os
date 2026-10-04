@@ -43,7 +43,6 @@ pipewire-pulse
 rsync
 sof-firmware
 squashfs-tools
-steam
 sudo
 ttf-liberation
 vulkan-intel

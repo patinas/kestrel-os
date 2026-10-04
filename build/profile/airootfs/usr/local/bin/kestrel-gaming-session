@@ -1,4 +1,5 @@
 #!/bin/sh
 # Steam gaming mode: gamescope runs Steam Big Picture directly on the display (like Steam Deck).
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+[ -x /usr/bin/steam ] || { echo "Steam is not installed. Choose it during installation. Returning to desktop."; rm -f "$HOME/.kestrel-mode"; sleep 3; exit 1; }
 exec gamescope -e -f -- steam -tenfoot -steamos3
