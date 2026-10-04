@@ -100,3 +100,5 @@ for control in ['PWA install/relaunch','Installer options','Hardware media/brigh
  results.append({'control':control,'result':'UNVERIFIED'})
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));print('CONTROL_RESULTS',json.dumps(results),flush=True)
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
+
+if any(x['result']=='FAIL' for x in results):raise RuntimeError('A control assertion failed; inspect CONTROL_RESULTS')

@@ -2,7 +2,7 @@
 # One-user, disposable Kestrel UI test. Never a general desktop service.
 . "$(dirname "$0")/env.sh"
 [ "$ACCEL" = kvm ] || { echo 'KVM required'; exit 1; }
-sudo apt-get install -y --no-install-recommends novnc websockify imagemagick python3-websocket
+sudo apt-get install -y --no-install-recommends novnc websockify imagemagick fonts-dejavu-core python3-websocket
 curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2026.9.3/cloudflared-linux-amd64 -o "$CI_DIR/cloudflared"
 echo "77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2  $CI_DIR/cloudflared" | sha256sum -c -
 chmod 755 "$CI_DIR/cloudflared"
@@ -26,7 +26,7 @@ for image in "$VM"/ui-*.ppm; do
  name=$(basename "$image" .ppm)
  convert "$image" -resize 960x600 -quality 48 "$VM/$name.jpg"
  done
- montage "$VM"/ui-click-*.jpg "$VM"/ui-maximized-urlbar.jpg "$VM"/ui-launcher-grid.jpg "$VM"/ui-quick-settings.jpg "$VM"/ui-snap-left.jpg -set label '%f' -label '%f' -pointsize 15 -tile 2x -geometry +4+18 "$VM/contact.jpg"
+ montage "$VM"/ui-click-*.jpg "$VM"/ui-maximized-urlbar.jpg "$VM"/ui-launcher-grid.jpg "$VM"/ui-quick-settings.jpg "$VM"/ui-snap-left.jpg -font DejaVu-Sans -set label '%f' -label '%f' -pointsize 15 -tile 2x -geometry +4+18 "$VM/contact.jpg"
  convert "$VM/contact.jpg" -crop 1928x1854 +repage -quality 65 "$VM/sheet-%02d.jpg"
  for image in "$VM"/sheet-*.jpg; do
  echo "UI_EVIDENCE_BEGIN $(basename "$image")"

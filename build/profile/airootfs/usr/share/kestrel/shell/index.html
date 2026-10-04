@@ -27,7 +27,7 @@ async function callBridge(path){let r=await fetch(path,{method:'POST',headers:{'
 async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A terminal will ask for a new local password.')){document.getElementById('advanced').checked=false;return}await callBridge(on?'/enable':'/disable');}
 async function refresh(){let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
  document.getElementById('network-state').textContent=s.network;
- document.getElementById('bluetooth-state').textContent=(s.bluetooth||'No Bluetooth adapter')+'\n'+s.bluetooth_connections;
+ document.getElementById('bluetooth-state').textContent=(s.bluetooth.includes('Controller ')?s.bluetooth:'No Bluetooth adapter detected')+'\n'+s.bluetooth_connections;
  document.getElementById('audio-state').textContent=s.audio;
  document.getElementById('battery-state').textContent='Battery: '+s.battery;
  document.getElementById('gaming').disabled=!s.steam;
