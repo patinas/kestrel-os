@@ -72,7 +72,16 @@ def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
 key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
-key('ret');time.sleep(4);shot('click-all-settings-result')
+# Actual mouse clicks on the visible quick-panel controls, with source state checks.
+def live_state():
+ req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
+ return json.load(urllib.request.urlopen(req,timeout=20))
+for name,x,y in [('volume-down',925,508),('mute',1064,508),('volume-up',1190,508)]:
+ before=live_state()['audio'];guest_click(x,y);after=live_state()['audio']
+ record('Quick settings '+name+' mouse',before!=after);shot('quick-click-'+name)
+guest_click(1064,508) # unmute before owner session
+# All settings button, not Enter or direct page navigation.
+guest_click(1064,634);time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
@@ -100,11 +109,19 @@ for button in ['network','bluetooth']:
 click('button[onclick="document.getElementById(\'settings\').close()"]');record('Settings close',not js("document.querySelector('#settings').open"));shot('click-settings-closed')
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
+# Real shelf click opens launcher, then actual Browser tile click dismisses it.
+guest_click(35,765);time.sleep(3);shot('shelf-click-launcher')
+guest_click(140,230);time.sleep(4);shot('launcher-click-browser')
+# Real shelf clock opens quick panel; Close button returns to Chrome.
+guest_click(1234,765);time.sleep(8);shot('shelf-click-clock')
+guest_click(1064,694);time.sleep(3);shot('quick-click-close')
 # Every unsupported effect remains blocked rather than fabricated as a test pass.
-for control in ['PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
+for control in ['Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
  results.append({'control':control,'result':'UNVERIFIED'})
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
+for _ in range(4):key('alt','f4');time.sleep(1)
+shot('wallpaper');key('meta_l','b');time.sleep(4);shot('owner-ready')
 
 req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
 final_state=json.load(urllib.request.urlopen(req,timeout=20));print('FINAL_WAYBAR_DIAGNOSTIC',json.dumps(final_state),flush=True)
