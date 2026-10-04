@@ -68,7 +68,10 @@ def click(selector):
 def record(name,condition):
  results.append({'control':name,'result':'PASS' if condition else 'FAIL'});print('CONTROL_RESULT',name,results[-1]['result'],flush=True)
 def guest_click(x,y):
- cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}},{'type':'btn','data':{'down':True,'button':'left'}}]})
+ # Deliver motion, allow the compositor to update hover/focus, then a human-length press.
+ cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}}]})
+ time.sleep(.25)
+ cmd('input-send-event',{'events':[{'type':'btn','data':{'down':True,'button':'left'}}]});time.sleep(.12)
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
 key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
@@ -84,9 +87,7 @@ guest_click(1180,385);shot('quick-mouse-bluetooth');key('alt','f4')
 guest_click(1085,704);shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
 # Keyboard activates the focused real All settings.
 
-guest_click(1085,646);time.sleep(2);shot('click-all-settings-first')
-# First click may activate a newly mapped GTK window. Capture both attempts.
-guest_click(1085,646);time.sleep(8);shot('click-all-settings-result')
+guest_click(1085,646);time.sleep(8);shot('click-all-settings-first');shot('click-all-settings-result')
 print('SETTINGS_TARGETS_AFTER_MOUSE',json.dumps([{'id':p['id'],'url':p.get('url','')} for p in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))]),flush=True)
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
