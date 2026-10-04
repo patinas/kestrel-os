@@ -13,6 +13,7 @@ def read(args):
 class Panel(Gtk.Window):
  def __init__(self):
   super().__init__(title='Kestrel quick settings');self.set_default_size(360,420);self.set_resizable(False);self.set_keep_above(True)
+  self.connect('map',self.mapped)
   outer=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);outer.set_border_width(8);self.add(outer)
   def label(text):
    x=Gtk.Label(label=text);x.set_xalign(0);x.set_line_wrap(True);x.set_max_width_chars(32);outer.pack_start(x,False,False,0);return x
@@ -39,6 +40,10 @@ class Panel(Gtk.Window):
   all_button=button('All settings',all_settings);outer.pack_start(all_button,False,False,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
   outer.pack_start(button('Close',self.close),False,False,0)
   self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return and self.get_focus()==all_button else False);self.connect('destroy',Gtk.main_quit)
+ def mapped(self,*_):
+  GLib.timeout_add(800,self.geometry)
+ def geometry(self):
+  print('QUICK_GEOMETRY',self.get_position(),self.get_size(),flush=True);return False
  def volume_changed(self,scale):
   subprocess.run(['wpctl','set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@',str(scale.get_value()/100)],stderr=subprocess.DEVNULL);self.audio.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
  def mute(self):

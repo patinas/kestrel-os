@@ -25,5 +25,5 @@
 <keybind key="XF86MonBrightnessDown"><action name="Execute" command="kestrel-media bright-down" /></keybind>
 </keyboard>
  <mouse><default /></mouse>
- <windowRules><windowRule identifier="*"><action name="SetDecorations"><decorations>full</decorations><forceSSD>yes</forceSSD></action></windowRule><windowRule identifier="kestrel-quick-settings"><action name="UnMaximize" /><action name="MoveToEdge" direction="right" /><action name="MoveToEdge" direction="down" /><action name="MoveRelative" x="-8" y="-8" /></windowRule><windowRule identifier="kestrel-launcher"><action name="MoveToEdge" direction="left" /><action name="MoveToEdge" direction="down" /><action name="MoveRelative" x="8" y="-8" /></windowRule></windowRules>
+ <windowRules><windowRule identifier="*"><action name="SetDecorations"><decorations>full</decorations><forceSSD>yes</forceSSD></action></windowRule><windowRule title="Kestrel quick settings"><action name="UnMaximize" /><action name="MoveToEdge" direction="right" /><action name="MoveToEdge" direction="down" /><action name="MoveRelative" x="-8" y="-8" /></windowRule><windowRule identifier="kestrel-launcher"><action name="MoveToEdge" direction="left" /><action name="MoveToEdge" direction="down" /><action name="MoveRelative" x="8" y="-8" /></windowRule></windowRules>
 </labwc_config>
