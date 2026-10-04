@@ -2,14 +2,16 @@
 # graphics: open drivers for AMD/Intel/old NVIDIA (NVK via mesa), nvidia-open added in a later milestone
 # hardware support extras
 # misc
-# shell: Cage + Google Chrome direct-download dependencies
+# shell: labwc + Google Chrome direct-download dependencies
 alsa-firmware
 amd-ucode
 arch-install-scripts
 base
 bluez
 bluez-utils
-cage
+labwc
+waybar
+xorg-xwayland
 dosfstools
 e2fsprogs
 egl-wayland

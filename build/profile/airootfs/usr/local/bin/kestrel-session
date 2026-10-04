@@ -1,5 +1,5 @@
 #!/bin/sh
-# Kestrel session launcher (replaces milestone 1 version): desktop kiosk by default, gaming mode if requested.
+# Kestrel session launcher (replaces milestone 1 version): windowed desktop by default, gaming mode if requested.
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export WLR_NO_HARDWARE_CURSORS=1
 if [ -n "$(systemd-detect-virt --vm 2>/dev/null | grep -v none)" ]; then
@@ -18,7 +18,7 @@ while true; do
   if [ -f "$HOME/.kestrel-mode" ]; then
     /usr/local/bin/kestrel-gaming-session
   else
-    cage -s -- /usr/local/bin/kestrel-desktop
+    labwc -C /etc/kestrel/labwc
   fi
   sleep 1
 done

@@ -6,6 +6,6 @@ case "$1" in
   *) echo "usage: kestrel-mode gaming|desktop" >&2; exit 1 ;;
 esac
 uid=$(id -u)
-pkill -u "$uid" -x cage 2>/dev/null
+pkill -u "$uid" -x labwc 2>/dev/null
 pkill -u "$uid" -x gamescope 2>/dev/null
 exit 0

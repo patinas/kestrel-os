@@ -9,4 +9,4 @@ systemctl --no-pager status kestrel-health.service boot-complete.target systemd-
 journalctl -b --no-pager -u kestrel-health.service -u systemd-bless-boot.service
 ls -l /boot/loader/entries
 bootctl status --no-pager || true
-pgrep -a cage; pgrep -af chromium | head -10
+pgrep -a labwc; pgrep -af chrome | head -10

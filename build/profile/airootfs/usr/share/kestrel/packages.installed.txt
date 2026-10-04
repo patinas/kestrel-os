@@ -6,7 +6,6 @@ at-spi2-core
 base
 bluez
 bluez-utils
-cage
 cairo
 curl
 dbus
@@ -27,6 +26,7 @@ gtk3
 hicolor-icon-theme
 intel-ucode
 iwd
+labwc
 lib32-mesa
 lib32-nvidia-utils
 lib32-vulkan-intel
@@ -71,6 +71,8 @@ ttf-liberation
 vulkan-intel
 vulkan-nouveau
 vulkan-radeon
+waybar
 wireplumber
 xdg-utils
 xf86-input-libinput
+xorg-xwayland
