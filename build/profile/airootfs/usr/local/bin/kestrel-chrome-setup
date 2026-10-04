@@ -22,7 +22,7 @@ rpmkeys --dbpath "$T/rpmdb" --import "$T/active.pub"
 rpmkeys --dbpath "$T/rpmdb" --checksig "$T/chrome.rpm" | tee "$T/verification.log"
 grep -q 'signatures OK' "$T/verification.log" || { echo 'Chrome signature not verified'; exit 1; }
 mkdir "$T/extracted"
-bsdtar -xf "$T/chrome.rpm" -C "$T/extracted" ./opt/google/chrome
+bsdtar -xf "$T/chrome.rpm" -C "$T/extracted" --include './opt/google/chrome/*'
 [ -x "$T/extracted/opt/google/chrome/chrome" ]
 "$T/extracted/opt/google/chrome/chrome" --version
 sha256sum "$T/chrome.rpm" > "$T/extracted/download.sha256"

@@ -3,6 +3,11 @@ name: vm-test
 on:
   workflow_dispatch:
     inputs:
+      launchers:
+        description: "Optional launcher coverage (no proprietary terms acceptance)"
+        type: choice
+        options: [none, lutris]
+        default: none
       allow_tcg:
         description: "Run without /dev/kvm (software emulation, several times slower)"
         type: boolean
@@ -17,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     env:
+      KESTREL_CI_LAUNCHERS: ${{ inputs.launchers }}
       KESTREL_CI_ALLOW_TCG: ${{ inputs.allow_tcg }}
     steps:
       - uses: actions/checkout@v4

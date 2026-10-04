@@ -19,4 +19,5 @@ vars=$(find /usr/share/OVMF /usr/share/edk2 -type f \( -name 'OVMF_VARS_4M.fd' -
 echo "$code" > "$VM/ovmf-code"; cp "$vars" "$VM/OVMF_VARS.fd"
 # Guest jobs read their time budget (seconds) from the share.
 if [ "$ACCEL" = kvm ]; then echo 1500 > "$B/ci-wait"; else echo 6000 > "$B/ci-wait"; fi
+printf "%s\n" "${KESTREL_CI_LAUNCHERS:-none}" > "$B/ci-launchers"
 df -h "$CI_DIR"

@@ -46,6 +46,12 @@ case "$stage" in
 0) [ "$slot" = A ] || fail "stage 0 expected slot A"
    ls "$ENT"/kestrel-A+*.conf >/dev/null 2>&1 || ls "$ENT"/kestrel-A.conf >/dev/null || fail "no A entry"
    wait_blessed; say "CI_STEP boot_A_health_and_bless_ok"
+   expected=$(cat "$T/ci-launchers")
+   ! pacman -Q steam >/dev/null 2>&1 || fail "Steam present by default"
+   if [ "$expected" = lutris ]; then pacman -Q lutris || fail "selected Lutris absent"; else ! pacman -Q lutris >/dev/null 2>&1 || fail "Lutris unexpectedly present"; fi
+   say "CI_STEP optional_launchers_$expected"
+   python3 "$T/tests/jobs/advanced-test.py" || fail "advanced permission tests"
+   say "CI_STEP advanced_sudo_on_off_password_verified"
    # bad detached signature must be rejected by the real verifier before any slot/entry write
    d=/var/tmp/kestrel-update; mkdir -p $d
    /usr/local/lib/kestrel/make-test-update.sh "$KEY" $d > $d/make.log 2>&1 || fail "make-test-update failed"

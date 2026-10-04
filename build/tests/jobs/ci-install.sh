@@ -11,6 +11,7 @@ getent hosts geo.mirror.pkgbuild.com
 sleep 20
 export KESTREL_ALLOW_VM_INSTALL=yes KESTREL_CONFIRM='ERASE /dev/vda'
 export KESTREL_SRC_OVERLAY=$S/profile/airootfs KESTREL_PACMAN_CONF=$S/profile/pacman.conf
+export KESTREL_GAME_LAUNCHERS=$(cat "$S/ci-launchers")
 export KESTREL_UPDATE_PUB=$S/out/test-keys/test.pub
 bash $S/scripts/install.sh /dev/vda
 mkdir -p /run/testroot /run/testesp
@@ -30,5 +31,11 @@ mv /run/testesp/loader/entries/kestrel-A.conf /run/testesp/loader/entries/kestre
 ls -l /run/testesp/loader/entries; cat /run/testesp/loader/loader.conf
 umount /run/testesp
 sync
+# CI-only direct Chrome setup in persistent home, authorized owner terms acceptance.
+mkdir -p /run/testdata; mount /dev/disk/by-label/kdata /run/testdata
+runuser -u kestrel -- env HOME=/run/testdata/home/kestrel bash -c 'printf "ACCEPT\n" | /usr/local/bin/kestrel-chrome-setup'
+test -x /run/testdata/home/kestrel/.local/share/kestrel/chrome/current/opt/google/chrome/chrome
+umount /run/testdata
+say "CI_STEP chrome_direct_download_signature_verified"
 say "CI_INSTALL_DONE"
 systemctl poweroff
