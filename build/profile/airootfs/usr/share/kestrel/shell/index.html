@@ -27,13 +27,13 @@ async function callBridge(path){let r=await fetch(path,{method:'POST',headers:{'
 async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A terminal will ask for a new local password.')){document.getElementById('advanced').checked=false;return}await callBridge(on?'/enable':'/disable');}
 async function refresh(){let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
  document.getElementById('network-state').textContent=s.network;
- document.getElementById('bluetooth-state').textContent=s.bluetooth||'No Bluetooth adapter';
+ document.getElementById('bluetooth-state').textContent=(s.bluetooth||'No Bluetooth adapter')+'\n'+s.bluetooth_connections;
  document.getElementById('audio-state').textContent=s.audio;
  document.getElementById('battery-state').textContent='Battery: '+s.battery;
  document.getElementById('gaming').disabled=!s.steam;
  document.getElementById('gpu-state').textContent='GPU: '+s.gpu+' | mode: '+s.mode;
  document.getElementById('slot-state').textContent='Root / slot: '+s.slot;
- document.getElementById('task-status').textContent=(s.network.includes(':connected:')?'Network connected':'Network unavailable')+' | '+(s.bluetooth?'Bluetooth detected':'No Bluetooth adapter')+' | '+s.audio+' | '+s.battery;}setInterval(refresh,15000);refresh();
+ document.getElementById('task-status').textContent=(s.network.includes(':connected:')?'Network connected':'Network unavailable')+' | '+(s.bluetooth.includes('Controller ')?(s.bluetooth_connections?'Bluetooth connected':'Bluetooth available'):'No Bluetooth adapter')+' | '+s.audio+' | '+s.battery;}setInterval(refresh,15000);refresh();
 function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
 location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
 function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}

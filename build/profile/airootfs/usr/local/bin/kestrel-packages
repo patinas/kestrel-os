@@ -11,6 +11,8 @@ D=/var/lib/kestrel/devroot
 if [ ! -x "$D/usr/bin/pacman" ]; then
   echo 'Preparing writable Arch development container. Packages stay here, not in Kestrel root.'
   mkdir -p "$D"
-  pacstrap -c "$D" base
+  pacstrap -c -C /etc/pacman.conf "$D" base
+  cp /etc/pacman.conf "$D/etc/pacman.conf"
+  cp /etc/pacman.d/mirrorlist "$D/etc/pacman.d/mirrorlist"
 fi
 exec systemd-nspawn --quiet --directory="$D" --resolv-conf=bind-host /usr/bin/pacman "$@"

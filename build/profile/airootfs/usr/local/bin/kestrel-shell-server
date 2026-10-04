@@ -12,6 +12,7 @@ def status():
  return {'enabled':Path('/var/lib/kestrel/terminal-enabled').exists(),
  'network':readcmd(['nmcli','-t','-f','DEVICE,TYPE,STATE,CONNECTION','device']),
  'bluetooth':readcmd(['bluetoothctl','show']),
+ 'bluetooth_connections':readcmd(['bluetoothctl','devices','Connected']),
  'audio':readcmd(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']),
  'battery':batteries[0].read_text().strip()+'%' if batteries else 'No battery',
  'gpu':Path('/run/kestrel-gpu').read_text().strip() if Path('/run/kestrel-gpu').exists() else 'Not available',
