@@ -32,7 +32,23 @@ for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar re
 done
 [ ! -f "$VM/control-results.json" ] || cat "$VM/control-results.json"
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
-websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
+# Temporary owner-only download shares the same email-PIN gate, no artifact storage.
+WEB="$CI_DIR/protected-web";mkdir -p "$WEB/downloads";cp -a /usr/share/novnc/. "$WEB/"
+name=$(basename "$ISO");ln -s "$ISO" "$WEB/downloads/$name"
+checksum=$(sha256sum "$ISO" | cut -d' ' -f1);bytes=$(stat -c %s "$ISO")
+printf '%s  %s\n' "$checksum" "$name" > "$WEB/downloads/SHA256SUMS"
+printf 'source_sha=%s\nfilename=%s\nbytes=%s\nsha256=%s\nboot_test=passed_guest_controls\n' "$GITHUB_SHA" "$name" "$bytes" "$checksum" > "$WEB/downloads/build-manifest.txt"
+python3 - "$WEB/downloads" "$name" "$GITHUB_SHA" "$bytes" "$checksum" <<'PYWEB'
+import sys,html
+from pathlib import Path
+root,name,sha,size,digest=sys.argv[1:]
+root=Path(root)
+root.joinpath('index.html').write_text('<!doctype html><html><meta charset="utf-8"><title>Kestrel alpha ISO</title><style>body{font:16px/1.5 system-ui;max-width:760px;margin:48px auto;padding:24px;color:#233044;background:#eef3fb}code{overflow-wrap:anywhere}a{display:block;margin:16px 0}</style><h1>Kestrel alpha ISO</h1><p>Temporary private download. Hardware and installer behavior are unverified. No public release.</p><p>Source: <code>'+html.escape(sha)+'</code></p><p>Bytes: '+size+'</p><p>SHA-256: <code>'+digest+'</code></p><a href="'+html.escape(name)+'">Download ISO</a><a href="SHA256SUMS">Checksum file</a><a href="build-manifest.txt">Build manifest</a></html>')
+PYWEB
+# Readback verifies exact bytes and checksum before the tunnel is opened.
+[ "$(sha256sum "$WEB/downloads/$name" | cut -d' ' -f1)" = "$checksum" ]
+echo "ISO_DELIVERY source=$GITHUB_SHA bytes=$bytes sha256=$checksum filename=$name"
+websockify --web "$WEB" 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!
 # Cloudflare email PIN protects HTTP AND WebSocket before they reach loopback.
 # Fail closed if the installed client cannot configure protected Quick Tunnels.
@@ -48,6 +64,7 @@ for i in $(seq 1 60); do
 done
 [ -n "${url:-}" ] || { tail -40 "$CI_DIR/tunnel.log"; exit 1; }
 echo "KESTREL_UI_TEST_URL=$url/vnc.html?autoconnect=true&resize=scale"
+echo "KESTREL_ISO_DOWNLOAD_URL=$url/downloads/"
 echo "One user only. Email PIN gate: andreas.patinas@gmail.com. Disposable test build; no disks, audio forwarding, saved data or release claim. Session expires 60 minutes after tunnel startup." >> "$GITHUB_STEP_SUMMARY"
 echo "[$url]($url/vnc.html?autoconnect=true&resize=scale)" >> "$GITHUB_STEP_SUMMARY"
 for i in $(seq 1 360); do
