@@ -5,13 +5,13 @@ from gi.repository import Gtk,Gio,Gdk,GLib
 GLib.set_prgname('kestrel-launcher')
 class Launcher(Gtk.Window):
  def __init__(self):
-  super().__init__(title='Kestrel apps');self.fullscreen();self.set_keep_above(True)
+  super().__init__(title='Kestrel apps');self.set_default_size(640,480);self.set_resizable(False);self.set_keep_above(True)
   self.connect('destroy',Gtk.main_quit);self.connect('key-press-event',self.key)
-  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=24);box.set_border_width(48);self.add(box)
+  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=24);box.set_border_width(24);self.add(box)
   title=Gtk.Label(label='Kestrel apps');box.pack_start(title,False,False,0)
   self.search=Gtk.SearchEntry();self.search.set_placeholder_text('Search apps');box.pack_start(self.search,False,False,0)
   scroll=Gtk.ScrolledWindow();box.pack_start(scroll,True,True,0)
-  self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(3);self.grid.set_max_children_per_line(7);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
+  self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(4);self.grid.set_max_children_per_line(4);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
   self.items=[]
   basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))
@@ -21,7 +21,7 @@ class Launcher(Gtk.Window):
   self.grid.set_filter_func(lambda child:self.search.get_text().lower() in child.name.lower());self.search.connect('search-changed',lambda _:self.grid.invalidate_filter())
   self.show_all();self.search.grab_focus()
  def add_app(self,name,icon,fn):
-  child=Gtk.FlowBoxChild();child.name=name;button=Gtk.Button();box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=10);box.set_size_request(144,96)
+  child=Gtk.FlowBoxChild();child.name=name;button=Gtk.Button();box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);box.set_size_request(96,88)
   image=Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.DIALOG) if isinstance(icon,str) else Gtk.Image.new_from_gicon(icon,Gtk.IconSize.DIALOG)
   box.pack_start(image,True,True,0);label=Gtk.Label(label=name);label.set_line_wrap(True);box.pack_start(label,False,False,0);button.add(box);child.add(button);self.grid.add(child)
   def click(_):fn();self.close()
@@ -29,6 +29,6 @@ class Launcher(Gtk.Window):
  def key(self,_,event):
   if event.keyval==Gdk.KEY_Escape:self.close()
 Gtk.Settings.get_default().set_property('gtk-icon-theme-name','Papirus')
-provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#eef3fb;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:16px;} button:hover {background:#cddcf1;} entry {border-radius:16px;padding:16px;}')
+provider=Gtk.CssProvider();provider.load_from_data(b'* {font-family: Noto Sans;font-size:14px;} window {background:#eef3fb;color:#233044;border-radius:16px;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:8px;} button:hover {background:#cddcf1;} entry {border-radius:16px;padding:8px;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Launcher();Gtk.main()
