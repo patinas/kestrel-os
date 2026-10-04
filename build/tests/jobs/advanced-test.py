@@ -12,6 +12,13 @@ D.joinpath('terminal-enabled').touch()
 r=subprocess.run(cmd,input=password+'\n',text=True,capture_output=True)
 assert r.returncode==0 and r.stdout.strip()=='0', 'correct password rejected'
 assert subprocess.run(cmd,input='bad\n',text=True,capture_output=True).returncode!=0
+# Real signed package transaction in the writable development root, not host root.
+assert subprocess.run(['pacman','-Q','jq'],capture_output=True).returncode!=0, 'test assumes host jq absent'
+subprocess.run(['kestrel-packages','-S','--noconfirm','jq'],check=True)
+subprocess.run(['systemd-nspawn','--quiet','-D','/var/lib/kestrel/devroot','/usr/bin/pacman','-Q','jq'],check=True)
+assert subprocess.run(['pacman','-Q','jq'],capture_output=True).returncode!=0, 'container package escaped onto host'
+assert 'ro' in subprocess.check_output(['findmnt','-no','OPTIONS','/'],text=True).strip().split(',')
+print('signed container jq transaction passed; host stayed read-only and jq absent')
 subprocess.run(['runuser','-u','kestrel','--','sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True,capture_output=True)
 assert not D.joinpath('terminal-enabled').exists() and not D.joinpath('sudo-password').exists()
 assert subprocess.run(cmd,input=password+'\n',text=True,capture_output=True).returncode!=0

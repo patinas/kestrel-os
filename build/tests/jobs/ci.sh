@@ -79,6 +79,8 @@ PY
    poweroff_now 1 ;;
 1) [ "$slot" = B ] || fail "stage 1 expected slot B, booted $slot (fallback or default wrong)"
    wait_blessed; say "CI_STEP boot_B_after_update_health_and_bless_ok"
+   test -x /var/lib/kestrel/devroot/usr/bin/jq || fail "development container not persisted across slot switch"
+   say "CI_STEP dev_container_persisted_across_A_to_B"
    do_update ""
    [ -f $ENT/kestrel-B.conf ] && ls $ENT/kestrel-A+3.conf >/dev/null || fail "B known-good/A armed entries wrong"
    say "CI_STEP signed_update_B_to_A_armed"
