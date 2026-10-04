@@ -28,7 +28,7 @@ async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A ter
 let refreshing=null;async function refresh(){if(refreshing)return refreshing;refreshing=(async()=>{let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
  document.getElementById('network-state').textContent=s.network;
  document.getElementById('bluetooth-state').textContent=(s.bluetooth.includes('Controller ')?s.bluetooth:'No Bluetooth adapter detected')+(s.bluetooth_connections?'\n'+s.bluetooth_connections:'');
- document.querySelector('button[onclick="callBridge(\'/bluetooth\')"]').disabled=!s.bluetooth.includes('Controller ');
+
  document.getElementById('audio-state').textContent=s.audio;
  document.getElementById('battery-state').textContent='Battery: '+s.battery;
  document.getElementById('gaming').disabled=true;
