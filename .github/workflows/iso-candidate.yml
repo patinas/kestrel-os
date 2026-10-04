@@ -1,0 +1,27 @@
+name: iso-candidate
+# Builds and tests only. No release, upload-artifact, cache or signing secrets.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: iso-candidate
+  cancel-in-progress: false
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      KESTREL_CI_ALLOW_TCG: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host setup
+        run: build/tests/ci/00-host.sh
+      - name: Build candidate ISO
+        run: build/tests/ci/01-build-iso.sh
+      - name: Firmware boot and capture evidence
+        run: |
+          sudo apt-get install -y --no-install-recommends imagemagick
+          build/tests/ci/06-iso-boot.sh
+      - name: Split and verify delivery parts (runner-local only)
+        run: build/tests/ci/07-split.sh
