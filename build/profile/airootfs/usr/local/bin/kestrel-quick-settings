@@ -3,40 +3,46 @@ import gi,subprocess,fcntl,os
 from pathlib import Path
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk,Gdk,GLib
-GLib.set_prgname("kestrel-quick-settings")
+GLib.set_prgname('kestrel-quick-settings')
 lock=open(os.path.join(os.environ.get('XDG_RUNTIME_DIR','/tmp'),'kestrel-quick-settings.lock'),'w')
 try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
 except BlockingIOError:raise SystemExit(0)
+def read(args):
+ try:return subprocess.check_output(args,text=True,stderr=subprocess.DEVNULL,timeout=4).strip()
+ except:return 'Unavailable'
 class Panel(Gtk.Window):
  def __init__(self):
   super().__init__(title='Kestrel quick settings');self.set_default_size(360,420);self.set_resizable(False);self.set_keep_above(True)
-  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=12);box.set_border_width(8);self.add(box)
+  outer=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);outer.set_border_width(8);self.add(outer)
   def label(text):
-   l=Gtk.Label(label=text);l.set_xalign(0);l.set_line_wrap(True);l.set_max_width_chars(32);box.pack_start(l,False,False,0);return l
-  def read(args):
-   try:return subprocess.check_output(args,text=True,stderr=subprocess.DEVNULL,timeout=5).strip()
-   except:return 'Unavailable'
-  label('Quick settings')
-  label(read(['nmcli','-t','-f','DEVICE,STATE,CONNECTION','device']))
-  row=Gtk.Box(spacing=8);box.pack_start(row,False,False,0)
-  def button(parent,text,fn):
-   b=Gtk.Button(label=text);b.connect('clicked',lambda _:fn());b.set_size_request(-1,48);parent.pack_start(b,True,True,0)
-  button(row,'Network',lambda:subprocess.Popen(['foot','nmtui']))
-  if 'Controller ' in read(['bluetoothctl','show']):button(row,'Bluetooth',lambda:subprocess.Popen(['foot','bluetoothctl']))
-  else:label('Bluetooth: no adapter detected')
-  self.volume=label(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
-  def audio(args):
-   subprocess.run(['wpctl']+args,stderr=subprocess.DEVNULL);self.volume.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
-  row=Gtk.Box(spacing=8);box.pack_start(row,False,False,0)
-  button(row,'Volume -',lambda:audio(['set-volume','@DEFAULT_AUDIO_SINK@','5%-']))
-  button(row,'Mute',lambda:audio(['set-mute','@DEFAULT_AUDIO_SINK@','toggle']))
-  button(row,'Volume +',lambda:audio(['set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@','5%+']))
+   x=Gtk.Label(label=text);x.set_xalign(0);x.set_line_wrap(True);x.set_max_width_chars(32);outer.pack_start(x,False,False,0);return x
+  title=label('Quick settings');title.set_margin_start(8);title.set_margin_top(8)
+  grid=Gtk.Grid(column_spacing=8,row_spacing=8);outer.pack_start(grid,False,False,0)
+  def button(text,fn,w=-1,h=48):
+   b=Gtk.Button(label=text);b.set_size_request(w,h);b.connect('clicked',lambda _:fn());return b
+  grid.attach(button('Network\nSettings',lambda:subprocess.Popen(['foot','nmtui']),168,64),0,0,1,1)
+  bt=button('Bluetooth\nNo adapter',lambda:subprocess.Popen(['foot','bluetoothctl']),168,64)
+  if 'Controller ' in read(['bluetoothctl','show']):bt.set_label('Bluetooth\nSettings')
+  else:bt.set_sensitive(False)
+  grid.attach(bt,1,0,1,1)
+  net=read(['nmcli','-t','-f','DEVICE,STATE,CONNECTION','device']);label(net)
+  self.audio=label(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
+  row=Gtk.Box(spacing=8);outer.pack_start(row,False,False,0)
+  row.pack_start(button('Mute',self.mute,56,48),False,False,0)
+  volume=read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@'])
+  try:value=float(volume.split()[1])*100
+  except:value=40
+  self.scale=Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL,0,100,1);self.scale.set_draw_value(False);self.scale.set_value(value);self.scale.set_size_request(-1,48);self.scale.set_tooltip_text('Volume');self.scale.connect('value-changed',self.volume_changed);row.pack_start(self.scale,True,True,0)
   caps=list(Path('/sys/class/power_supply').glob('BAT*/capacity'));label('Battery: '+(caps[0].read_text().strip()+'%' if caps else 'No battery detected'))
-  label('Display brightness control is not available in this alpha.')
-  def all_settings():
-   subprocess.Popen(['kestrel-settings']);self.close()
-  all_button=Gtk.Button(label='All settings');all_button.set_size_request(-1,48);all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
-  button(box,'Close',lambda:self.close());self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return and self.get_focus()==all_button else False);self.connect('destroy',Gtk.main_quit)
-provider=Gtk.CssProvider();provider.load_from_data(b'* {font-family: Noto Sans;font-size:14px;} window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:8px 12px;} button:hover {background:#cddcf1;} button:focus {border-color:#4680bc;box-shadow:0 0 0 2px #4680bc;} button:active {background:#abc5e8;}')
+  label('Brightness: unavailable on this device')
+  def all_settings():subprocess.Popen(['kestrel-settings']);self.close()
+  all_button=button('All settings',all_settings);outer.pack_start(all_button,False,False,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
+  outer.pack_start(button('Close',self.close),False,False,0)
+  self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return and self.get_focus()==all_button else False);self.connect('destroy',Gtk.main_quit)
+ def volume_changed(self,scale):
+  subprocess.run(['wpctl','set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@',str(scale.get_value()/100)],stderr=subprocess.DEVNULL);self.audio.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
+ def mute(self):
+  subprocess.run(['wpctl','set-mute','@DEFAULT_AUDIO_SINK@','toggle'],stderr=subprocess.DEVNULL);self.audio.set_text(read(['wpctl','get-volume','@DEFAULT_AUDIO_SINK@']))
+provider=Gtk.CssProvider();provider.load_from_data(b'* {font-family:Noto Sans;font-size:14px;} window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:6px 8px;} button:hover {background:alpha(#233044,.08);} button:active {background:alpha(#233044,.16);} button:focus {border-color:#4680bc;box-shadow:0 0 0 2px #4680bc;} button:disabled {opacity:.38;} scale trough {min-height:32px;border-radius:16px;background:#dbe4f1;} scale highlight {min-height:32px;border-radius:16px;background:#a6c4eb;} scale slider {min-width:4px;min-height:28px;border-radius:2px;background:#466fa7;} tooltip {border-radius:6px;padding:5px 8px;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Panel().show_all();Gtk.main()
