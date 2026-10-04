@@ -72,7 +72,15 @@ def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
 key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
-key('ret');time.sleep(4);shot('click-all-settings-result')
+def live_audio():
+ req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
+ return json.load(urllib.request.urlopen(req,timeout=30))['audio']
+# Coordinates measured from34aa0f4 original1280x800 quick-panel pixels.
+for name,x in [('volume-down',978),('mute',1090),('volume-up',1204)]:
+ before=live_audio();guest_click(x,479);after=live_audio();record('Quick panel '+name+' mouse effect',before!=after);shot('quick-mouse-'+name)
+guest_click(1090,479) # unmute
+# Real All settings button click.
+guest_click(1090,627);time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
@@ -80,9 +88,6 @@ page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'] and 
 ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
-def live_audio():
- req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
- return json.load(urllib.request.urlopen(req,timeout=30))['audio']
 for button in ['volume-up','volume-down','mute']:
  actual_before=live_audio()
  before=js("document.querySelector('#audio-state').textContent");click('button[onclick="callBridge(\'/'+button+'\')"]');js('refresh()');time.sleep(2)
@@ -105,8 +110,12 @@ for button in ['network','bluetooth']:
 click('button[onclick="document.getElementById(\'settings\').close()"]');record('Settings close',not js("document.querySelector('#settings').open"));shot('click-settings-closed')
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
+# Shelf clock and panel Close coordinates measured from prior full-size frames.
+guest_click(1234,768);time.sleep(8);shot('shelf-mouse-clock')
+guest_click(1090,700);time.sleep(3);shot('quick-mouse-close')
+guest_click(32,768);time.sleep(3);shot('shelf-mouse-launcher');key('esc')
 # Every unsupported effect remains blocked rather than fabricated as a test pass.
-for control in ['Quick-panel mouse volume/mute/All settings/Close','Shelf launcher/clock mouse','Launcher Browser tile mouse','Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
+for control in ['Quick panel Close pixel review','Shelf launcher/clock pixel review','Shelf launcher/clock mouse','Launcher Browser tile mouse','Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
  results.append({'control':control,'result':'UNVERIFIED'})
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
