@@ -12,13 +12,11 @@ def cmd(name,args=None):
 cmd('qmp_capabilities'); cmd('screendump',{'filename':str(v/'iso-shell.ppm')})
 def key(*keys):
  cmd('send-key',{'keys':[{'type':'qcode','data':k} for k in keys], 'hold-time':80}); time.sleep(.25)
-key('ctrl','alt','f2'); time.sleep(8)
-for k in ['k','e','s','t','r','e','l','ret']: key(k)
-time.sleep(3)
-# No shell writes: show running session processes and live ISO kernel cmdline.
-text='pgrep -a cage; pgrep -a chromium; cat /proc/cmdline'
-mapkey={' ':'spc','-':'minus',';':'semicolon','/':'slash'}
-for c in text: key(mapkey.get(c,c))
-key('ret'); time.sleep(4)
-cmd('screendump',{'filename':str(v/'iso-console.ppm')})
+# Capture real shell states and public shortcut destination, no account sign-in.
+for k in ['k','e','s','t','r','e','l','spc','o','s']: key(k)
+cmd('screendump',{'filename':str(v/'iso-search-input.ppm')})
+key('ctrl','a'); key('backspace'); key('tab')
+cmd('screendump',{'filename':str(v/'iso-search-launcher.ppm')})
+key('ret'); time.sleep(25)
+cmd('screendump',{'filename':str(v/'iso-search-page.ppm')})
 cmd('quit')

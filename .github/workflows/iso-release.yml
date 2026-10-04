@@ -1,0 +1,42 @@
+name: iso-release
+# Manually dispatched only after owner approval. Stages a draft; human visual gate publishes.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: iso-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      KESTREL_CI_ALLOW_TCG: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host setup
+        run: build/tests/ci/00-host.sh
+      - name: Build ISO
+        run: build/tests/ci/01-build-iso.sh
+      - name: Firmware boot and screenshots
+        run: |
+          sudo apt-get install -y --no-install-recommends imagemagick
+          build/tests/ci/06-iso-boot.sh
+      - name: Verify split parts
+        run: build/tests/ci/07-split.sh
+      - name: Stage draft pre-release (no Actions artifact storage)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="alpha-$(date -u +%Y%m%d)-${GITHUB_RUN_ID}"
+          cat > "$CI_DIR/notes.md" <<NOTES
+          Experimental x86_64 UEFI live alpha. Not tested on real hardware. Do not install on an internal disk; the installer retains VM-only guards.
+          Source: $GITHUB_SHA
+          Build and verification: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Download both numeric ISO parts, SHA256SUMS.parts and SHA256SUMS.iso. Verify each part, concatenate part00 then part01 into the original ISO filename, then verify SHA256SUMS.iso. Each part is below 2 GiB. SHA256 provides integrity, not a release-signing guarantee.
+          UI is a browser shell with external Search/Mail/Video/Games shortcuts, not built-in native apps. Gaming, GPU, ARM, browser interaction and hardware compatibility are not certified.
+          NOTES
+          cat "$CI_DIR/delivery/SHA256SUMS.iso" >> "$CI_DIR/notes.md"
+          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "Kestrel OS alpha (UEFI live test)" --notes-file "$CI_DIR/notes.md" "$CI_DIR"/delivery/*.iso.part[0-9][0-9] "$CI_DIR"/delivery/SHA256SUMS.* "$CI_DIR"/vm/iso-*.png
+          echo "Draft tag: $tag" >> "$GITHUB_STEP_SUMMARY"

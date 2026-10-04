@@ -17,7 +17,7 @@ pid=$!
 trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT
 sleep 150
 python3 "$REPO/build/tests/ci/iso-evidence.py" "$VM"
-for name in iso-shell iso-console; do
+for name in iso-shell iso-search-input iso-search-launcher iso-search-page; do
  convert "$VM/$name.ppm" "$VM/$name.png"
  echo "ISO_EVIDENCE_BEGIN $name.png"
  base64 -w 100 "$VM/$name.png"
