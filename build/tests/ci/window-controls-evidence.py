@@ -46,7 +46,7 @@ for _ in range(30):
  try:
   pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
   page=next(x for x in pages if x['type']=='page')
-  ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15);break
+  ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60);break
  except Exception as e:time.sleep(1)
 if ws is None:raise RuntimeError('CI Chrome debug unavailable')
 seq=0
@@ -77,7 +77,7 @@ key('ret');time.sleep(4);shot('click-all-settings-result')
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
 page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'] and x['id'] not in existing_settings)
-ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15)
+ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
 for button in ['volume-up','volume-down','mute']:

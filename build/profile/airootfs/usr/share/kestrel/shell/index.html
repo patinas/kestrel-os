@@ -25,7 +25,7 @@ button{padding:8px 14px;background:#161b22;color:var(--fg);border:1px solid #596
 <script>
 async function callBridge(path){let r=await fetch(path,{method:'POST',headers:{'X-Kestrel-Token':'BRIDGE_TOKEN'}});if(!r.ok)document.getElementById('state').textContent='Action failed';}
 async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A terminal will ask for a new local password.')){document.getElementById('advanced').checked=false;return}await callBridge(on?'/enable':'/disable');}
-async function refresh(){let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
+let refreshing=false;async function refresh(){if(refreshing)return;refreshing=true;try{let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
  document.getElementById('network-state').textContent=s.network;
  document.getElementById('bluetooth-state').textContent=(s.bluetooth.includes('Controller ')?s.bluetooth:'No Bluetooth adapter detected')+(s.bluetooth_connections?'\n'+s.bluetooth_connections:'');
  document.querySelector('button[onclick="callBridge(\'/bluetooth\')"]').disabled=!s.bluetooth.includes('Controller ');
@@ -34,10 +34,10 @@ async function refresh(){let s=await(await fetch('/status')).json();document.get
  document.getElementById('gaming').disabled=true;
  document.getElementById('gpu-state').textContent='GPU: '+s.gpu+' | mode: '+s.mode;
  document.getElementById('slot-state').textContent='Root / slot: '+s.slot;
- document.getElementById('task-status').textContent=(s.network.includes(':connected:')?'Network connected':'Network unavailable')+' | '+(s.bluetooth.includes('Controller ')?(s.bluetooth_connections?'Bluetooth connected':'Bluetooth available'):'No Bluetooth adapter')+' | '+s.audio+' | '+s.battery;}setInterval(refresh,15000);refresh();
+ document.getElementById('task-status').textContent=(s.network.includes(':connected:')?'Network connected':'Network unavailable')+' | '+(s.bluetooth.includes('Controller ')?(s.bluetooth_connections?'Bluetooth connected':'Bluetooth available'):'No Bluetooth adapter')+' | '+s.audio+' | '+s.battery;}finally{refreshing=false}}setInterval(refresh,15000);refresh();
 function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
 location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
 function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
-document.getElementById('settings').showModal();refresh();
+document.getElementById('settings').showModal();
 t();setInterval(t,15000)
 </script></body></html>
