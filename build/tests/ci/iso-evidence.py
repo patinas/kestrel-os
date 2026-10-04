@@ -14,7 +14,8 @@ def key(*keys):
 def text(t):
  keys={' ':'spc','-':'minus',';':'semicolon','/':'slash','.':'dot','=':'equal'}
  for c in t:
-  if c.isupper():key('shift',c.lower())
+  if c==':':key('shift','semicolon')
+  elif c.isupper():key('shift',c.lower())
   else:key(keys.get(c,c))
 def shot(n):cmd('screendump',{'filename':str(v/('iso-'+n+'.ppm'))})
 cmd('qmp_capabilities');shot('chrome-terms')
