@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+/usr/local/bin/kestrel-shell-server &
+pid=$!
+trap 'kill "$pid" 2>/dev/null || true' EXIT
+"$HOME/.local/share/kestrel/chrome/current/opt/google/chrome/chrome" --kiosk --no-first-run --no-default-browser-check --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" --app=http://127.0.0.1:8765

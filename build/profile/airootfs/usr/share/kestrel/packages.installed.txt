@@ -15,6 +15,7 @@ e2fsprogs
 egl-wayland
 expat
 fontconfig
+foot
 freetype2
 fwupd
 gamemode
@@ -60,6 +61,7 @@ pango
 parted
 pipewire
 pipewire-pulse
+python
 rpm-tools
 rsync
 sof-firmware

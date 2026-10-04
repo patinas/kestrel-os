@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+# User-owned HTTP bridge. External pages cannot invoke privileged operations.
+import http.server,json,os,secrets,subprocess
+from pathlib import Path
+TOKEN=secrets.token_urlsafe(32)
+PAGE=Path('/usr/share/kestrel/shell/index.html').read_text().replace('BRIDGE_TOKEN',TOKEN)
+ORIGIN='http://127.0.0.1:8765'
+class Handler(http.server.BaseHTTPRequestHandler):
+ def do_GET(self):
+  if self.headers.get('Host')!='127.0.0.1:8765': self.send_error(403);return
+  if self.path=='/': data=PAGE.encode();kind='text/html'
+  elif self.path=='/status': data=json.dumps({'enabled':Path('/var/lib/kestrel/terminal-enabled').exists()}).encode();kind='application/json'
+  else:self.send_error(404);return
+  self.send_response(200);self.send_header('Content-Type',kind);self.send_header('Cache-Control','no-store');self.send_header('X-Frame-Options','DENY');self.end_headers();self.wfile.write(data)
+ def do_POST(self):
+  if self.headers.get('Host')!='127.0.0.1:8765' or self.headers.get('Origin')!=ORIGIN or self.headers.get('X-Kestrel-Token')!=TOKEN:self.send_error(403);return
+  if self.path=='/enable':subprocess.Popen(['foot','sh','-c','sudo /usr/local/bin/kestrel-advanced-toggle enable; printf "Press Enter to close"; read reply'])
+  elif self.path=='/disable':subprocess.run(['sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True)
+  elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot'])
+  else:self.send_error(403);return
+  self.send_response(204);self.end_headers()
+http.server.HTTPServer(('127.0.0.1',8765),Handler).serve_forever()

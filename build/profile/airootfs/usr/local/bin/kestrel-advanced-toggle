@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[ "$EUID" = 0 ] && [ "${SUDO_USER:-}" = kestrel ] || exit 1
+D=/var/lib/kestrel
+mkdir -p "$D"; chmod 755 "$D"
+case "${1:-}" in
+ enable)
+   printf 'Advanced terminal access allows system changes. Choose a non-empty local password.\n'
+   passwd kestrel
+   # Password must exist and not be locked/empty.
+   h=$(getent shadow kestrel | cut -d: -f2)
+   case "$h" in ''|'!'*|'*'*) echo 'Non-empty password required'; exit 1;; esac
+   printf 'kestrel ALL=(ALL:ALL) ALL\n' > "$D/sudoers"
+   chmod 440 "$D/sudoers"
+   touch "$D/terminal-enabled";;
+ disable)
+   printf '# Advanced access disabled\n' > "$D/sudoers"
+   chmod 440 "$D/sudoers"
+   rm -f "$D/terminal-enabled"
+   pkill -u kestrel -x foot || true;;
+ *) exit 2;;
+esac

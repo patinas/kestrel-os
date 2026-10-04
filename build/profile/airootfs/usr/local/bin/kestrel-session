@@ -18,9 +18,7 @@ while true; do
   if [ -f "$HOME/.kestrel-mode" ]; then
     /usr/local/bin/kestrel-gaming-session
   else
-    cage -s -- "$CHROME" --kiosk --no-first-run --no-default-browser-check --disable-infobars \
-      --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" \
-      --app=file:///usr/share/kestrel/shell/index.html
+    cage -s -- /usr/local/bin/kestrel-desktop
   fi
   sleep 1
 done

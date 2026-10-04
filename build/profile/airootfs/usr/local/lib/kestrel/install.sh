@@ -55,7 +55,7 @@ USED=$(df --output=pcent "$T" | tail -1 | tr -dc 0-9)
 echo "root slot usage after install: ${USED}% of ${ROOT_GIB} GiB"
 [ "$USED" -lt 85 ] || die "installed root uses ${USED}% of the slot; raise KESTREL_ROOT_GIB"
 # 2. Kestrel overlay: shell, scripts, services, user
-for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/chromium etc/os-release etc/hostname etc/skel; do
+for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/sudoers.d etc/os-release etc/hostname etc/skel; do
   [ -e "$SRC/$p" ] && { mkdir -p "$T/$(dirname "$p")"; cp -a "$SRC/$p" "$T/$(dirname "$p")/"; }
 done
 find "$T/usr/local/bin" -maxdepth 1 -type f -name "kestrel-*" -exec chmod 755 {} +
@@ -86,12 +86,17 @@ if [ -n "${KESTREL_UPDATE_PUB:-}" ]; then
   install -m 644 "$KESTREL_UPDATE_PUB" "$T/etc/kestrel/update.pub"
   echo "TEST-ONLY key installed by installer; replace with a release key before any real use" > "$T/etc/kestrel/update.pub.TESTONLY"
 fi
+# Persist local sudo password without unlocking either root slot.
+mkdir -p "$T/var/lib/kestrel"
+cp "$T/etc/shadow" "$T/var/lib/kestrel/shadow"
+chmod 600 "$T/var/lib/kestrel/shadow"
 # 3. fstab: root read-only, /var and /home on writable kdata
 cat > "$T/etc/fstab" <<F
 # root mounted ro by kernel cmdline
 LABEL=KESTRELESP /boot vfat umask=0077,noauto,x-systemd.automount 0 2
 LABEL=kdata /var  ext4 defaults 0 2
 /var/home /home none bind,x-systemd.requires-mounts-for=/var 0 0
+/var/lib/kestrel/shadow /etc/shadow none bind,x-systemd.requires-mounts-for=/var 0 0
 F
 # Persist data dirs onto kdata on first populate
 mkdir -p "$W/kd"; mount "$P4" "$W/kd"

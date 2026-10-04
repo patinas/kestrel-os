@@ -14,15 +14,18 @@ input:focus{border-color:var(--acc)}
 .tiles a{width:120px;padding:18px 0;text-align:center;border-radius:16px;background:#161b22;color:var(--fg);text-decoration:none}
 .tiles a:hover{background:#1f2630}
 footer{padding:12px;text-align:center;color:var(--dim);font-size:13px}
-</style></head><body>
-<header><span>Kestrel OS</span><span id="clock"></span></header>
+button{padding:8px 14px;background:#161b22;color:var(--fg);border:1px solid #596473;border-radius:8px;cursor:pointer}dialog{max-width:580px;background:#161b22;color:var(--fg);border:1px solid #596473;border-radius:16px}dialog input{width:auto}dialog::backdrop{background:#0009}</style></head><body>
+<header><span>Kestrel OS</span><span><button onclick="document.getElementById('settings').showModal()">Settings</button> <span id="clock"></span></span></header>
 <main><h1>kestrel</h1>
 <form onsubmit="go(event)"><input id="q" autofocus placeholder="Search or enter address"></form>
 <div class="tiles">
 <a href="https://duckduckgo.com">Search</a><a href="https://mail.google.com">Mail</a>
 <a href="https://www.youtube.com">Video</a><a href="https://store.steampowered.com">Games</a></div></main>
-<footer>alpha live image</footer>
+<dialog id="settings"><h2>Advanced settings</h2><p>Terminal and sudo allow system changes. Choose your own password when enabling.</p><label><input type="checkbox" id="advanced" onchange="toggleAdvanced(this.checked)"> Enable terminal / sudo (advanced)</label><p>Live USB packages disappear on reboot. Installed root stays read-only; use the development container.</p><button id="terminal" onclick="callBridge('/terminal')" disabled>Open terminal</button><button onclick="document.getElementById('settings').close()">Close</button><p id="state"></p></dialog><footer>alpha live image</footer>
 <script>
+async function callBridge(path){let r=await fetch(path,{method:'POST',headers:{'X-Kestrel-Token':'BRIDGE_TOKEN'}});if(!r.ok)document.getElementById('state').textContent='Action failed';}
+async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A terminal will ask for a new local password.')){document.getElementById('advanced').checked=false;return}await callBridge(on?'/enable':'/disable');}
+async function refresh(){let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';}setInterval(refresh,2000);refresh();
 function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
 location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
 function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}

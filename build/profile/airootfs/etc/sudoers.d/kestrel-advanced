@@ -1,0 +1,3 @@
+# This narrow root-owned helper is available even while general sudo is off.
+kestrel ALL=(root) NOPASSWD: /usr/local/bin/kestrel-advanced-toggle enable, /usr/local/bin/kestrel-advanced-toggle disable
+@include /var/lib/kestrel/sudoers
