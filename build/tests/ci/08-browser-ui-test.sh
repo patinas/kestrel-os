@@ -22,7 +22,7 @@ qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
-for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-volume-down quick-mouse-mute quick-mouse-volume-up click-all-settings-result click-network click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
+for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-volume-down quick-mouse-mute quick-mouse-volume-up click-all-settings-result settings-after-controls click-settings-closed click-network click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue
  convert "$image" -quality 48 "$VM/ui-$name.jpg"
@@ -30,6 +30,7 @@ for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar re
  base64 -w 800 "$VM/ui-$name.jpg"
  echo "UI_EVIDENCE_END ui-$name.jpg"
 done
+[ ! -f "$VM/control-results.json" ] || cat "$VM/control-results.json"
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!

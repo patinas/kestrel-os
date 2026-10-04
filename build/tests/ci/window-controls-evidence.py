@@ -107,7 +107,7 @@ for button in ['network','bluetooth']:
  if button=='bluetooth' and js("document.querySelector('button[onclick=\"callBridge(\\\'/bluetooth\\\')\"]').disabled"):
   shot('click-bluetooth-unavailable');record('Bluetooth setup disabled without hardware',True);continue
  click('button[onclick="callBridge(\'/'+button+'\')"]');time.sleep(3);shot('click-'+button);key('alt','f4');results.append({'control':'Settings '+button+' setup','result':'PIXEL_REVIEW'})
-click('button[onclick="document.getElementById(\'settings\').close()"]');record('Settings close',not js("document.querySelector('#settings').open"));shot('click-settings-closed')
+click('button[onclick="location.href=\'https://www.google.com\'"]');time.sleep(3);record('Settings Close returns to Google',js("location.hostname==='www.google.com'"));shot('click-settings-closed')
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
 # Shelf clock and panel Close coordinates measured from prior full-size frames.
@@ -117,6 +117,7 @@ guest_click(32,768);time.sleep(3);shot('shelf-mouse-launcher');key('esc')
 # Every unsupported effect remains blocked rather than fabricated as a test pass.
 for control in ['Quick panel Close pixel review','Shelf launcher/clock pixel review','Shelf launcher/clock mouse','Launcher Browser tile mouse','Taskbar mouse activate/close','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
  results.append({'control':control,'result':'UNVERIFIED'})
+cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(4);shot('settings-after-controls')
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
 for _ in range(4):key('alt','f4');time.sleep(1)
