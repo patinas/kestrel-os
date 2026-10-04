@@ -52,3 +52,6 @@ vulkan-nouveau
 vulkan-radeon
 wireplumber
 xf86-input-libinput
+
+rpm-tools
+gnupg

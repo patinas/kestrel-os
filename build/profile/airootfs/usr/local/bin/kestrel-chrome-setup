@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Chrome is downloaded by the end user, never included in the distributed ISO.
+set -Eeuo pipefail
+D="$HOME/.local/share/kestrel/chrome"; mkdir -p "$D"
+if [ ! -f "$D/terms-accepted" ]; then
+  printf '\nGoogle Chrome setup (network required)\nRead https://www.google.com/chrome/terms/ and https://policies.google.com/terms\nChrome is proprietary software, downloaded directly from Google.\nType ACCEPT to accept these terms and download, or anything else to stop: '
+  read -r answer
+  [ "$answer" = ACCEPT ] || { echo 'Terms not accepted. Chrome was not downloaded.'; exit 2; }
+  date -Is > "$D/terms-accepted"
+fi
+[ -x "$D/current/opt/google/chrome/chrome" ] && exit 0
+T=$(mktemp -d "$D/setup.XXXXXX"); trap 'rm -rf "$T"' EXIT
+curl --fail --location --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 240 -o "$T/chrome.rpm" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+curl --fail --location --proto '=https' --tlsv1.2 --max-time 40 -o "$T/google.pub" https://dl.google.com/linux/linux_signing_key.pub
+fingerprint=$(gpg --show-keys --with-colons "$T/google.pub" | awk -F: '$1=="fpr"{print $10}')
+printf '%s\n' "$fingerprint" | grep -qx EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796 || { echo 'Google signing-key fingerprint mismatch'; exit 1; }
+mkdir "$T/rpmdb"
+rpmkeys --dbpath "$T/rpmdb" --import "$T/google.pub"
+rpmkeys --dbpath "$T/rpmdb" --checksig "$T/chrome.rpm" | tee "$T/verification.log"
+grep -q 'signatures OK' "$T/verification.log" || { echo 'Chrome signature not verified'; exit 1; }
+mkdir "$T/extracted"
+bsdtar -xf "$T/chrome.rpm" -C "$T/extracted" ./opt/google/chrome
+[ -x "$T/extracted/opt/google/chrome/chrome" ]
+"$T/extracted/opt/google/chrome/chrome" --version
+sha256sum "$T/chrome.rpm" > "$T/extracted/download.sha256"
+mv "$T/extracted" "$D/current"
+echo 'Chrome downloaded and verified. This community Arch route is not a Google-supported distribution.'

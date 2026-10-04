@@ -8,12 +8,18 @@ fi
 if [ "$(cat /run/kestrel-gpu 2>/dev/null)" = nvidia-open ]; then
   export GBM_BACKEND=nvidia-drm __GLX_VENDOR_LIBRARY_NAME=nvidia WLR_NO_HARDWARE_CURSORS=1
 fi
+# User must accept Google terms locally. No Chromium fallback is launched.
+until /usr/local/bin/kestrel-chrome-setup; do
+  printf 'Chrome setup failed or was declined. Check network. Press Enter to retry, or Ctrl+C to stop. '
+  read reply
+done
+CHROME="$HOME/.local/share/kestrel/chrome/current/opt/google/chrome/chrome"
 while true; do
   if [ -f "$HOME/.kestrel-mode" ]; then
     /usr/local/bin/kestrel-gaming-session
   else
-    cage -s -- chromium --kiosk --no-first-run --no-default-browser-check --disable-infobars \
-      --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chromium" \
+    cage -s -- "$CHROME" --kiosk --no-first-run --no-default-browser-check --disable-infobars \
+      --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" \
       --app=file:///usr/share/kestrel/shell/index.html
   fi
   sleep 1

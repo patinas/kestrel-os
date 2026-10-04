@@ -12,6 +12,7 @@ egl-wayland
 fwupd
 gamemode
 gamescope
+gnupg
 intel-ucode
 iwd
 lib32-mesa
@@ -34,6 +35,7 @@ nvidia-utils
 parted
 pipewire
 pipewire-pulse
+rpm-tools
 rsync
 sof-firmware
 steam
