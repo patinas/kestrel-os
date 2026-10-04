@@ -6,5 +6,5 @@ cd "$(dirname "$0")/../profile"
 OUT=airootfs/usr/share/kestrel/packages.installed.txt
 TMP=$(mktemp)
 grep -vE '^\s*(#|$)' packages.x86_64 | sort -u | comm -23 - <(grep -vE '^\s*(#|$)' packages.live-only.txt | sort -u) > "$TMP"
-for need in base linux linux-firmware mkinitcpio networkmanager cage chromium minisign rsync; do grep -qx "$need" "$TMP" || { echo "missing required package $need" >&2; exit 1; }; done
+for need in base linux linux-firmware mkinitcpio networkmanager cage rpm-tools gnupg curl nss gtk3 minisign rsync; do grep -qx "$need" "$TMP" || { echo "missing required package $need" >&2; exit 1; }; done
 if [ "${1:-}" = --check ]; then diff -u "$OUT" "$TMP" >/dev/null || { echo "stale $OUT; run scripts/gen-installed-packages.sh" >&2; exit 1; }; else mv "$TMP" "$OUT"; fi

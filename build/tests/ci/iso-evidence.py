@@ -27,7 +27,7 @@ for count,name in enumerate(['search','mail','video','games'],1):
 # Fresh virtual terminal login. Give getty time to settle before typing.
 key('ctrl','alt','f2');time.sleep(15);text('kestrel');key('ret');time.sleep(8);shot('console-login')
 text('getent hosts example.com; ip route; cat /proc/asound/cards; cat /run/kestrel-gpu');key('ret');time.sleep(8);shot('network-audio-gpu')
-text('pgrep -a cage; pgrep -a chromium');key('ret');time.sleep(4);shot('processes')
+text('pgrep -a cage; pgrep -a chrome');key('ret');time.sleep(4);shot('processes')
 # Exercise reversible user mode commands in this disposable live guest.
 text('kestrel-mode bad');key('ret');time.sleep(2);shot('mode-invalid')
 text('kestrel-mode gaming');key('ret');time.sleep(20);key('ctrl','alt','f1');time.sleep(15);shot('gaming-mode')

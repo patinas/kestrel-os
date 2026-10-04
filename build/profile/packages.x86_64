@@ -2,7 +2,7 @@
 # graphics: open drivers for AMD/Intel/old NVIDIA (NVK via mesa), nvidia-open added in a later milestone
 # hardware support extras
 # misc
-# shell: Wayland kiosk compositor + Chromium
+# shell: Cage + Google Chrome direct-download dependencies
 alsa-firmware
 amd-ucode
 arch-install-scripts
@@ -10,7 +10,6 @@ base
 bluez
 bluez-utils
 cage
-chromium
 dosfstools
 e2fsprogs
 egl-wayland
@@ -55,3 +54,31 @@ xf86-input-libinput
 
 rpm-tools
 gnupg
+
+curl
+alsa-lib
+at-spi2-core
+cairo
+dbus
+expat
+fontconfig
+freetype2
+glib2
+glibc
+gtk3
+hicolor-icon-theme
+libcups
+libdrm
+libx11
+libxcb
+libxcomposite
+libxdamage
+libxext
+libxfixes
+libxkbcommon
+libxrandr
+libxss
+nspr
+nss
+pango
+xdg-utils
