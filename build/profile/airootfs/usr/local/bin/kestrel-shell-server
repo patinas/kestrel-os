@@ -5,7 +5,7 @@ from pathlib import Path
 TOKEN=secrets.token_urlsafe(32)
 PAGE=Path('/usr/share/kestrel/shell/index.html').read_text().replace('BRIDGE_TOKEN',TOKEN)
 def readcmd(args):
- try:return subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=4).stdout.strip()[:3000]
+ try:return subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=4).stdout.strip()[:3000]
  except Exception:return 'Not available'
 def status():
  batteries=list(Path('/sys/class/power_supply').glob('BAT*/capacity'))

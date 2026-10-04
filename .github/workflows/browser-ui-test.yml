@@ -1,0 +1,24 @@
+name: browser-ui-test
+# Manual 60-minute owner UI test on the standard free public runner.
+# No secrets, paid runner, artifact uploads, cache or public release.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: browser-ui-test
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      KESTREL_CI_ALLOW_TCG: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host setup
+        run: build/tests/ci/00-host.sh
+      - name: Build disposable UI test ISO
+        run: build/tests/ci/01-build-iso.sh
+      - name: Owner browser UI test (email PIN, 60 minutes)
+        run: build/tests/ci/08-browser-ui-test.sh
