@@ -10,7 +10,7 @@ except BlockingIOError:raise SystemExit(0)
 class Panel(Gtk.Window):
  def __init__(self):
   super().__init__(title='Kestrel quick settings');self.set_default_size(400,420);self.set_resizable(False);self.set_keep_above(True)
-  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=14);box.set_border_width(22);self.add(box)
+  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=16);box.set_border_width(24);self.add(box)
   def label(text):
    l=Gtk.Label(label=text);l.set_xalign(0);l.set_line_wrap(True);box.pack_start(l,False,False,0);return l
   def read(args):
@@ -20,7 +20,7 @@ class Panel(Gtk.Window):
   label(read(['nmcli','-t','-f','DEVICE,STATE,CONNECTION','device']))
   row=Gtk.Box(spacing=8);box.pack_start(row,False,False,0)
   def button(parent,text,fn):
-   b=Gtk.Button(label=text);b.connect('clicked',lambda _:fn());parent.pack_start(b,True,True,0)
+   b=Gtk.Button(label=text);b.connect('clicked',lambda _:fn());b.set_size_request(-1,48);parent.pack_start(b,True,True,0)
   button(row,'Network',lambda:subprocess.Popen(['foot','nmtui']))
   if 'Controller ' in read(['bluetoothctl','show']):button(row,'Bluetooth',lambda:subprocess.Popen(['foot','bluetoothctl']))
   else:label('Bluetooth: no adapter detected')
@@ -35,8 +35,8 @@ class Panel(Gtk.Window):
   label('Display brightness control is not available in this alpha.')
   def all_settings():
    subprocess.Popen(['kestrel-settings']);self.close()
-  all_button=Gtk.Button(label='All settings');all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
+  all_button=Gtk.Button(label='All settings');all_button.set_size_request(-1,48);all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
   button(box,'Close',lambda:self.close());self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return and self.get_focus()==all_button else False);self.connect('destroy',Gtk.main_quit)
-provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:14px;padding:10px;} button:hover {background:#cddcf1;} button:focus {border-color:#4680bc;}')
+provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:8px 12px;} button:hover {background:#cddcf1;} button:focus {border-color:#4680bc;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Panel().show_all();Gtk.main()

@@ -1,7 +1,7 @@
 {
   "layer": "top",
   "position": "bottom",
-  "height": 52,
+  "height": 56,
   "modules-left": [
     "custom/launcher"
   ],
@@ -58,9 +58,9 @@
     "tooltip-format": "Quick settings",
     "on-click": "kestrel-quick-settings"
   },
-  "margin-bottom": 8,
-  "margin-left": 12,
-  "margin-right": 12,
+  "margin-bottom": 16,
+  "margin-left": 16,
+  "margin-right": 16,
   "custom/launcher": {
     "format": "\ue000",
     "tooltip-format": "Launcher",

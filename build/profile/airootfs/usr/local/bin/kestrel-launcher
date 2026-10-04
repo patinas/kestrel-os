@@ -7,7 +7,7 @@ class Launcher(Gtk.Window):
  def __init__(self):
   super().__init__(title='Kestrel apps');self.fullscreen();self.set_keep_above(True)
   self.connect('destroy',Gtk.main_quit);self.connect('key-press-event',self.key)
-  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=22);box.set_border_width(44);self.add(box)
+  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=24);box.set_border_width(48);self.add(box)
   title=Gtk.Label(label='Kestrel apps');box.pack_start(title,False,False,0)
   self.search=Gtk.SearchEntry();self.search.set_placeholder_text('Search apps');box.pack_start(self.search,False,False,0)
   scroll=Gtk.ScrolledWindow();box.pack_start(scroll,True,True,0)
@@ -21,7 +21,7 @@ class Launcher(Gtk.Window):
   self.grid.set_filter_func(lambda child:self.search.get_text().lower() in child.name.lower());self.search.connect('search-changed',lambda _:self.grid.invalidate_filter())
   self.show_all();self.search.grab_focus()
  def add_app(self,name,icon,fn):
-  child=Gtk.FlowBoxChild();child.name=name;button=Gtk.Button();box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=10);box.set_size_request(120,100)
+  child=Gtk.FlowBoxChild();child.name=name;button=Gtk.Button();box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=10);box.set_size_request(144,96)
   image=Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.DIALOG) if isinstance(icon,str) else Gtk.Image.new_from_gicon(icon,Gtk.IconSize.DIALOG)
   box.pack_start(image,True,True,0);label=Gtk.Label(label=name);label.set_line_wrap(True);box.pack_start(label,False,False,0);button.add(box);child.add(button);self.grid.add(child)
   def click(_):fn();self.close()
@@ -29,6 +29,6 @@ class Launcher(Gtk.Window):
  def key(self,_,event):
   if event.keyval==Gdk.KEY_Escape:self.close()
 Gtk.Settings.get_default().set_property('gtk-icon-theme-name','Papirus')
-provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#eef3fb;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:18px;padding:12px;} button:hover {background:#cddcf1;} entry {border-radius:18px;padding:12px;}')
+provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#eef3fb;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:16px;padding:16px;} button:hover {background:#cddcf1;} entry {border-radius:16px;padding:16px;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Launcher();Gtk.main()
