@@ -20,7 +20,8 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -device virtio-serial-pci -chardev null,id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check -vnc 127.0.0.1:1 -display none -serial "file:$VM/ui-serial.log" -qmp "unix:$VM/ui-qmp.sock,server=on,wait=off" &
 qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
-python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM"
+test_status=0
+python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
 for image in "$VM"/ui-*.ppm; do
  name=$(basename "$image" .ppm)
  convert "$image" -resize 960x600 -quality 48 "$VM/$name.jpg"
@@ -32,6 +33,7 @@ for image in "$VM"/ui-*.ppm; do
  base64 -w 800 "$image"
  echo "UI_EVIDENCE_END $(basename "$image")"
  done
+[ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 websockify --web /usr/share/novnc 127.0.0.1:6080 127.0.0.1:5901 > "$CI_DIR/novnc.log" 2>&1 &
 web_pid=$!
 # Cloudflare email PIN protects HTTP AND WebSocket before they reach loopback.

@@ -31,6 +31,6 @@ class Panel(Gtk.Window):
   label('Display brightness control is not available in this alpha.')
   def all_settings():
    subprocess.Popen(['kestrel-settings']);self.close()
-  button(box,'All settings',all_settings)
+  all_button=Gtk.Button(label='All settings');all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus())
   button(box,'Close',lambda:self.close());self.connect('destroy',Gtk.main_quit)
 Panel().show_all();Gtk.main()

@@ -70,7 +70,7 @@ def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}},{'type':'btn','data':{'down':True,'button':'left'}}]})
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 key('alt','shift','s');time.sleep(3);shot('click-quick-before-all')
-guest_click(880,488);time.sleep(4);shot('click-all-settings-result')
+key('ret');time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
