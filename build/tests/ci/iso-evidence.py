@@ -29,6 +29,9 @@ for count,name in enumerate(['search','mail','video','games'],1):
  for _ in range(count):key('tab')
  shot(name+'-focus');key('ret');time.sleep(30);shot(name+'-destination')
  key('alt','left');time.sleep(5);shot(name+'-back')
+key('ctrl','l');text('http://127.0.0.1:8765');key('ret');time.sleep(8)
+key('shift','tab');key('ret');time.sleep(8);shot('settings-status')
+key('esc')
 # Fresh virtual terminal login. Give getty time to settle before typing.
 key('ctrl','alt','f2');time.sleep(15);text('kestrel');key('ret');time.sleep(8);shot('console-login')
 text('getent hosts example.com; ip route; cat /proc/asound/cards; cat /run/kestrel-gpu');key('ret');time.sleep(8);shot('network-audio-gpu')
