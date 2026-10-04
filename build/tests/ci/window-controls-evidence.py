@@ -70,12 +70,13 @@ def record(name,condition):
 def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}},{'type':'btn','data':{'down':True,'button':'left'}}]})
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
+existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
 key('alt','shift','s');time.sleep(3);shot('click-quick-before-all')
 key('ret');time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()
 pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))
-page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'])
+page=next(x for x in pages if x['type']=='page' and '#settings' in x['url'] and x['id'] not in existing_settings)
 ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=15)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
@@ -105,4 +106,6 @@ for control in ['PWA install/relaunch','Installer options','Hardware media/brigh
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
 cdp('Page.navigate',{'url':'https://www.google.com'});time.sleep(3);shot('click-final-desktop');ws.close()
 
+req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
+final_state=json.load(urllib.request.urlopen(req,timeout=20));print('FINAL_WAYBAR_DIAGNOSTIC',json.dumps(final_state),flush=True)
 if any(x['result']=='FAIL' for x in results):raise RuntimeError('A control assertion failed; inspect CONTROL_RESULTS')

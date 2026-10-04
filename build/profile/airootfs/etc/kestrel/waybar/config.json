@@ -3,12 +3,12 @@
   "position": "bottom",
   "height": 52,
   "modules-left": [
-    "image#launcher"
+    "custom/launcher"
   ],
   "modules-center": [
-    "image#browser",
-    "image#mail",
-    "image#video",
+    "custom/browser",
+    "custom/mail",
+    "custom/video",
     "wlr/taskbar"
   ],
   "modules-right": [
@@ -62,24 +62,24 @@
   "margin-bottom": 8,
   "margin-left": 12,
   "margin-right": 12,
-  "image#browser": {
-    "path": "/usr/share/icons/hicolor/64x64/apps/kestrel-browser.png",
-    "size": 32,
+  "custom/launcher": {
+    "format": "\ue000",
+    "tooltip-format": "Launcher",
+    "on-click": "kestrel-launcher"
+  },
+  "custom/browser": {
+    "format": "\ue001",
+    "tooltip-format": "Browser",
     "on-click": "kestrel-browser"
   },
-  "image#mail": {
-    "path": "/usr/share/icons/hicolor/64x64/apps/kestrel-mail.png",
-    "size": 32,
+  "custom/mail": {
+    "format": "\ue002",
+    "tooltip-format": "Mail",
     "on-click": "kestrel-browser https://mail.google.com"
   },
-  "image#video": {
-    "path": "/usr/share/icons/hicolor/64x64/apps/kestrel-video.png",
-    "size": 32,
+  "custom/video": {
+    "format": "\ue003",
+    "tooltip-format": "Video",
     "on-click": "kestrel-browser https://www.youtube.com"
-  },
-  "image#launcher": {
-    "path": "/usr/share/icons/hicolor/64x64/apps/kestrel-launcher.png",
-    "size": 32,
-    "on-click": "kestrel-launcher"
   }
 }

@@ -10,3 +10,5 @@ window#waybar {background: rgba(224,232,246,0.94); color: #233044;}
 window#waybar {border-radius: 24px;}
 
 #image {padding: 0 10px; margin: 6px 2px; border-radius: 20px; background: #d8e3f3;}
+
+#custom-launcher, #custom-browser, #custom-mail, #custom-video {font-family: "Kestrel Icons"; font-size: 30px; padding: 0 12px; margin: 5px 2px; border-radius: 20px; background: #d2dced;}
