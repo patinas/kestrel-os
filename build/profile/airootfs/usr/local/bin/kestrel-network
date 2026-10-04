@@ -56,7 +56,7 @@ class Wifi(Gtk.Window):
    for path in settings.ListConnections():
     con=dbus.Interface(self.obj(path),C);s=con.GetSettings()
     if str(s['connection']['type'])=='802-11-wireless':
-     name=str(s['connection']['id']);self.button('Forget '+name,lambda p=str(path),n=name:self.forget(p,n))
+     name=str(s['connection']['id']);self.button('Connect to saved '+name,lambda p=str(path):self.work(lambda:self.manager().ActivateConnection(p,self.dev,'/')));self.button('Forget '+name,lambda p=str(path),n=name:self.forget(p,n))
    self.list.show_all()
   except Exception:self.status.set_text('Network service is unavailable. Try again in a moment.')
   return True
