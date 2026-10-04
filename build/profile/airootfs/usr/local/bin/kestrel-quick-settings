@@ -32,8 +32,8 @@ class Panel(Gtk.Window):
   label('Display brightness control is not available in this alpha.')
   def all_settings():
    subprocess.Popen(['kestrel-settings']);self.close()
-  all_button=Gtk.Button(label='All settings');all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus());self.set_default(all_button);all_button.set_can_default(True);all_button.grab_default()
-  button(box,'Close',lambda:self.close());self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return else False);self.connect('destroy',Gtk.main_quit)
+  all_button=Gtk.Button(label='All settings');all_button.connect('clicked',lambda _:all_settings());box.pack_start(all_button,True,True,0);self.connect('map',lambda _:all_button.grab_focus());all_button.set_can_default(True);self.set_default(all_button);all_button.grab_default()
+  button(box,'Close',lambda:self.close());self.connect('key-press-event',lambda _,e:(all_settings() or True) if e.keyval==Gdk.KEY_Return and self.get_focus()==all_button else False);self.connect('destroy',Gtk.main_quit)
 provider=Gtk.CssProvider();provider.load_from_data(b'window {background:#f3f6fc;color:#233044;} button {background:#e2eaf6;border:1px solid #c2cee0;border-radius:14px;padding:10px;} button:hover {background:#cddcf1;} button:focus {border-color:#4680bc;}')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 Panel().show_all();Gtk.main()
