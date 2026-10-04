@@ -27,9 +27,10 @@ ready=False
 for _ in range(180):
  try:
   req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
-  with urllib.request.urlopen(req,timeout=3) as r: state=json.load(r)
+  with urllib.request.urlopen(req,timeout=20) as r: state=json.load(r)
   if state.get('chrome_running'):ready=True;break
- except Exception:pass
+ except Exception as error:
+  print("Readiness check:",type(error).__name__,str(error),flush=True)
  time.sleep(2)
 shot('shell')
 if not ready:raise RuntimeError('Chrome/guest shell server failed readiness gate')

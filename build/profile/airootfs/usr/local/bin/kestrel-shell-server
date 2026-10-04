@@ -46,4 +46,4 @@ class Handler(http.server.BaseHTTPRequestHandler):
   self.send_response(204);self.end_headers()
 # Disposable CI guest only: QEMU exposes a named virtio port for host-forwarded checks.
 BIND='0.0.0.0' if Path('/dev/virtio-ports/kestrel-ci-check').exists() else '127.0.0.1'
-http.server.HTTPServer((BIND,8765),Handler).serve_forever()
+http.server.ThreadingHTTPServer((BIND,8765),Handler).serve_forever()
