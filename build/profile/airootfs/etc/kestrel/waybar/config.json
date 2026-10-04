@@ -6,7 +6,6 @@
     "custom/launcher"
   ],
   "modules-center": [
-    "custom/browser",
     "custom/mail",
     "custom/video",
     "wlr/taskbar"
@@ -66,11 +65,6 @@
     "format": "\ue000",
     "tooltip-format": "Launcher",
     "on-click": "kestrel-launcher"
-  },
-  "custom/browser": {
-    "format": "\ue001",
-    "tooltip-format": "Browser",
-    "on-click": "kestrel-browser"
   },
   "custom/mail": {
     "format": "\ue002",

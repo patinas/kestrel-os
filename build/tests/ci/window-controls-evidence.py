@@ -37,7 +37,7 @@ key('alt','f10');time.sleep(3);shot('maximized-controls')
 key('ctrl','n');time.sleep(4);key('alt','f4');time.sleep(4);shot('close-window')
 
 key("meta_l");time.sleep(3);shot("launcher-grid");key("esc")
-key("alt","shift","s");time.sleep(3);shot("quick-settings");key("alt","f4")
+key("alt","shift","s");time.sleep(8);shot("quick-settings");key("alt","f4")
 key("alt","bracket_left");time.sleep(3);shot("snap-left");key("alt","equal");time.sleep(3);shot("shortcut-maximize")
 # Append to existing genuine QMP key evidence. Only isolated CI guest uses CDP.
 import websocket,random,string
@@ -71,7 +71,7 @@ def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}},{'type':'btn','data':{'down':True,'button':'left'}}]})
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
-key('alt','shift','s');time.sleep(3);shot('click-quick-before-all')
+key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
 key('ret');time.sleep(4);shot('click-all-settings-result')
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()

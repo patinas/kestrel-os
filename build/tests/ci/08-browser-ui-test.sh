@@ -22,7 +22,7 @@ qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
-for name in maximized-urlbar launcher-grid click-launcher-search quick-settings click-all-settings-result click-network click-advanced-off; do
+for name in maximized-urlbar launcher-grid click-launcher-search quick-settings click-quick-before-all click-all-settings-result click-network click-advanced-off click-final-desktop; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue
  convert "$image" -quality 48 "$VM/ui-$name.jpg"

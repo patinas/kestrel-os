@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import gi,subprocess
+import gi,subprocess,fcntl,os
 from pathlib import Path
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk,Gdk,GLib
 GLib.set_prgname("kestrel-quick-settings")
+lock=open(os.path.join(os.environ.get('XDG_RUNTIME_DIR','/tmp'),'kestrel-quick-settings.lock'),'w')
+try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+except BlockingIOError:raise SystemExit(0)
 class Panel(Gtk.Window):
  def __init__(self):
   super().__init__(title='Kestrel quick settings');self.set_default_size(400,420);self.set_resizable(False);self.set_keep_above(True)
