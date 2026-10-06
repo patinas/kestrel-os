@@ -11,7 +11,7 @@ on:
       - "build/tests/ci/window-controls-evidence.py"
       - "build/tests/ci/08-browser-ui-test.sh"
 permissions:
-  contents: read
+  contents: write   # only to push the ui-evidence branch; no other scope
 concurrency:
   group: browser-ui-test-${{ github.sha }}
   cancel-in-progress: false
@@ -28,4 +28,6 @@ jobs:
       - name: Build disposable UI test ISO
         run: build/tests/ci/01-build-iso.sh
       - name: Owner browser UI test (email PIN, 60 minutes)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: build/tests/ci/08-browser-ui-test.sh

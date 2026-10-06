@@ -21,9 +21,9 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
 qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
-python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
+python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" 2>&1 | tee -a "$VM/ui-log.txt" || test_status=$?
 # Interaction states + pixel-measured symmetry (hover, pressed, focus, dismiss/reopen, media keys). Runs even if the first script failed.
-python3 "$REPO/build/tests/ci/ui-states-evidence.py" "$VM" || { st=$?; [ "$test_status" != 0 ] || test_status=$st; }
+python3 "$REPO/build/tests/ci/ui-states-evidence.py" "$VM" 2>&1 | tee -a "$VM/ui-log.txt" || { st=$?; [ "$test_status" != 0 ] || test_status=$st; }
 for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-slider quick-mouse-mute quick-mouse-network quick-mouse-bluetooth quick-mouse-close click-all-settings-first click-all-settings-result settings-after-controls click-settings-closed click-network click-bluetooth click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue
@@ -39,6 +39,8 @@ for image in "$VM"/ui-st-*.ppm; do
 done
 [ ! -f "$VM/control-results.json" ] || cat "$VM/control-results.json"
 [ ! -f "$VM/ui-state-results.json" ] || { echo UI_STATE_RESULTS; cat "$VM/ui-state-results.json"; }
+# Publish evidence (public orphan branch) before pass/fail handling and before any tunnel opens. A publish failure is reported but does not hide the test result.
+bash "$REPO/build/tests/ci/publish-evidence.sh" || echo "EVIDENCE_PUBLISH_FAILED"
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 # Temporary owner-only download shares the same email-PIN gate, no artifact storage.
 WEB="$CI_DIR/protected-web";mkdir -p "$WEB/downloads";cp -a /usr/share/novnc/. "$WEB/"
