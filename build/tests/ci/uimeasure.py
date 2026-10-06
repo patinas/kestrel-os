@@ -25,7 +25,9 @@ def blocks(m,rowmin,box,rgap=2,cgap=2):
         for c0,c1 in runs(sub[r0:r1].sum(0),1,cgap):res.append([int(x1+c0),int(y1+r0),int(x1+c1),int(y1+r1)])
     return res
 def center(r): return ((r[0]+r[2])//2,(r[1]+r[3])//2)
-def qs_panel(img): return bbox(mask(img,'#f3f6fc',2,(640,0,1280,744)),8000)
+def qs_panel(img):
+    b=bbox(mask(img,'#f3f6fc',2,(640,0,1280,744)),8000)
+    return b if b and 356<=b[2]-b[0]<=364 else None   # a full-width page with the same colour (Settings) is not the 360 px panel
 def qs_layout(img):
     """quick settings: panel, tiles(2), mute, wide(All settings, Close) rects"""
     pan=qs_panel(img)

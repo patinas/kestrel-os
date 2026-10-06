@@ -75,9 +75,21 @@ def guest_click(x,y):
  time.sleep(.25)
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':True,'button':'left'}}]});time.sleep(.12)
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
+import re,math
+def fmt_audio(t):
+ m=re.search(r'Volume:\s*([\d.]+)',t)
+ if not m:return 'Unavailable'
+ v=str(math.floor(float(m.group(1))*100+0.5))+'%'
+ return 'Muted ('+v+')' if 'MUTED' in t else v
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
-key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
-L=uim.qs_layout(uim.load_ppm(v/'ui-click-quick-before-all.ppm'))
+def open_quick(name):
+ # Wait until the 360 px panel is really on screen before any click: a click sent while it was still starting landed on Chrome.
+ key('alt','shift','s')
+ for _ in range(20):
+  time.sleep(1.5);shot(name);lay=uim.qs_layout(uim.load_ppm(v/('ui-'+name+'.ppm')))
+  if lay and lay['mute'] and len(lay['tiles'])==2 and len(lay['wide'])==2:time.sleep(1);return lay
+ raise RuntimeError('quick settings panel did not appear')
+L=open_quick('click-quick-before-all')
 if not L or not L['mute'] or len(L['tiles'])!=2 or len(L['wide'])!=2:raise RuntimeError('quick settings layout not measurable: '+json.dumps(L))
 C=uim.center
 def live_audio():
@@ -89,7 +101,7 @@ before=live_audio();guest_click(C(L['tiles'][1])[0],C(L['mute'])[1]);after=live_
 before=live_audio();guest_click(*C(L['mute']));after=live_audio();record('Quick mute mouse effect',('MUTED' in before)!=('MUTED' in after));shot('quick-mouse-mute');guest_click(*C(L['mute']))
 guest_click(*C(L['tiles'][0]));shot('quick-mouse-network');key('alt','f4')
 guest_click(*C(L['tiles'][1]));shot('quick-mouse-bluetooth');key('alt','f4')
-guest_click(*C(L['wide'][1]));shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
+guest_click(*C(L['wide'][1]));shot('quick-mouse-close');L=open_quick('click-quick-reopened')
 # Keyboard activates the focused real All settings.
 
 guest_click(*C(L['wide'][0]));time.sleep(8);shot('click-all-settings-first');shot('click-all-settings-result')
@@ -105,7 +117,7 @@ for button in ['volume-up','volume-down','mute']:
  actual_before=live_audio()
  before=js("document.querySelector('#audio-state').textContent");click('button[onclick="callBridge(\'/'+button+'\')"]');js('refresh()');time.sleep(2)
  actual_after=live_audio();print('AUDIO_EFFECT',button,repr(actual_before),repr(actual_after),flush=True)
- record('Settings '+button+' effect',actual_before!=actual_after);js('refresh()');record('Settings '+button+' display',actual_after==js("document.querySelector('#audio-state').textContent"));shot('click-'+button)
+ record('Settings '+button+' effect',actual_before!=actual_after);js('refresh()');record('Settings '+button+' display',fmt_audio(actual_after)==js("document.querySelector('#audio-state').textContent"));shot('click-'+button)
 # Unmute again so the owner starts with normal audio state.
 click('button[onclick="callBridge(\'/mute\')"]');js('refresh()')
 record('Advanced initially off',not js("document.querySelector('#advanced').checked"));record('Terminal initially disabled',js("document.querySelector('#terminal').disabled"));shot('click-advanced-off')

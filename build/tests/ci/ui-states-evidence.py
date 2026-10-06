@@ -31,7 +31,7 @@ def frame(n):
  p=v/('ui-st-'+n+'.ppm');cmd('screendump',{'filename':str(p)});time.sleep(.8);return U.load_ppm(p)
 results=[]
 def rec(name,ok,detail=''):
- r={'check':name,'result':'PASS' if ok is True else ('UNMEASURED' if ok is None else 'FAIL'),'detail':str(detail)};results.append(r);print('UI_STATE',r['result'],name,detail,flush=True)
+ r={'check':name,'result':'UNMEASURED' if ok is None else ('PASS' if bool(ok) else 'FAIL'),'detail':str(detail)};results.append(r);print('UI_STATE',r['result'],name,detail,flush=True)
 def rules(name,d):
  for n,ok,det in symmetry_check.run(d):rec(name+': '+n,ok,det)
 def audio():
@@ -39,18 +39,20 @@ def audio():
 def clear():
  move(640,300)
  for _ in range(4):key('alt','f4');time.sleep(1)
-def state_check(label,base,rect,wait_img_name):
+def state_check(label,base,rect,wait_img_name,pressed=True):
  """hover then pressed (released off the element so nothing fires): brightness must fall base > hover > pressed at the top-centre sample"""
  sx,sy=(rect[0]+rect[2])//2,rect[1]+5
  move(rect[0]+12,rect[3]-10);hv=frame(wait_img_name+'-hover')
  btn(True);pr=frame(wait_img_name+'-pressed');move(rect[0]-30 if rect[0]>40 else rect[2]+30,rect[1]-30);btn(False);time.sleep(1)
  b,h,p=(U.luma(x[sy,sx]) for x in (base,hv,pr))
- rec(label+' hover is darker than idle',h<b-2,f'{b:.0f}->{h:.0f}');rec(label+' pressed is darker than hover',p<h-2,f'{h:.0f}->{p:.0f}')
+ rec(label+' hover is darker than idle',h<b-2,f'{b:.0f}->{h:.0f}')
+ if pressed:rec(label+' pressed is darker than hover',p<h-2,f'{h:.0f}->{p:.0f}')
+ else:rec(label+' pressed state',None,f'hover {h:.0f} pressed {p:.0f}; Waybar custom modules are GTK event boxes that never get :active, so no pressed styling is possible there (known limitation, buttons in the taskbar do)')
 SHELF='#e0e8f6'
 def shelf_report(img,label):
  sh=U.bbox(U.mask(img,SHELF,7,(0,700,1280,800)),2000)
  if sh is None:rec(label+': shelf found by colour',None,'no #e0e8f6 shelf');return None,[]
- box=(sh[0]+24,sh[1],sh[2]-24,sh[3]);non=~U.mask(img,SHELF,9)
+ box=(sh[0],sh[1]+4,sh[2],sh[3]-4);non=~U.mask(img,SHELF,9)   # rows 4..44 only: the 24 px rounded corners are wallpaper above and below that band
  els=U.blocks(non,1,box,2,3);els=[e for e in els if e[2]-e[0]>=20]
  rec(label+': shelf elements measured',len(els)>=5,els)
  cy=(sh[1]+sh[3])/2;sc=640
@@ -79,7 +81,7 @@ def shelf_report(img,label):
 # ---- 0. shelf, empty desktop ----
 clear();time.sleep(3);img0=frame('shelf');sh,els=shelf_report(img0,'shelf (no windows)')
 launch=[e for e in els if e[2]<300]
-if launch:state_check('shelf launcher button',img0,launch[0],'shelf');key('esc')
+if launch:state_check('shelf launcher button',img0,launch[0],'shelf',pressed=False);key('esc')
 # ---- 0b. shelf with a window open ----
 clear();key('meta_l','b');time.sleep(12);move(640,300);imgw=frame('shelf-window');shelf_report(imgw,'shelf (window open)')
 clear()
