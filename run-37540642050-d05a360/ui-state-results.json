@@ -1,0 +1,472 @@
+[
+ {
+  "check": "shelf (no windows): shelf elements measured",
+  "result": "PASS",
+  "detail": "[[33, 748, 56, 788], [596, 748, 636, 788], [644, 748, 684, 788], [1085, 748, 1134, 788], [1142, 748, 1201, 788], [1209, 748, 1247, 788]]"
+ },
+ {
+  "check": "shelf (no windows): every element is 40 px tall",
+  "result": "PASS",
+  "detail": "[40, 40, 40, 40, 40, 40]"
+ },
+ {
+  "check": "shelf (no windows): every element is vertically centred in the 48 px shelf",
+  "result": "PASS",
+  "detail": "[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"
+ },
+ {
+  "check": "shelf (no windows): icon buttons (left+centre) are one size",
+  "result": "FAIL",
+  "detail": "[(23, 40), (40, 40)]"
+ },
+ {
+  "check": "shelf (no windows): centre group is centred on the screen (+-2 px)",
+  "result": "PASS",
+  "detail": "centre 640.0 vs 640"
+ },
+ {
+  "check": "shelf (no windows): centre group gaps equal",
+  "result": "PASS",
+  "detail": "[8]"
+ },
+ {
+  "check": "shelf (no windows): right group gaps equal",
+  "result": "PASS",
+  "detail": "[8, 8]"
+ },
+ {
+  "check": "shelf (no windows): left margin == right margin inside shelf",
+  "result": "PASS",
+  "detail": "24 vs 24"
+ },
+ {
+  "check": "shelf (no windows): space left of centre group vs right of it (informational, centre is pinned to screen centre)",
+  "result": "PASS",
+  "detail": "540 vs 401"
+ },
+ {
+  "check": "shelf (no windows): glyph/text is centred inside its pill (+-2 px both axes)",
+  "result": "FAIL",
+  "detail": "[(-5.0, -2.5), (-3.0, -2.5), (-5.5, -3.0), (-0.5, 0.5), (-0.5, 0.0), (3.0, 0.5)]"
+ },
+ {
+  "check": "shelf (no windows): shelf left gutter == right gutter",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "shelf (no windows): shelf bottom gutter == side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "shelf (no windows): shelf height 48",
+  "result": "PASS",
+  "detail": "48"
+ },
+ {
+  "check": "shelf (no windows): shelf centered on screen",
+  "result": "PASS",
+  "detail": "640.0 vs 640.0"
+ },
+ {
+  "check": "shelf (no windows): shelf on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(1262, 48)"
+ },
+ {
+  "check": "shelf launcher button hover is darker than idle",
+  "result": "FAIL",
+  "detail": "219->209"
+ },
+ {
+  "check": "shelf launcher button pressed is darker than hover",
+  "result": "FAIL",
+  "detail": "209->209"
+ },
+ {
+  "check": "shelf (window open): shelf elements measured",
+  "result": "PASS",
+  "detail": "[[33, 748, 56, 788], [572, 748, 612, 788], [620, 748, 660, 788], [668, 748, 708, 788], [1085, 748, 1134, 788], [1142, 748, 1201, 788], [1209, 748, 1247, 788]]"
+ },
+ {
+  "check": "shelf (window open): every element is 40 px tall",
+  "result": "PASS",
+  "detail": "[40, 40, 40, 40, 40, 40, 40]"
+ },
+ {
+  "check": "shelf (window open): every element is vertically centred in the 48 px shelf",
+  "result": "PASS",
+  "detail": "[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"
+ },
+ {
+  "check": "shelf (window open): icon buttons (left+centre) are one size",
+  "result": "FAIL",
+  "detail": "[(23, 40), (40, 40)]"
+ },
+ {
+  "check": "shelf (window open): centre group is centred on the screen (+-2 px)",
+  "result": "PASS",
+  "detail": "centre 640.0 vs 640"
+ },
+ {
+  "check": "shelf (window open): centre group gaps equal",
+  "result": "PASS",
+  "detail": "[8, 8]"
+ },
+ {
+  "check": "shelf (window open): right group gaps equal",
+  "result": "PASS",
+  "detail": "[8, 8]"
+ },
+ {
+  "check": "shelf (window open): left margin == right margin inside shelf",
+  "result": "PASS",
+  "detail": "24 vs 24"
+ },
+ {
+  "check": "shelf (window open): space left of centre group vs right of it (informational, centre is pinned to screen centre)",
+  "result": "PASS",
+  "detail": "516 vs 377"
+ },
+ {
+  "check": "shelf (window open): glyph/text is centred inside its pill (+-2 px both axes)",
+  "result": "FAIL",
+  "detail": "[(-5.0, -2.5), (-3.0, -2.5), (-5.5, -3.0), (0.0, 0.0), (-0.5, 0.5), (-0.5, 0.0), (3.0, 0.5)]"
+ },
+ {
+  "check": "shelf (window open): shelf left gutter == right gutter",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "shelf (window open): shelf bottom gutter == side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "shelf (window open): shelf height 48",
+  "result": "PASS",
+  "detail": "48"
+ },
+ {
+  "check": "shelf (window open): shelf centered on screen",
+  "result": "PASS",
+  "detail": "640.0 vs 640.0"
+ },
+ {
+  "check": "shelf (window open): shelf on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(1262, 48)"
+ },
+ {
+  "check": "panel rect",
+  "result": "PASS",
+  "detail": "[912, 316, 1272, 736]"
+ },
+ {
+  "check": "quick: 2 tiles, Mute, All settings, Close found",
+  "result": "PASS",
+  "detail": "{'panel': [912, 316, 1272, 736], 'tiles': [[921, 362, 1087, 423], [1097, 362, 1263, 423]], 'mute': [921, 490, 1087, 535], 'wide': [[921, 601, 1263, 647], [921, 658, 1263, 703]]}"
+ },
+ {
+  "check": "quick: shelf left gutter == right gutter",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "quick: shelf bottom gutter == side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "quick: shelf height 48",
+  "result": "PASS",
+  "detail": "48"
+ },
+ {
+  "check": "quick: shelf centered on screen",
+  "result": "PASS",
+  "detail": "640.0 vs 640.0"
+ },
+ {
+  "check": "quick: panel bottom gap above shelf == shelf side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "quick: panel right gutter == shelf right gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "quick: panel width 360",
+  "result": "PASS",
+  "detail": "360"
+ },
+ {
+  "check": "quick: panel tiles same size",
+  "result": "PASS",
+  "detail": "[(166, 61)]"
+ },
+ {
+  "check": "quick: panel tiles column pitch equal",
+  "result": "PASS",
+  "detail": "[176]"
+ },
+ {
+  "check": "quick: panel tiles row pitch equal",
+  "result": "PASS",
+  "detail": "[]"
+ },
+ {
+  "check": "quick: panel_tiles left inset == right inset inside panel",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "quick: shelf on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(1262, 48)"
+ },
+ {
+  "check": "quick: panel on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(360, 420)"
+ },
+ {
+  "check": "quick: tile row, Mute+slider row and wide buttons share the same left and right edges",
+  "result": "PASS",
+  "detail": "tiles (921, 1263), mute 921, wide [(921, 1263), (921, 1263)]"
+ },
+ {
+  "check": "quick: Mute width == tile width (aligned to tile column)",
+  "result": "PASS",
+  "detail": "(166, 166)"
+ },
+ {
+  "check": "quick: Mute, All settings and Close are all 48 px tall",
+  "result": "PASS",
+  "detail": "[45, 46, 45]"
+ },
+ {
+  "check": "quick: wide button 0 left inset == right inset in panel",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "quick: wide button 1 left inset == right inset in panel",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "quick: panel has no titlebar (top of panel is the Quick settings heading)",
+  "result": "PASS",
+  "detail": "[912, 316, 1272, 736]"
+ },
+ {
+  "check": "quick Network tile hover is darker than idle",
+  "result": "FAIL",
+  "detail": "233->230"
+ },
+ {
+  "check": "quick Network tile pressed is darker than hover",
+  "result": "FAIL",
+  "detail": "230->214"
+ },
+ {
+  "check": "quick panel still open after a cancelled press (no accidental click)",
+  "result": "PASS",
+  "detail": ""
+ },
+ {
+  "check": "quick focus ring visible after Tab",
+  "result": "PASS",
+  "detail": "1133"
+ },
+ {
+  "check": "quick Mute button toggles real mute state",
+  "result": "PASS",
+  "detail": "'Volume: 0.49'->'Volume: 0.49 [MUTED]'"
+ },
+ {
+  "check": "quick Close button dismisses panel",
+  "result": "PASS",
+  "detail": ""
+ },
+ {
+  "check": "quick panel reopens at the same rect",
+  "result": "PASS",
+  "detail": "[912, 316, 1272, 736] vs [912, 316, 1272, 736]"
+ },
+ {
+  "check": "quick panel Escape dismisses",
+  "result": "PASS",
+  "detail": ""
+ },
+ {
+  "check": "quick All settings closes the panel",
+  "result": "FAIL",
+  "detail": "[640, 72, 1227, 711]"
+ },
+ {
+  "check": "quick All settings opens the Settings page",
+  "result": "PASS",
+  "detail": "['http://127.0.0.1:8765/#settings', 'chrome://omnibox-popup.top-chrome/', 'chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html']"
+ },
+ {
+  "check": "launcher rect",
+  "result": "PASS",
+  "detail": "[320, 256, 960, 736]"
+ },
+ {
+  "check": "launcher is 640x480 with no titlebar",
+  "result": "PASS",
+  "detail": "(640, 480)"
+ },
+ {
+  "check": "launcher tiles measured (5 expected)",
+  "result": "PASS",
+  "detail": "[[387, 372, 503, 512], [517, 372, 633, 512], [647, 372, 763, 512], [777, 372, 893, 512], [582, 526, 698, 666]]"
+ },
+ {
+  "check": "launcher: shelf left gutter == right gutter",
+  "result": "PASS",
+  "detail": "9 vs 9"
+ },
+ {
+  "check": "launcher: shelf bottom gutter == side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "launcher: shelf height 48",
+  "result": "PASS",
+  "detail": "48"
+ },
+ {
+  "check": "launcher: shelf centered on screen",
+  "result": "PASS",
+  "detail": "640.0 vs 640.0"
+ },
+ {
+  "check": "launcher: launcher tiles same size",
+  "result": "PASS",
+  "detail": "[(116, 140)]"
+ },
+ {
+  "check": "launcher: launcher tiles column pitch equal",
+  "result": "PASS",
+  "detail": "[130, 130, 130]"
+ },
+ {
+  "check": "launcher: launcher tiles row pitch equal",
+  "result": "PASS",
+  "detail": "[]"
+ },
+ {
+  "check": "launcher: launcher_tiles left inset == right inset inside launcher",
+  "result": "PASS",
+  "detail": "67 vs 67"
+ },
+ {
+  "check": "launcher: shelf on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(1262, 48)"
+ },
+ {
+  "check": "launcher: launcher on 8 px grid (+-2 px for anti-aliased edges)",
+  "result": "PASS",
+  "detail": "(640, 480)"
+ },
+ {
+  "check": "launcher: all tiles are one size",
+  "result": "PASS",
+  "detail": "[(116, 140)]"
+ },
+ {
+  "check": "launcher is centred horizontally on the screen (+-1 px)",
+  "result": "PASS",
+  "detail": "640.0"
+ },
+ {
+  "check": "launcher bottom gap above shelf == shelf side gutter",
+  "result": "PASS",
+  "detail": "8 vs 9"
+ },
+ {
+  "check": "launcher: short last row is centred in the window",
+  "result": "PASS",
+  "detail": "640.0 vs 640.0"
+ },
+ {
+  "check": "launcher tile hover is darker than idle",
+  "result": "FAIL",
+  "detail": "233->218"
+ },
+ {
+  "check": "launcher tile pressed is darker than hover",
+  "result": "FAIL",
+  "detail": "218->193"
+ },
+ {
+  "check": "launcher still open after cancelled press",
+  "result": "PASS",
+  "detail": ""
+ },
+ {
+  "check": "launcher search \"mail\" leaves exactly 1 tile",
+  "result": "PASS",
+  "detail": "[[582, 372, 698, 512]]"
+ },
+ {
+  "check": "launcher filtered tile is centred",
+  "result": "PASS",
+  "detail": "640.0"
+ },
+ {
+  "check": "launcher Escape dismisses",
+  "result": "PASS",
+  "detail": ""
+ },
+ {
+  "check": "launcher reopens at the same rect",
+  "result": "PASS",
+  "detail": "[320, 256, 960, 736] vs [320, 256, 960, 736]"
+ },
+ {
+  "check": "media key Volume Down changes real volume",
+  "result": "PASS",
+  "detail": "'Volume: 0.49'->'Volume: 0.39'"
+ },
+ {
+  "check": "media key Volume Up restores volume",
+  "result": "PASS",
+  "detail": "'Volume: 0.39'->'Volume: 0.49'"
+ },
+ {
+  "check": "media key Mute toggles real mute state",
+  "result": "PASS",
+  "detail": "'Volume: 0.49'->'Volume: 0.49 [MUTED]'"
+ },
+ {
+  "check": "Brightness keys not exercised here",
+  "result": "UNMEASURED",
+  "detail": "UNMEASURED by design"
+ },
+ {
+  "check": "Play/Pause/Next/Prev keys not exercised here",
+  "result": "UNMEASURED",
+  "detail": "UNMEASURED by design"
+ },
+ {
+  "check": "Taskbar click/middle-click close not exercised here",
+  "result": "UNMEASURED",
+  "detail": "UNMEASURED by design"
+ },
+ {
+  "check": "Titlebar buttons by mouse (keyboard equivalents covered in window-controls-evidence) not exercised here",
+  "result": "UNMEASURED",
+  "detail": "UNMEASURED by design"
+ }
+]
