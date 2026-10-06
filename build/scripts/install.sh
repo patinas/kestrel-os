@@ -25,8 +25,30 @@ R1=513; R2=$(( R1 + ROOT_GIB*1024 )); R3=$(( R2 + ROOT_GIB*1024 ))
 # Preflight before touching the disk: package list, pacman.conf (multilib + signatures), overlay files
 PKGLIST="$SRC/usr/share/kestrel/packages.installed.txt"
 [ -r "$PKGLIST" ] || die "missing $PKGLIST"
+# Launchers are explicit installer choices; no proprietary Steam binary in base ISO.
+GAMES=${KESTREL_GAME_LAUNCHERS:-none}
+if [ "${KESTREL_INTERACTIVE:-no}" = yes ]; then
+  printf 'Optional game launchers (none/steam/lutris/both), default none: '
+  read -r GAMES; GAMES=${GAMES:-none}
+fi
+case "$GAMES" in
+ none) EXTRA=;;
+ lutris) EXTRA=lutris;;
+ steam|both)
+  printf 'Steam is proprietary. Read https://store.steampowered.com/subscriber_agreement/ before using it.\n'
+  [ "${KESTREL_STEAM_TERMS_ACCEPTED:-no}" = yes ] || die 'Steam selection requires explicit KESTREL_STEAM_TERMS_ACCEPTED=yes from the local user'
+  EXTRA=steam; [ "$GAMES" != both ] || EXTRA="steam lutris";;
+ *) die 'launcher choices: none/steam/lutris/both';;
+esac
 PKGS=$(grep -vE '^\s*(#|$)' "$PKGLIST" | sort -u | tr '\n' ' ')
 [ -n "$PKGS" ] || die "empty package list"
+PKGS="$PKGS $EXTRA"
+# 32-bit graphics libraries are only needed for Steam/Wine, so they are not in the base ISO or base install.
+if [ "$GAMES" != none ]; then
+  GAMESLIST="$SRC/usr/share/kestrel/packages.games.txt"
+  [ -r "$GAMESLIST" ] || die "missing $GAMESLIST"
+  PKGS="$PKGS $(grep -vE '^\s*(#|$)' "$GAMESLIST" | sort -u | tr '\n' ' ')"
+fi
 PCONF=${KESTREL_PACMAN_CONF:-/etc/pacman.conf}
 grep -Eq '^\[multilib\]' "$PCONF" || die "$PCONF has no [multilib] section"
 grep -Eq '^SigLevel *= *Required' "$PCONF" || die "$PCONF does not require package signatures"
@@ -50,12 +72,15 @@ pacman-key --populate archlinux
 # one transaction, full authoritative list, signatures required, multilib enabled
 # shellcheck disable=SC2086
 pacstrap -C "$PCONF" "$T" $PKGS
+mkdir -p "$T/usr/share/kestrel"
+printf "%s\n" "$GAMES" > "$T/usr/share/kestrel/game-launchers.selected"
+arch-chroot "$T" pacman -Qq > "$T/usr/share/kestrel/packages.actual.txt"
 cp "$PCONF" "$T/etc/pacman.conf"; cp /etc/pacman.d/mirrorlist "$T/etc/pacman.d/mirrorlist"
 USED=$(df --output=pcent "$T" | tail -1 | tr -dc 0-9)
 echo "root slot usage after install: ${USED}% of ${ROOT_GIB} GiB"
 [ "$USED" -lt 85 ] || die "installed root uses ${USED}% of the slot; raise KESTREL_ROOT_GIB"
 # 2. Kestrel overlay: shell, scripts, services, user
-for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/chromium etc/os-release etc/hostname etc/skel; do
+for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/sudoers.d etc/pam.d/kestrel-sudo etc/os-release etc/hostname etc/skel; do
   [ -e "$SRC/$p" ] && { mkdir -p "$T/$(dirname "$p")"; cp -a "$SRC/$p" "$T/$(dirname "$p")/"; }
 done
 find "$T/usr/local/bin" -maxdepth 1 -type f -name "kestrel-*" -exec chmod 755 {} +
@@ -86,6 +111,10 @@ if [ -n "${KESTREL_UPDATE_PUB:-}" ]; then
   install -m 644 "$KESTREL_UPDATE_PUB" "$T/etc/kestrel/update.pub"
   echo "TEST-ONLY key installed by installer; replace with a release key before any real use" > "$T/etc/kestrel/update.pub.TESTONLY"
 fi
+# Persist advanced state without unlocking either root slot.
+mkdir -p "$T/var/lib/kestrel"
+printf "# Advanced access disabled\n" > "$T/var/lib/kestrel/sudoers"
+chmod 440 "$T/var/lib/kestrel/sudoers"
 # 3. fstab: root read-only, /var and /home on writable kdata
 cat > "$T/etc/fstab" <<F
 # root mounted ro by kernel cmdline
