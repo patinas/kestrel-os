@@ -3,6 +3,13 @@ name: browser-ui-test
 # No secrets, paid runner, artifact uploads, cache or public release.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/browser-ui-test.yml"
+      - "build/tests/ci/ui-states-evidence.py"
+      - "build/tests/ci/window-controls-evidence.py"
+      - "build/tests/ci/08-browser-ui-test.sh"
 permissions:
   contents: read
 concurrency:
