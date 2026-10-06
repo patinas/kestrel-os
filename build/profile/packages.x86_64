@@ -105,3 +105,12 @@ socat
 # Native graphical wireless settings
 blueman
 python-dbus
+
+# GPU: video decode, diagnostics, vendor-neutral loaders
+libva-nvidia-driver
+intel-media-driver
+vulkan-tools
+libva-utils
+mesa-utils
+vulkan-icd-loader
+pciutils

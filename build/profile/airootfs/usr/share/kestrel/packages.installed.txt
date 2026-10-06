@@ -27,6 +27,7 @@ gnupg
 grim
 gtk3
 hicolor-icon-theme
+intel-media-driver
 intel-ucode
 iwd
 labwc
@@ -40,6 +41,8 @@ libcups
 libdrm
 libnotify
 libva-mesa-driver
+libva-nvidia-driver
+libva-utils
 libx11
 libxcb
 libxcomposite
@@ -53,6 +56,7 @@ linux
 linux-firmware
 mangohud
 mesa
+mesa-utils
 minisign
 mkinitcpio
 nano
@@ -65,6 +69,7 @@ nvidia-utils
 pango
 papirus-icon-theme
 parted
+pciutils
 pipewire
 pipewire-pulse
 playerctl
@@ -79,9 +84,11 @@ sof-firmware
 sudo
 swaybg
 ttf-liberation
+vulkan-icd-loader
 vulkan-intel
 vulkan-nouveau
 vulkan-radeon
+vulkan-tools
 waybar
 wireplumber
 wofi

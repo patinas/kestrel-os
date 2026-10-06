@@ -102,3 +102,7 @@ https://github.com/patinas/kestrel-os/actions/runs/37166402488 (e14c97b) succeed
 ISO: kestrel-os-2026.10.04-x86_64.iso, 2,747,412,480 bytes. SHA256: 137f564683a05452750571e6f91ae8db2ea60f5fa9ea6d30e39f7e0f653a61ae. Part00 SHA256: 48af8d3259c8388276a13f7d9bdc519ce358b61098ff8f2917ed15c84623d0fd. Part01 SHA256: f1c5d4649027ad032be85e54133cd191323a48e4fc7f05068072a3861ce9388f. Parts were split at 1,900 MiB, each below 2 GiB, and recombination matched the ISO hash. Run 1 failed because its broad glob included the checksum file; run 2 fixed that.
 
 These bytes were runner-local and were not retained or published. There is no download link. The build-only workflow has contents:read and no release/artifact/cache uploads. After explicit publication approval, a fresh build can use split GitHub release assets, with new checksums and boot verification. Rolling Arch inputs mean the later ISO hash will differ. GitHub documents each asset must be under 2 GiB, with no total release-size or bandwidth limit: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases.
+
+## GPU selection (logic only)
+
+`build/tests/gpu/gpu-select-test.sh` runs `kestrel-gpu-select` against stubbed lspci/modinfo/lsmod/modprobe and a fake sysfs (8 cases: AMD, NVIDIA supported/new/unsupported, modprobe failure, nouveau busy, hybrid, mixed desktop). It proves the decision logic. It does not prove that amdgpu, nvidia-open or NVK load or render on real hardware.

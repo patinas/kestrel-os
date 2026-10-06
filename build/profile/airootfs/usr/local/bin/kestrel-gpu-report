@@ -1,0 +1,12 @@
+#!/bin/sh
+# Best-effort GPU diagnostics into /run/kestrel-gpu-report.txt (read by the boot assessment and bug reports).
+OUT="${KESTREL_RUN:-/run}/kestrel-gpu-report.txt"
+{
+  echo "== stack"; cat "${KESTREL_RUN:-/run}/kestrel-gpu" 2>/dev/null
+  echo "== lspci"; lspci -nnk 2>&1 | grep -A3 -Ei 'VGA|3D|Display'
+  echo "== modules"; lsmod | grep -Ei '^(amdgpu|nouveau|nvidia|i915|xe) '
+  echo "== nvidia-open"; modinfo -F version nvidia 2>&1
+  echo "== vulkan"; timeout 15 vulkaninfo --summary 2>&1 | head -40
+  echo "== vaapi"; timeout 15 vainfo 2>&1 | head -20
+} > "$OUT" 2>&1
+chmod 644 "$OUT"

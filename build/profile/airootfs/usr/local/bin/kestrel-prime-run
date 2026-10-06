@@ -1,0 +1,9 @@
+#!/bin/sh
+# Run a program on the discrete GPU on hybrid systems. Usage: kestrel-prime-run <command> [args]
+[ $# -gt 0 ] || { echo "usage: kestrel-prime-run <command> [args]" >&2; exit 2; }
+if [ "$(cat /run/kestrel-gpu 2>/dev/null)" = nvidia-open ]; then
+  export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only
+else
+  export DRI_PRIME=1
+fi
+exec "$@"

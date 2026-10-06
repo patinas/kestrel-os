@@ -5,7 +5,9 @@ export WLR_NO_HARDWARE_CURSORS=1
 if [ -n "$(systemd-detect-virt --vm 2>/dev/null | grep -v none)" ]; then
   export WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1
 fi
-if [ "$(cat /run/kestrel-gpu 2>/dev/null)" = nvidia-open ]; then
+[ -r /run/kestrel-gpu.env ] && { set -a; . /run/kestrel-gpu.env; set +a; }
+# NVIDIA userspace for the whole session only when the NVIDIA card drives the display; on hybrid systems it stays an offload GPU (kestrel-prime-run).
+if [ "$(cat /run/kestrel-gpu 2>/dev/null)" = nvidia-open ] && [ "${KESTREL_PRIMARY_VENDOR:-0x10de}" = 0x10de ]; then
   export GBM_BACKEND=nvidia-drm __GLX_VENDOR_LIBRARY_NAME=nvidia WLR_NO_HARDWARE_CURSORS=1
 fi
 # User must accept Google terms locally. No Chromium fallback is launched.

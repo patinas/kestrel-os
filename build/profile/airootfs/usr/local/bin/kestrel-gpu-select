@@ -1,12 +1,76 @@
 #!/bin/sh
-# Runs as ROOT from kestrel-gpu-select.service at boot; writes /run/kestrel-gpu for the session to read.
+# Runs as ROOT from kestrel-gpu-select.service at boot.
+# Writes /run/kestrel-gpu (stack name) and /run/kestrel-gpu.env (session variables).
+# Env overrides exist only for tests: KESTREL_RUN, KESTREL_SYSFS, KESTREL_PERSIST.
+RUN="${KESTREL_RUN:-/run}"
+SYSFS="${KESTREL_SYSFS:-/sys}"
+PERSIST="${KESTREL_PERSIST:-/etc/modprobe.d}"
+LOG="$RUN/kestrel-gpu.log"
+log() { printf '%s\n' "$*" >> "$LOG"; }
+: > "$LOG"
+
+nv_ids=$(lspci -nn 2>/dev/null | grep -Ei 'VGA|3D|Display' | grep -i '\[10de:' | sed -n 's/.*\[10de:\([0-9a-fA-F]\{4\}\)\].*/\1/p')
+
+# nvidia-open supports a GPU if the module lists its PCI id. Fallback heuristic only when the alias list is unreadable.
+supports_open() {
+  id=$(printf '%s' "$1" | tr 'a-f' 'A-F')
+  aliases=$(modinfo -F alias nvidia 2>/dev/null)
+  if [ -n "$aliases" ]; then
+    printf '%s\n' "$aliases" | grep -qi "pci:v000010DEd0000${id}sv" && return 0
+    return 1
+  fi
+  log "nvidia alias list unreadable, using heuristic for $1"
+  printf '%s' "$1" | grep -Eiq '^(1e|1f|2[0-9a-f])'
+}
+
 out=mesa
-if lspci -nn | grep -qi 'nvidia'; then
-  # Turing (RTX 16/20) and newer expose GSP firmware and work with nvidia-open (heuristic: device id prefixes 1e,1f,20-28).
-  if lspci -nn | grep -Eiq 'NVIDIA.*\[10de:(1e|1f|2[0-8])'; then
-    if modprobe nvidia_drm modeset=1 2>/dev/null; then out=nvidia-open; else out=nouveau-nvk; fi
+nvidia_all_open=1
+nvidia_any=0
+for id in $nv_ids; do
+  nvidia_any=1
+  if supports_open "$id"; then log "nvidia $id: nvidia-open supported"; else log "nvidia $id: not in nvidia-open list"; nvidia_all_open=0; fi
+done
+
+if [ "$nvidia_any" = 1 ]; then
+  if [ "$nvidia_all_open" = 1 ]; then
+    # nouveau must not own the card. Try to unload it; if it is busy the stack falls back to NVK.
+    if lsmod | grep -q '^nouveau'; then rmmod nouveau 2>>"$LOG" || log "nouveau busy"; fi
+    if lsmod | grep -q '^nouveau'; then
+      out=nouveau-nvk
+    elif modprobe nvidia_drm modeset=1 fbdev=1 2>>"$LOG"; then
+      out=nvidia-open
+      # Make it stick for next boot so nouveau never binds first (initramfs may need regeneration: verify on hardware).
+      printf 'blacklist nouveau\noptions nouveau modeset=0\n' > "$PERSIST/kestrel-nouveau-blacklist.conf" 2>/dev/null || log "could not persist nouveau blacklist"
+    else
+      out=nouveau-nvk
+    fi
   else
     out=nouveau-nvk
   fi
 fi
-echo "$out" > /run/kestrel-gpu; chmod 644 /run/kestrel-gpu
+
+# Pick the compositor GPU: boot VGA card, but on mixed iGPU+NVIDIA systems prefer the non-NVIDIA card.
+primary=""; primary_vendor=""; ncards=0; boot=""; boot_vendor=""; other=""; other_vendor=""
+for c in "$SYSFS"/class/drm/card[0-9]*; do
+  [ -e "$c/device/vendor" ] || continue
+  case "$c" in *-*) continue;; esac
+  ncards=$((ncards+1))
+  v=$(cat "$c/device/vendor"); pci=$(basename "$(readlink -f "$c/device")")
+  node="/dev/dri/by-path/pci-${pci}-card"
+  if [ "$(cat "$c/device/boot_vga" 2>/dev/null)" = 1 ]; then boot="$node"; boot_vendor="$v"; fi
+  if [ "$v" != 0x10de ] && [ -z "$other" ]; then other="$node"; other_vendor="$v"; fi
+done
+if [ "$ncards" -gt 1 ] && [ -n "$other" ] && [ "$nvidia_any" = 1 ]; then primary="$other"; primary_vendor="$other_vendor"
+elif [ -n "$boot" ]; then primary="$boot"; primary_vendor="$boot_vendor"; fi
+log "stack=$out cards=$ncards primary=$primary vendor=$primary_vendor"
+
+echo "$out" > "$RUN/kestrel-gpu"; chmod 644 "$RUN/kestrel-gpu"
+{
+  echo "KESTREL_GPU_STACK=$out"
+  echo "KESTREL_GPU_COUNT=$ncards"
+  echo "KESTREL_PRIMARY_VENDOR=$primary_vendor"
+  [ "$ncards" -gt 1 ] && [ -n "$primary" ] && echo "WLR_DRM_DEVICES=$primary"
+} > "$RUN/kestrel-gpu.env"
+chmod 644 "$RUN/kestrel-gpu.env"
+[ -x /usr/local/bin/kestrel-gpu-report ] && /usr/local/bin/kestrel-gpu-report >/dev/null 2>&1 &
+exit 0
