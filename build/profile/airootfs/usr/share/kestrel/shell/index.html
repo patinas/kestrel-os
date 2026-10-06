@@ -52,7 +52,7 @@ function fmtNet(t){for(const l of String(t).split('\n')){const f=l.split(/(?<!\\
 function fmtAudio(t){const m=String(t).match(/Volume:\s*([\d.]+)/);if(!m)return 'Unavailable';const v=Math.round(parseFloat(m[1])*100)+'%';return /MUTED/.test(t)?'Muted ('+v+')':v}
 let refreshing=null;async function refresh(){if(refreshing)return refreshing;refreshing=(async()=>{let s=await(await fetch('/status')).json();document.getElementById('advanced').checked=s.enabled;document.getElementById('terminal').disabled=!s.enabled;document.getElementById('state').textContent=s.enabled?'Advanced access on':'Advanced access off';
  document.getElementById('network-state').textContent=fmtNet(s.network);
- document.getElementById('bluetooth-state').textContent=(s.bluetooth.includes('Controller ')?s.bluetooth:'No Bluetooth adapter detected')+(s.bluetooth_connections?'\n'+s.bluetooth_connections:'');
+ {const adapter=s.bluetooth.includes('Controller ');const n=(s.bluetooth_connections||'').split('\n').filter(l=>l.startsWith('Device ')).length;document.getElementById('bluetooth-state').textContent=adapter?('Adapter ready'+(n?' - '+n+' connected':' - nothing connected')):'No Bluetooth adapter detected';}
 
  document.getElementById('audio-state').textContent=fmtAudio(s.audio);
  document.getElementById('battery-state').textContent=s.battery=='No battery'?'No battery detected':s.battery;

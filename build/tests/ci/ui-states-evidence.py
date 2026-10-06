@@ -52,8 +52,7 @@ SHELF='#e0e8f6'
 def shelf_report(img,label):
  sh=U.bbox(U.mask(img,SHELF,7,(0,700,1280,800)),2000)
  if sh is None:rec(label+': shelf found by colour',None,'no #e0e8f6 shelf');return None,[]
- box=(sh[0],sh[1]+4,sh[2],sh[3]-4);non=~U.mask(img,SHELF,9)   # rows 4..44 only: the 24 px rounded corners are wallpaper above and below that band
- els=U.blocks(non,1,box,2,3);els=[e for e in els if e[2]-e[0]>=20]
+ els=U.shelf_elements(img,sh)
  rec(label+': shelf elements measured',len(els)>=5,els)
  cy=(sh[1]+sh[3])/2;sc=640
  rec(label+': every element is 40 px tall',all(abs((e[3]-e[1])-40)<=1 for e in els),[e[3]-e[1] for e in els])
@@ -75,6 +74,19 @@ def shelf_report(img,label):
   if g:off.append((round((g[0]+g[2])/2-(e[0]+e[2])/2,1),round((g[1]+g[3])/2-(e[1]+e[3])/2,1)))
   else:off.append(None)
  rec(label+': glyph/text is centred inside its pill (+-2 px both axes)',all(o is not None and abs(o[0])<=2 and abs(o[1])<=2 for o in off),off)
+ act=[e for e in centre if np.all(np.abs(img[(e[1]+e[3])//2,e[0]+2]-np.array(U.hexc('#a6c4eb')))<=14)] if centre else []
+ if 'window open' in label:
+  if not act:rec(label+': active taskbar button found by its #a6c4eb highlight',None,'none of the centre elements has the active fill')
+  else:
+   a=act[0];ink=np.abs(img[a[1]+2:a[3]-2,a[0]+2:a[2]-2]-np.array(U.hexc('#a6c4eb'))).sum(2)>90;ys,xs=np.where(ink)
+   if len(xs)<50:rec(label+': active taskbar icon measurable',None,'no icon ink')
+   else:
+    ib=[a[0]+2+int(xs.min()),a[1]+2+int(ys.min()),a[0]+2+int(xs.max())+1,a[1]+2+int(ys.max())+1];dx=(ib[0]+ib[2])/2-(a[0]+a[2])/2;dy=(ib[1]+ib[3])/2-(a[1]+a[3])/2
+    rec(label+': active taskbar icon is centred in its highlight (+-1 px both axes)',abs(dx)<=1 and abs(dy)<=1,f'highlight {a} icon {ib} offset ({dx:+.1f},{dy:+.1f})')
+    rec(label+': active highlight is 40x40 and centred in the shelf',abs((a[2]-a[0])-40)<=1 and abs((a[3]-a[1])-40)<=1 and abs((a[1]+a[3])/2-cy)<=1,a)
+    ring=img[a[1]-3:a[3]+3,a[0]-3:a[2]+3];halo=np.abs(ring-np.array(U.hexc(SHELF))).sum(2)
+    cols=np.where((halo>30).sum(0)>0)[0];rows=np.where((halo>30).sum(1)>0)[0]
+    if len(cols):rec(label+': no shadow or halo outside the highlight (equal margin left/right and top/bottom)',abs((cols.min()+a[0]-3)-a[0])<=1 and abs((cols.max()+1+a[0]-3)-a[2])<=1 and abs((rows.min()+a[1]-3)-a[1])<=1 and abs((rows.max()+1+a[1]-3)-a[3])<=1,f'halo x {cols.min()+a[0]-3}..{cols.max()+1+a[0]-3} y {rows.min()+a[1]-3}..{rows.max()+1+a[1]-3} vs highlight {a}')
  d={'screen':[0,0,1280,800],'shelf':sh}
  rules(label,d)
  return sh,els

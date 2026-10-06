@@ -19,6 +19,15 @@ def runs(a,minv,gap=1):
         if out and i-out[-1][1]<=gap:out[-1][1]=i
         else:out.append([i,i])
     return [(a0,a1+1) for a0,a1 in out]
+def shelf_elements(img,sh,shelf_hex='#e0e8f6'):
+    """Pills on the shelf. X extents come from a 8 px band at the vertical middle, where the shelf's rounded caps are square, then Y extents are read per element."""
+    non=~mask(img,shelf_hex,9);mid=(sh[1]+sh[3])//2
+    out=[]
+    for e in blocks(non,1,(sh[0],mid-4,sh[2],mid+4),1,3):
+        if e[2]-e[0]<20:continue
+        col=non[sh[1]+4:sh[3]-4,e[0]:e[2]];ys=np.where(col.sum(1)>=0.6*(e[2]-e[0]))[0]
+        if len(ys):out.append([e[0],int(sh[1]+4+ys.min()),e[2],int(sh[1]+4+ys.max()+1)])
+    return out
 def blocks(m,rowmin,box,rgap=2,cgap=2):
     x1,y1,x2,y2=box;sub=m[y1:y2,x1:x2];res=[]
     for r0,r1 in runs(sub.sum(1),rowmin,rgap):
@@ -26,8 +35,12 @@ def blocks(m,rowmin,box,rgap=2,cgap=2):
     return res
 def center(r): return ((r[0]+r[2])//2,(r[1]+r[3])//2)
 def qs_panel(img):
-    b=bbox(mask(img,'#f3f6fc',2,(640,0,1280,744)),8000)
-    return b if b and 356<=b[2]-b[0]<=364 else None   # a full-width page with the same colour (Settings) is not the 360 px panel
+    """360 px quick-settings panel by its fill colour. Rows/columns need many matching pixels, so stray page pixels of a similar colour cannot stretch the box."""
+    m=mask(img,'#f3f6fc',3,(880,0,1280,744))
+    rows=np.where(m.sum(1)>=200)[0];cols=np.where(m.sum(0)>=150)[0]
+    if len(rows)<100 or len(cols)<300:return None
+    b=[int(cols.min()+0),int(rows.min()),int(cols.max()+1),int(rows.max()+1)]
+    return b if 352<=b[2]-b[0]<=368 else None
 def qs_layout(img):
     """quick settings: panel, tiles(2), mute, wide(All settings, Close) rects"""
     pan=qs_panel(img)
