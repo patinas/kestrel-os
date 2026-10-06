@@ -1,0 +1,75 @@
+CONTROL_RESULT Quick slider mouse effect PASS
+CONTROL_RESULT Quick mute mouse effect PASS
+UI_STATE PASS shelf rect [9, 744, 1271, 792]
+UI_STATE PASS shelf icon buttons measured [[16, 748, 60, 788], [592, 748, 636, 788], [644, 748, 688, 788], [1085, 748, 1134, 788], [1209, 748, 1264, 788]]
+UI_STATE PASS shelf: shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS shelf: shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS shelf: shelf height 48 48
+UI_STATE PASS shelf: shelf centered on screen 640.0 vs 640.0
+UI_STATE FAIL shelf: shelf icons all same size [(44, 40), (49, 40), (55, 40)]
+UI_STATE PASS shelf: shelf icons vertically centered in shelf 
+UI_STATE FAIL shelf: shelf icon gaps equal [532, 8, 397, 75]
+UI_STATE PASS shelf: shelf left/right group padding equal 7 vs 7
+UI_STATE FAIL shelf: shelf on 8 px grid (1262, 48)
+UI_STATE FAIL shelf: gap between every button equal [532, 8, 397, 8, 8]
+UI_STATE FAIL shelf launcher hover colour #c2d3ea (1, 1, 1)
+UI_STATE FAIL shelf launcher pressed colour #abc5e8 (1, 1, 1)
+UI_STATE PASS panel rect [911, 309, 1271, 735]
+UI_STATE PASS panel tiles measured (2 expected) [[920, 355, 1086, 416], [1096, 355, 1262, 416]]
+UI_STATE PASS wide buttons measured (All settings, Close) [[920, 624, 1262, 670], [920, 681, 1262, 726]]
+UI_STATE PASS quick: shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS quick: shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS quick: shelf height 48 48
+UI_STATE PASS quick: shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS quick: panel bottom gap above shelf == shelf side gutter 9 vs 9
+UI_STATE PASS quick: panel right gutter == shelf right gutter 9 vs 9
+UI_STATE PASS quick: panel width 360 360
+UI_STATE PASS quick: panel tiles same size [(166, 61)]
+UI_STATE PASS quick: panel tiles column pitch equal [176]
+UI_STATE PASS quick: panel tiles row pitch equal []
+UI_STATE PASS quick: panel_tiles left inset == right inset inside panel 9 vs 9
+UI_STATE FAIL quick: shelf on 8 px grid (1262, 48)
+UI_STATE PASS quick: panel on 8 px grid (360, 426)
+UI_STATE PASS quick: wide button 0 left inset == right inset in panel 9 vs 9
+UI_STATE PASS quick: wide button 1 left inset == right inset in panel 9 vs 9
+UI_STATE PASS quick: All settings and Close same size [[920, 624, 1262, 670], [920, 681, 1262, 726]]
+UI_STATE PASS quick: tile row spans same width as wide buttons ([[920, 355, 1086, 416], [1096, 355, 1262, 416]], [[920, 624, 1262, 670], [920, 681, 1262, 726]])
+UI_STATE FAIL quick tile hover colour #cddcf1 (225, 227, 232)
+UI_STATE FAIL quick tile pressed colour #abc5e8 (213, 216, 222)
+UI_STATE PASS quick panel still open after a cancelled press (no accidental click) [911, 309, 1271, 735]
+UI_STATE PASS quick focus ring visible after Tab 1133
+UI_STATE PASS quick Mute button toggles real mute state 'Volume: 0.76'->'Volume: 0.76 [MUTED]'
+UI_STATE PASS quick Close button dismisses panel None
+UI_STATE PASS quick panel reopens at the same rect [911, 309, 1271, 735] vs [911, 309, 1271, 735]
+UI_STATE FAIL quick panel Escape dismisses (spec expects it) [911, 309, 1271, 735]
+UI_STATE PASS launcher rect [9, 255, 649, 735]
+UI_STATE PASS launcher size 640x480 (640, 480)
+UI_STATE FAIL launcher tiles measured (5 expected) [[69, 376, 181, 511], [205, 376, 317, 511], [341, 376, 453, 511], [477, 376, 589, 511]]
+UI_STATE PASS launcher: shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS launcher: shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS launcher: shelf height 48 48
+UI_STATE PASS launcher: shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS launcher: launcher tiles same size [(112, 135)]
+UI_STATE PASS launcher: launcher tiles column pitch equal [136, 136, 136]
+UI_STATE PASS launcher: launcher tiles row pitch equal []
+UI_STATE PASS launcher: launcher_tiles left inset == right inset inside launcher 60 vs 60
+UI_STATE FAIL launcher: shelf on 8 px grid (1262, 48)
+UI_STATE PASS launcher: launcher on 8 px grid (640, 480)
+UI_STATE FAIL launcher centred horizontally on screen 329.0
+UI_STATE PASS launcher bottom gap above shelf == shelf side gutter (spec docks it above the shelf) 9 vs 9
+UI_STATE PASS launcher tile hover colour #cddcf1 (210, 220, 235)
+UI_STATE FAIL launcher tile pressed colour #abc5e8 (186, 204, 229)
+UI_STATE PASS launcher still open after cancelled press 
+UI_STATE FAIL launcher search "mail" leaves exactly 1 tile [[69, 376, 181, 511], [205, 376, 317, 511], [341, 376, 453, 511], [477, 376, 589, 511]]
+UI_STATE PASS launcher filtered tile keeps size [[69, 376, 181, 511], [205, 376, 317, 511], [341, 376, 453, 511], [477, 376, 589, 511]]
+UI_STATE PASS launcher Escape dismisses None
+UI_STATE PASS launcher reopens at the same rect [9, 255, 649, 735] vs [9, 255, 649, 735]
+UI_STATE PASS media key Volume Down changes real volume 'Volume: 0.76'->'Volume: 0.66'
+UI_STATE PASS media key Volume Up restores volume 'Volume: 0.66'->'Volume: 0.76'
+UI_STATE PASS media key Mute toggles real mute state 'Volume: 0.76'->'Volume: 0.76 [MUTED]'
+UI_STATE UNMEASURED Brightness keys not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Play/Pause/Next/Prev keys not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Taskbar click/middle-click close not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Quick Network tile mouse launch not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Titlebar buttons (covered only by keyboard equivalents in window-controls-evidence) not exercised here UNMEASURED by design
+UI_STATE_SUMMARY {"PASS": 52, "FAIL": 15, "UNMEASURED": 5}
