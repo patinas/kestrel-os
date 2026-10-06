@@ -2,7 +2,7 @@
 # One-user, disposable Kestrel UI test. Never a general desktop service.
 . "$(dirname "$0")/env.sh"
 [ "$ACCEL" = kvm ] || { echo 'KVM required'; exit 1; }
-sudo apt-get install -y --no-install-recommends novnc websockify imagemagick fonts-dejavu-core python3-websocket
+sudo apt-get install -y --no-install-recommends novnc websockify imagemagick fonts-dejavu-core python3-websocket python3-numpy
 curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2026.9.3/cloudflared-linux-amd64 -o "$CI_DIR/cloudflared"
 echo "77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2  $CI_DIR/cloudflared" | sha256sum -c -
 chmod 755 "$CI_DIR/cloudflared"
@@ -22,6 +22,8 @@ qemu_pid=$!
 trap 'kill "$qemu_pid" 2>/dev/null || true' EXIT
 test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" || test_status=$?
+# Interaction states + pixel-measured symmetry (hover, pressed, focus, dismiss/reopen, media keys). Runs even if the first script failed.
+python3 "$REPO/build/tests/ci/ui-states-evidence.py" "$VM" || { st=$?; [ "$test_status" != 0 ] || test_status=$st; }
 for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all quick-mouse-slider quick-mouse-mute quick-mouse-network quick-mouse-bluetooth quick-mouse-close click-all-settings-first click-all-settings-result settings-after-controls click-settings-closed click-network click-bluetooth click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue
@@ -30,7 +32,13 @@ for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar re
  base64 -w 800 "$VM/ui-$name.jpg"
  echo "UI_EVIDENCE_END ui-$name.jpg"
 done
+for image in "$VM"/ui-st-*.ppm; do
+ [ -f "$image" ] || continue
+ b=$(basename "$image" .ppm); convert "$image" -quality 48 "$VM/$b.jpg"
+ echo "UI_EVIDENCE_BEGIN $b.jpg"; base64 -w 800 "$VM/$b.jpg"; echo "UI_EVIDENCE_END $b.jpg"
+done
 [ ! -f "$VM/control-results.json" ] || cat "$VM/control-results.json"
+[ ! -f "$VM/ui-state-results.json" ] || { echo UI_STATE_RESULTS; cat "$VM/ui-state-results.json"; }
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 # Temporary owner-only download shares the same email-PIN gate, no artifact storage.
 WEB="$CI_DIR/protected-web";mkdir -p "$WEB/downloads";cp -a /usr/share/novnc/. "$WEB/"

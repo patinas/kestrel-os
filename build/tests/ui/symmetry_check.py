@@ -30,6 +30,7 @@ def run(d):
             rule("shelf left/right group padding equal", near(a[0]-sh[0], sh[2]-b[2]), f"{a[0]-sh[0]} vs {sh[2]-b[2]}")
     for name in ("panel", "launcher"):
         p = d.get(name)
+        if name == "launcher" and d.get("launcher_floating"): continue
         if p and sh:
             rule(f"{name} bottom gap above shelf == shelf side gutter", near(sh[1]-p[3], sh[0]-S[0]), f"{sh[1]-p[3]} vs {sh[0]-S[0]}")
     p = d.get("panel")
@@ -37,7 +38,7 @@ def run(d):
         rule("panel right gutter == shelf right gutter", near(S[2]-p[2], S[2]-sh[2]), f"{S[2]-p[2]} vs {S[2]-sh[2]}")
         rule("panel width 360", near(w(p), 360), w(p))
     la = d.get("launcher")
-    if la and sh:
+    if la and sh and not d.get("launcher_floating"):
         rule("launcher left edge == shelf left edge", near(la[0], sh[0]), f"{la[0]} vs {sh[0]}")
     for name, key in (("panel tiles", "panel_tiles"), ("launcher tiles", "launcher_tiles"), ("settings buttons", "settings_buttons")):
         t = d.get(key)

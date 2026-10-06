@@ -16,6 +16,9 @@ hover (background change visible), pressed state, keyboard focus ring (Tab), cli
 ## Symmetry/polish rules (symmetry_check.py, tolerance 1 px)
 shelf left gutter == right gutter == bottom gutter; shelf centered; shelf icons same size, equal gaps, vertically centered; panel and launcher gap above shelf == shelf side gutter; panel right gutter == shelf right gutter; panel width 360; launcher left edge == shelf left edge; tiles same size with equal pitch; tile block left inset == right inset inside its container; labels left-aligned; shelf/panel dimensions on the 8 px grid.
 
+## Automation
+build/tests/ci/ui-states-evidence.py (run by 08-browser-ui-test.sh) drives hover, pressed (cancelled before release), Tab focus, Close/Escape dismiss, reopen, search filtering and media keys through QMP, measures rects from the real 1280x800 screendumps by CSS colour, and runs symmetry_check.py. Frames are ui-st-*.jpg in the log. UNMEASURED means the colour was not found: it is not a pass. Not automated: brightness and play/next keys (no hardware), taskbar clicks, titlebar mouse clicks, Quick Network tile launch.
+
 ## Findings from reading the source (before any frame was measured; verify in frames)
 1. Quick settings title label had an extra 8 px left margin versus other labels and the tiles. Removed in this patch (labels now align to the tile edge).
 2. Launcher FlowBox had no horizontal alignment, so four 96 px tiles would sit left of centre with free space on the right. Patch centres the grid; verify the inset rule on a frame.
