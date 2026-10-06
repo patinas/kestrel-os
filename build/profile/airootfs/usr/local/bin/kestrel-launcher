@@ -11,21 +11,32 @@ class Launcher(Gtk.Window):
   title=Gtk.Label(label='Kestrel apps');box.pack_start(title,False,False,0)
   self.search=Gtk.SearchEntry();self.search.set_size_request(-1,56);self.search.set_placeholder_text('Search apps');box.pack_start(self.search,False,False,0)
   scroll=Gtk.ScrolledWindow();box.pack_start(scroll,True,True,0)
-  self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_halign(Gtk.Align.CENTER);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(4);self.grid.set_max_children_per_line(4);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
+  self.rows=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=16);self.rows.set_halign(Gtk.Align.CENTER);self.rows.set_valign(Gtk.Align.START);scroll.add(self.rows)
   self.items=[]
   basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))
   # Chrome-created desktop entries retain their app-id/standalone-window command.
   for app in Gio.AppInfo.get_all():
    if app.should_show() and app.get_id().startswith('chrome-') and '--app-id=' in (app.get_commandline() or ''):self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
-  self.grid.set_filter_func(lambda child:self.search.get_text().lower() in child.name.lower());self.search.connect('search-changed',lambda _:self.grid.invalidate_filter())
+  self.search.connect('search-changed',lambda _:self.refilter());self.refilter()
   self.show_all();self.search.grab_focus()
  def add_app(self,name,icon,fn):
-  child=Gtk.FlowBoxChild();child.name=name;button=Gtk.Button();box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);box.set_size_request(96,120)
+  button=Gtk.Button();button.name=name;box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);box.set_size_request(96,120)
   image=Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.DIALOG) if isinstance(icon,str) else Gtk.Image.new_from_gicon(icon,Gtk.IconSize.DIALOG);image.set_pixel_size(64)
-  box.pack_start(image,True,True,0);label=Gtk.Label(label=name);label.set_line_wrap(True);label.set_max_width_chars(12);box.pack_start(label,False,False,0);button.add(box);child.add(button);self.grid.add(child)
+  box.pack_start(image,True,True,0);label=Gtk.Label(label=name);label.set_line_wrap(True);label.set_max_width_chars(12);label.set_justify(Gtk.Justification.CENTER);label.set_lines(2);label.set_ellipsize(3);label.set_size_request(-1,48);label.set_valign(Gtk.Align.START);box.pack_start(label,False,False,0);button.add(box);self.items.append(button)
   def click(_):fn();self.close()
   button.connect('clicked',click)
+ def refilter(self):
+  # Rows of 4, every row centred, so a short last row is symmetric.
+  for row in self.rows.get_children():
+   for b in row.get_children():row.remove(b)
+   self.rows.remove(row);row.destroy()
+  q=self.search.get_text().lower();vis=[b for b in self.items if q in b.name.lower()]
+  for i in range(0,len(vis),4):
+   row=Gtk.Box(spacing=16);row.set_halign(Gtk.Align.CENTER)
+   for b in vis[i:i+4]:row.pack_start(b,False,False,0)
+   self.rows.pack_start(row,False,False,0)
+  self.rows.show_all()
  def key(self,_,event):
   if event.keyval==Gdk.KEY_Escape:self.close()
 Gtk.Settings.get_default().set_property('gtk-icon-theme-name','Papirus')

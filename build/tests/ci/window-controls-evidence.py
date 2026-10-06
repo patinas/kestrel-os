@@ -1,4 +1,6 @@
 import json,socket,sys,time,urllib.request
+sys.path.insert(0,__import__('os').path.dirname(__import__('os').path.abspath(__file__)))
+import uimeasure as uim
 from pathlib import Path
 v=Path(sys.argv[1]);s=socket.socket(socket.AF_UNIX);s.connect(str(v/'ui-qmp.sock'));f=s.makefile('rw');f.readline()
 def cmd(n,a=None):
@@ -75,19 +77,22 @@ def guest_click(x,y):
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'left'}}]});time.sleep(2)
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
 key('alt','shift','s');time.sleep(8);shot('click-quick-before-all')
+L=uim.qs_layout(uim.load_ppm(v/'ui-click-quick-before-all.ppm'))
+if not L or not L['mute'] or len(L['tiles'])!=2 or len(L['wide'])!=2:raise RuntimeError('quick settings layout not measurable: '+json.dumps(L))
+C=uim.center
 def live_audio():
  req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
  return json.load(urllib.request.urlopen(req,timeout=30))['audio']
 # Genuine QMP mouse coordinates grounded in sourcee881015 1280x800 full frame.
 # Panel x911..1271 y282..735, mute y530, slider x995..1251, bottom Close y704.
-before=live_audio();guest_click(1190,530);after=live_audio();record('Quick slider mouse effect',before!=after);shot('quick-mouse-slider')
-before=live_audio();guest_click(946,530);after=live_audio();record('Quick mute mouse effect',('MUTED' in before)!=('MUTED' in after));shot('quick-mouse-mute');guest_click(946,530)
-guest_click(1000,385);shot('quick-mouse-network');key('alt','f4')
-guest_click(1180,385);shot('quick-mouse-bluetooth');key('alt','f4')
-guest_click(1085,704);shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
+before=live_audio();guest_click(C(L['tiles'][1])[0],C(L['mute'])[1]);after=live_audio();record('Quick slider mouse effect',before!=after);shot('quick-mouse-slider')
+before=live_audio();guest_click(*C(L['mute']));after=live_audio();record('Quick mute mouse effect',('MUTED' in before)!=('MUTED' in after));shot('quick-mouse-mute');guest_click(*C(L['mute']))
+guest_click(*C(L['tiles'][0]));shot('quick-mouse-network');key('alt','f4')
+guest_click(*C(L['tiles'][1]));shot('quick-mouse-bluetooth');key('alt','f4')
+guest_click(*C(L['wide'][1]));shot('quick-mouse-close');key('alt','shift','s');time.sleep(3)
 # Keyboard activates the focused real All settings.
 
-guest_click(1085,646);time.sleep(8);shot('click-all-settings-first');shot('click-all-settings-result')
+guest_click(*C(L['wide'][0]));time.sleep(8);shot('click-all-settings-first');shot('click-all-settings-result')
 print('SETTINGS_TARGETS_AFTER_MOUSE',json.dumps([{'id':p['id'],'url':p.get('url','')} for p in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))]),flush=True)
 # Existing CDP target may not be the newly opened Settings tab; reconnect to the actual pane.
 ws.close()

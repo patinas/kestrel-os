@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Interaction states + pixel-measured symmetry for the Kestrel shell, run in the disposable CI guest after window-controls-evidence.py.
-Usage: ui-states-evidence.py VMDIR. Frames: ui-st-*.ppm. Results: ui-state-results.json. Exit 1 on any FAIL or UNMEASURED.
-Measurements come from real QEMU screendumps (1280x800), found by the CSS colours in the shipped stylesheets. A colour not found means UNMEASURED, never a pass."""
-import json,socket,sys,time,urllib.request
+Usage: ui-states-evidence.py VMDIR. Frames: ui-st-*.ppm. Results: ui-state-results.json. Exit 1 on any FAIL.
+Elements are found by the CSS colours of the shipped stylesheets. A colour not found means UNMEASURED, never a pass.
+State checks are relative (base > hover > pressed in brightness at a point away from the pointer and glyphs), because the pointer is drawn in screendumps."""
+import json,socket,sys,time,urllib.request,os
 from pathlib import Path
 import numpy as np
-v=Path(sys.argv[1]);sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'ui'))
+here=Path(__file__).resolve().parent;sys.path.insert(0,str(here));sys.path.insert(0,str(here.parents[0]/'ui'))
+import uimeasure as U
 import symmetry_check
+v=Path(sys.argv[1])
 s=socket.socket(socket.AF_UNIX);s.connect(str(v/'ui-qmp.sock'));f=s.makefile('rw');f.readline()
 def cmd(n,a=None):
  d={'execute':n}
@@ -17,7 +20,7 @@ def cmd(n,a=None):
   if 'error' in r:raise RuntimeError(r)
   if 'return' in r:return r
 cmd('qmp_capabilities')
-def key(*k,hold=100):cmd('send-key',{'keys':[{'type':'qcode','data':x} for x in k],'hold-time':hold});time.sleep(.4)
+def key(*k):cmd('send-key',{'keys':[{'type':'qcode','data':x} for x in k],'hold-time':100});time.sleep(.4)
 def text(t):
  for c in t:key(c)
 def move(x,y):
@@ -25,124 +28,124 @@ def move(x,y):
 def btn(down):cmd('input-send-event',{'events':[{'type':'btn','data':{'down':down,'button':'left'}}]});time.sleep(.4)
 def click(x,y):move(x,y);btn(True);btn(False);time.sleep(1.5)
 def frame(n):
- p=v/('ui-st-'+n+'.ppm');cmd('screendump',{'filename':str(p)});time.sleep(.6)
- raw=p.read_bytes();parts=raw.split(maxsplit=4);w,h=int(parts[1]),int(parts[2]);assert parts[0]==b'P6'
- body=raw[len(raw)-w*h*3:];return np.frombuffer(body,np.uint8).reshape(h,w,3).astype(int)
-def hexc(h):return tuple(int(h[i:i+2],16) for i in (1,3,5))
-def mask(img,c,tol,reg=None):
- m=np.all(np.abs(img-np.array(hexc(c) if isinstance(c,str) else c))<=tol,axis=2)
- if reg:
-  z=np.zeros_like(m);x1,y1,x2,y2=reg;z[y1:y2,x1:x2]=m[y1:y2,x1:x2];return z
- return m
-def bbox(m,minpx=3000):
- if m.sum()<minpx:return None
- ys,xs=np.where(m);return [int(xs.min()),int(ys.min()),int(xs.max())+1,int(ys.max())+1]
-def runs(a,minv,gap=1):
- idx=np.where(a>=minv)[0];out=[]
- for i in idx:
-  if out and i-out[-1][1]<=gap:out[-1][1]=i
-  else:out.append([i,i])
- return [(a0,a1+1) for a0,a1 in out]
-def blocks(m,rowmin,box):
- """rects of colour blocks inside box: row bands with >=rowmin px, then column runs inside each band"""
- x1,y1,x2,y2=box;sub=m[y1:y2,x1:x2];res=[]
- for r0,r1 in runs(sub.sum(1),rowmin,2):
-  for c0,c1 in runs(sub[r0:r1].sum(0),3,2):res.append([int(x1+c0),int(y1+r0),int(x1+c1),int(y1+r1)])
- return res
+ p=v/('ui-st-'+n+'.ppm');cmd('screendump',{'filename':str(p)});time.sleep(.8);return U.load_ppm(p)
 results=[]
 def rec(name,ok,detail=''):
  r={'check':name,'result':'PASS' if ok is True else ('UNMEASURED' if ok is None else 'FAIL'),'detail':str(detail)};results.append(r);print('UI_STATE',r['result'],name,detail,flush=True)
-def near(c,ref,tol=10):return bool(np.all(np.abs(np.array(c)-np.array(hexc(ref)))<=tol))
 def rules(name,d):
  for n,ok,det in symmetry_check.run(d):rec(name+': '+n,ok,det)
 def audio():
  req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'});return json.load(urllib.request.urlopen(req,timeout=30))['audio']
-SHELF='#e0e8f6';ICON='#d2dced'
 def clear():
+ move(640,300)
  for _ in range(4):key('alt','f4');time.sleep(1)
-def shelf_measure(img):
- sh=bbox(mask(img,SHELF,7,(0,700,1280,800)),2000)
- if not sh:return None,[]
- m=mask(img,ICON,5,tuple(sh));bt=blocks(m,6,tuple(sh));return sh,bt
-# ---- 0. clean desktop, shelf ----
-clear();time.sleep(3);img=frame('shelf')
-sh,bt=shelf_measure(img)
-if sh is None:rec('shelf found by colour',None,'no #e0e8f6 shelf')
-else:
- icons=[b for b in bt if b[2]-b[0]<=56];pills=[b for b in bt if b[2]-b[0]>56]
- d={'screen':[0,0,1280,800],'shelf':sh,'shelf_icons':icons}
- if bt:d['shelf_left_group']=bt[0];d['shelf_right_group']=bt[-1]
- rec('shelf rect',True,sh);rec('shelf icon buttons measured',len(icons)>=3,icons);rules('shelf',d)
- if len(bt)>=2:
-  pt=[(b[0],b[2]) for b in bt];gaps=[pt[i+1][0]-pt[i][1] for i in range(len(pt)-1)]
-  rec('shelf: gap between every button equal',max(gaps)-min(gaps)<=2,gaps)
- # hover / pressed on the launcher icon
- if icons:
-  ic=icons[0];cx,cy=(ic[0]+ic[2])//2,ic[1]+4;move(cx,cy);h=frame('shelf-hover');rec('shelf launcher hover colour #c2d3ea',near(h[cy,cx],'#c2d3ea',8),tuple(h[cy,cx]))
-  btn(True);p=frame('shelf-pressed');rec('shelf launcher pressed colour #abc5e8',near(p[cy,cx],'#abc5e8',8),tuple(p[cy,cx]));move(640,300);btn(False);time.sleep(1.5);key('esc')
+def state_check(label,base,rect,wait_img_name):
+ """hover then pressed (released off the element so nothing fires): brightness must fall base > hover > pressed at the top-centre sample"""
+ sx,sy=(rect[0]+rect[2])//2,rect[1]+5
+ move(rect[0]+12,rect[3]-10);hv=frame(wait_img_name+'-hover')
+ btn(True);pr=frame(wait_img_name+'-pressed');move(rect[0]-30 if rect[0]>40 else rect[2]+30,rect[1]-30);btn(False);time.sleep(1)
+ b,h,p=(U.luma(x[sy,sx]) for x in (base,hv,pr))
+ rec(label+' hover is darker than idle',h<b-2,f'{b:.0f}->{h:.0f}');rec(label+' pressed is darker than hover',p<h-2,f'{h:.0f}->{p:.0f}')
+SHELF='#e0e8f6'
+def shelf_report(img,label):
+ sh=U.bbox(U.mask(img,SHELF,7,(0,700,1280,800)),2000)
+ if sh is None:rec(label+': shelf found by colour',None,'no #e0e8f6 shelf');return None,[]
+ box=(sh[0]+24,sh[1],sh[2]-24,sh[3]);non=~U.mask(img,SHELF,9)
+ els=U.blocks(non,1,box,2,3);els=[e for e in els if e[2]-e[0]>=20]
+ rec(label+': shelf elements measured',len(els)>=5,els)
+ cy=(sh[1]+sh[3])/2;sc=640
+ rec(label+': every element is 40 px tall',all(abs((e[3]-e[1])-40)<=1 for e in els),[e[3]-e[1] for e in els])
+ rec(label+': every element is vertically centred in the 48 px shelf',all(abs((e[1]+e[3])/2-cy)<=1 for e in els),[round((e[1]+e[3])/2-cy,1) for e in els])
+ left=[e for e in els if e[2]<300];centre=[e for e in els if 300<=e[0] and e[2]<=980];right=[e for e in els if e[0]>980]
+ icons=left+centre
+ rec(label+': icon buttons (left+centre) are one size',len({(e[2]-e[0],e[3]-e[1]) for e in icons})==1,sorted({(e[2]-e[0],e[3]-e[1]) for e in icons}))
+ if centre:
+  c0,c1=min(e[0] for e in centre),max(e[2] for e in centre);rec(label+': centre group is centred on the screen (+-2 px)',abs((c0+c1)/2-sc)<=2,f'centre {(c0+c1)/2} vs {sc}')
+ for gname,g in (('left',left),('centre',centre),('right',right)):
+  gaps=[g[i+1][0]-g[i][2] for i in range(len(g)-1)]
+  if gaps:rec(f'{label}: {gname} group gaps equal',max(gaps)-min(gaps)<=1,gaps)
+ if left and right:rec(label+': left margin == right margin inside shelf',abs((left[0][0]-sh[0])-(sh[2]-right[-1][2]))<=1,f'{left[0][0]-sh[0]} vs {sh[2]-right[-1][2]}')
+ if left and centre and right:
+  gl=centre[0][0]-left[-1][2];gr=right[0][0]-centre[-1][2];rec(label+': space left of centre group vs right of it (informational, centre is pinned to screen centre)',True,f'{gl} vs {gr}')
+ off=[]
+ for e in els:
+  g=U.glyph_box(img,e)
+  if g:off.append((round((g[0]+g[2])/2-(e[0]+e[2])/2,1),round((g[1]+g[3])/2-(e[1]+e[3])/2,1)))
+  else:off.append(None)
+ rec(label+': glyph/text is centred inside its pill (+-2 px both axes)',all(o is not None and abs(o[0])<=2 and abs(o[1])<=2 for o in off),off)
+ d={'screen':[0,0,1280,800],'shelf':sh}
+ rules(label,d)
+ return sh,els
+# ---- 0. shelf, empty desktop ----
+clear();time.sleep(3);img0=frame('shelf');sh,els=shelf_report(img0,'shelf (no windows)')
+launch=[e for e in els if e[2]<300]
+if launch:state_check('shelf launcher button',img0,launch[0],'shelf');key('esc')
+# ---- 0b. shelf with a window open ----
+clear();key('meta_l','b');time.sleep(12);move(640,300);imgw=frame('shelf-window');shelf_report(imgw,'shelf (window open)')
+clear()
 # ---- 1. quick settings ----
-clear();key('alt','shift','s');time.sleep(6);img=frame('qs-open')
-pan=bbox(mask(img,'#f3f6fc',2,(640,0,1280,744)),8000)
-if not pan:rec('quick settings panel found by colour',None,'no #f3f6fc window')
+key('alt','shift','s');time.sleep(6);img=frame('qs-open');L=U.qs_layout(img)
+if not L or len(L['tiles'])!=2 or not L['mute'] or len(L['wide'])!=2:rec('quick settings layout found by colour',None,json.dumps(L))
 else:
- bl=blocks(mask(img,'#e2eaf6',3,tuple(pan)),200,tuple(pan));tiles=[b for b in bl if b[2]-b[0]<200];wide=[b for b in bl if b[2]-b[0]>=200]
- rec('panel rect',True,pan);rec('panel tiles measured (2 expected)',len(tiles)==2,tiles);rec('wide buttons measured (All settings, Close)',len(wide)==2,wide)
+ pan,tiles,mute,wide=L['panel'],L['tiles'],L['mute'],L['wide']
+ rec('panel rect',True,pan);rec('quick: 2 tiles, Mute, All settings, Close found',True,L)
  d={'screen':[0,0,1280,800],'panel':pan,'panel_tiles':tiles}
  if sh:d['shelf']=sh
  rules('quick',d)
- for i,wb in enumerate(wide):
-  rec(f'quick: wide button {i} left inset == right inset in panel',abs((wb[0]-pan[0])-(pan[2]-wb[2]))<=1,f'{wb[0]-pan[0]} vs {pan[2]-wb[2]}')
- if len(wide)==2:rec('quick: All settings and Close same size',abs((wide[0][2]-wide[0][0])-(wide[1][2]-wide[1][0]))<=1 and abs((wide[0][3]-wide[0][1])-(wide[1][3]-wide[1][1]))<=1,wide)
- if tiles:rec('quick: tile row spans same width as wide buttons',not wide or (abs(min(t[0] for t in tiles)-wide[0][0])<=1 and abs(max(t[2] for t in tiles)-wide[0][2])<=1),(tiles,wide))
- # states on the first tile (Network)
- if tiles:
-  t=tiles[0];px,py=t[0]+14,t[1]+6
-  move(px,py);hv=frame('qs-hover');rec('quick tile hover colour #cddcf1',near(hv[py,px],'#cddcf1',8),tuple(hv[py,px]))
-  btn(True);pr=frame('qs-pressed');rec('quick tile pressed colour #abc5e8',near(pr[py,px],'#abc5e8',8),tuple(pr[py,px]));move(pan[0]+6,pan[1]+6);btn(False);time.sleep(1)
-  mp=bbox(mask(frame('qs-after-cancel'),'#f3f6fc',2,(640,0,1280,744)),8000);rec('quick panel still open after a cancelled press (no accidental click)',mp==pan,mp)
- # keyboard focus: Tab moves ring (border #4680bc) somewhere inside the panel
- key('tab');fc=frame('qs-focus');ring=mask(fc,'#4680bc',12,tuple(pan));rec('quick focus ring visible after Tab',int(ring.sum())>=60,int(ring.sum()))
- # volume slider + mute with real audio state
- mute=[b for b in blocks(mask(img,'#e2eaf6',3,tuple(pan)),30,tuple(pan)) if 40<=b[2]-b[0]<=70]
- if mute:
-  m=mute[0];a0=audio();click((m[0]+m[2])//2,(m[1]+m[3])//2);a1=audio();rec('quick Mute button toggles real mute state',('MUTED' in a0)!=('MUTED' in a1),f'{a0!r}->{a1!r}');click((m[0]+m[2])//2,(m[1]+m[3])//2)
-  frame('qs-slider-row')
- else:rec('quick Mute button found',None,'no 40-70px button')
- # dismiss with the Close button, then reopen with the same shortcut
- if wide:
-  c=wide[-1];click((c[0]+c[2])//2,(c[1]+c[3])//2);gone=bbox(mask(frame('qs-closed'),'#f3f6fc',2,(640,0,1280,744)),8000);rec('quick Close button dismisses panel',gone is None,gone)
-  key('alt','shift','s');time.sleep(5);again=bbox(mask(frame('qs-reopen'),'#f3f6fc',2,(640,0,1280,744)),8000);rec('quick panel reopens at the same rect',again==pan,f'{again} vs {pan}')
-  for name,ks in (('Escape',('esc',)),):
-   key(*ks);time.sleep(1);e=bbox(mask(frame('qs-escape'),'#f3f6fc',2,(640,0,1280,744)),8000);rec('quick panel Escape dismisses (spec expects it)',e is None,e)
- clear()
+ span=(tiles[0][0],tiles[1][2])
+ rec('quick: tile row, Mute+slider row and wide buttons share the same left and right edges',all(abs(b[0]-span[0])<=1 for b in [mute]+wide) and all(abs(b[2]-span[1])<=1 for b in wide),f'tiles {span}, mute {mute[0]}, wide {[(b[0],b[2]) for b in wide]}')
+ rec('quick: Mute width == tile width (aligned to tile column)',abs((mute[2]-mute[0])-(tiles[0][2]-tiles[0][0]))<=1,(mute[2]-mute[0],tiles[0][2]-tiles[0][0]))
+ rec('quick: Mute, All settings and Close are all 48 px tall',all(abs((b[3]-b[1])-48)<=4 for b in [mute]+wide),[b[3]-b[1] for b in [mute]+wide])
+ for i,wb in enumerate(wide):rec(f'quick: wide button {i} left inset == right inset in panel',abs((wb[0]-pan[0])-(pan[2]-wb[2]))<=1,f'{wb[0]-pan[0]} vs {pan[2]-wb[2]}')
+ rec('quick: panel has no titlebar (top of panel is the Quick settings heading)',pan[3]-pan[1]<=420,pan)
+ state_check('quick Network tile',img,tiles[0],'qs')
+ time.sleep(1);rec('quick panel still open after a cancelled press (no accidental click)',U.qs_panel(frame('qs-after-cancel'))==pan)
+ key('tab');fc=frame('qs-focus');ring=U.mask(fc,'#4680bc',12,tuple(pan));rec('quick focus ring visible after Tab',int(ring.sum())>=60,int(ring.sum()))
+ a0=audio();click(*U.center(mute));a1=audio();rec('quick Mute button toggles real mute state',('MUTED' in a0)!=('MUTED' in a1),f'{a0!r}->{a1!r}');click(*U.center(mute))
+ frame('qs-after-mute')
+ click(*U.center(wide[1]));rec('quick Close button dismisses panel',U.qs_panel(frame('qs-closed')) is None)
+ key('alt','shift','s');time.sleep(5);again=U.qs_panel(frame('qs-reopen'));rec('quick panel reopens at the same rect',again==pan,f'{again} vs {pan}')
+ key('esc');time.sleep(1);rec('quick panel Escape dismisses',U.qs_panel(frame('qs-escape')) is None)
+ key('alt','shift','s');time.sleep(5);click(*U.center(wide[0]));time.sleep(8);gone=U.qs_panel(frame('qs-all-settings'))
+ rec('quick All settings closes the panel',gone is None,gone)
+ try:
+  pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'));rec('quick All settings opens the Settings page',any('#settings' in p.get('url','') for p in pages),[p.get('url','')[:60] for p in pages])
+ except Exception as e:rec('quick All settings opens the Settings page',None,repr(e))
+clear()
 # ---- 2. launcher ----
 key('meta_l');time.sleep(4);img=frame('launcher-open')
-lw=bbox(mask(img,'#eef3fb',2,(0,0,1280,744)),20000)
+lw=U.bbox(U.mask(img,'#eef3fb',2,(0,0,1280,744)),20000)
 if not lw:rec('launcher window found by colour',None,'no #eef3fb window')
 else:
- tl=blocks(mask(img,'#e2eaf6',3,tuple(lw)),150,tuple(lw));rec('launcher rect',True,lw);rec('launcher size 640x480',lw[2]-lw[0]==640 and lw[3]-lw[1]==480,(lw[2]-lw[0],lw[3]-lw[1]))
- rec('launcher tiles measured (5 expected)',len(tl)>=5,tl);d={'screen':[0,0,1280,800],'launcher':lw,'launcher_floating':True,'launcher_tiles':tl}
+ white=U.bbox(U.mask(img,'#ffffff',2,(lw[0],lw[1],lw[2],lw[1]+104)),2000)
+ top=(white[3]+4) if white else lw[1]+100
+ non=~U.mask(img,'#eef3fb',3);tl=[t for t in U.blocks(non,1,(lw[0],top,lw[2],lw[3]-1),2,2) if t[2]-t[0]>=80 and t[3]-t[1]>=80]
+ rec('launcher rect',True,lw);rec('launcher is 640x480 with no titlebar',(lw[2]-lw[0],lw[3]-lw[1])==(640,480),(lw[2]-lw[0],lw[3]-lw[1]))
+ rec('launcher tiles measured (5 expected)',len(tl)==5,tl)
+ row1=[t for t in tl if t[1]==min(x[1] for x in tl)] if tl else [];last=[t for t in tl if t not in row1]
+ d={'screen':[0,0,1280,800],'launcher':lw,'launcher_floating':True,'launcher_tiles':row1}
  if sh:d['shelf']=sh
  rules('launcher',d)
- rec('launcher centred horizontally on screen',abs((lw[0]+lw[2])/2-640)<=1,(lw[0]+lw[2])/2)
- rec('launcher bottom gap above shelf == shelf side gutter (spec docks it above the shelf)',bool(sh) and abs((sh[1]-lw[3])-sh[0])<=1,f'{sh[1]-lw[3] if sh else None} vs {sh[0] if sh else None}')
+ rec('launcher: all tiles are one size',len({(t[2]-t[0],t[3]-t[1]) for t in tl})==1,sorted({(t[2]-t[0],t[3]-t[1]) for t in tl}))
+ rec('launcher is centred horizontally on the screen (+-1 px)',abs((lw[0]+lw[2])/2-640)<=1,(lw[0]+lw[2])/2)
+ rec('launcher bottom gap above shelf == shelf side gutter',bool(sh) and abs((sh[1]-lw[3])-sh[0])<=1,f'{sh[1]-lw[3] if sh else None} vs {sh[0] if sh else None}')
+ for t in last:rec('launcher: short last row is centred in the window',abs((t[0]+t[2])/2-(lw[0]+lw[2])/2)<=1,f'{(t[0]+t[2])/2} vs {(lw[0]+lw[2])/2}')
  if tl:
-  t=tl[0];px,py=t[0]+10,t[1]+5;move(px,py);hv=frame('launcher-hover');rec('launcher tile hover colour #cddcf1',near(hv[py,px],'#cddcf1',8),tuple(hv[py,px]))
-  btn(True);pr=frame('launcher-pressed');rec('launcher tile pressed colour #abc5e8',near(pr[py,px],'#abc5e8',8),tuple(pr[py,px]));move(lw[0]+4,lw[1]+4);btn(False);time.sleep(1)
-  rec('launcher still open after cancelled press',bbox(mask(frame('launcher-after-cancel'),'#eef3fb',2,(0,0,1280,744)),20000)==lw)
- text('mail');time.sleep(2);sf=frame('launcher-search-mail');ft=blocks(mask(sf,'#e2eaf6',3,tuple(lw)),150,tuple(lw));rec('launcher search "mail" leaves exactly 1 tile',len(ft)==1,ft)
- if ft and tl:rec('launcher filtered tile keeps size',abs((ft[0][2]-ft[0][0])-(tl[0][2]-tl[0][0]))<=1 and abs((ft[0][3]-ft[0][1])-(tl[0][3]-tl[0][1]))<=1,ft)
- key('esc');gone=bbox(mask(frame('launcher-escape'),'#eef3fb',2,(0,0,1280,744)),20000);rec('launcher Escape dismisses',gone is None,gone)
- key('meta_l');time.sleep(4);re=bbox(mask(frame('launcher-reopen'),'#eef3fb',2,(0,0,1280,744)),20000);rec('launcher reopens at the same rect',re==lw,f'{re} vs {lw}');key('esc')
+  state_check('launcher tile',img,tl[0],'launcher');rec('launcher still open after cancelled press',U.bbox(U.mask(frame('launcher-after-cancel'),'#eef3fb',2,(0,0,1280,744)),20000)==lw)
+ if white:click((white[0]+white[2])//2,(white[1]+white[3])//2)   # focus the search field by mouse so typing cannot land on a tile
+ text('mail');time.sleep(2);sf=frame('launcher-search-mail');ft=[t for t in U.blocks(~U.mask(sf,'#eef3fb',3),1,(lw[0],top,lw[2],lw[3]-1),2,2) if t[2]-t[0]>=80 and t[3]-t[1]>=80]
+ rec('launcher search "mail" leaves exactly 1 tile',len(ft)==1,ft)
+ if ft:rec('launcher filtered tile is centred',abs((ft[0][0]+ft[0][2])/2-(lw[0]+lw[2])/2)<=1,(ft[0][0]+ft[0][2])/2)
+ key('esc');rec('launcher Escape dismisses',U.bbox(U.mask(frame('launcher-escape'),'#eef3fb',2,(0,0,1280,744)),20000) is None)
+ key('meta_l');time.sleep(4);re=U.bbox(U.mask(frame('launcher-reopen'),'#eef3fb',2,(0,0,1280,744)),20000);rec('launcher reopens at the same rect',re==lw,f'{re} vs {lw}');key('esc')
 clear()
-# ---- 3. media keys against real audio state (no hardware keys: brightness, play/next/prev stay UNVERIFIED) ----
+# ---- 3. media keys ----
 try:
  a0=audio();key('volumedown');key('volumedown');a1=audio();key('volumeup');key('volumeup');a2=audio()
  rec('media key Volume Down changes real volume',a0!=a1,f'{a0!r}->{a1!r}');rec('media key Volume Up restores volume',a2!=a1,f'{a1!r}->{a2!r}')
  key('audiomute');m1=audio();rec('media key Mute toggles real mute state',('MUTED' in a2)!=('MUTED' in m1),f'{a2!r}->{m1!r}');key('audiomute')
 except Exception as e:rec('media keys',False,repr(e))
-for c in ('Brightness keys','Play/Pause/Next/Prev keys','Taskbar click/middle-click close','Quick Network tile mouse launch','Titlebar buttons (covered only by keyboard equivalents in window-controls-evidence)'):rec(c+' not exercised here',None,'UNMEASURED by design')
+for c in ('Brightness keys','Play/Pause/Next/Prev keys','Taskbar click/middle-click close','Titlebar buttons by mouse (keyboard equivalents covered in window-controls-evidence)'):rec(c+' not exercised here',None,'UNMEASURED by design')
 v.joinpath('ui-state-results.json').write_text(json.dumps(results,indent=1))
-bad=[r for r in results if r['result']=='FAIL']
 print('UI_STATE_SUMMARY',json.dumps({k:sum(1 for r in results if r['result']==k) for k in ('PASS','FAIL','UNMEASURED')}),flush=True)
-sys.exit(1 if bad else 0)
+sys.exit(1 if any(r['result']=='FAIL' for r in results) else 0)

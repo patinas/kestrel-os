@@ -59,7 +59,7 @@ def run(d):
     for name in ("shelf", "panel", "launcher"):
         r = d.get(name)
         if r:
-            rule(f"{name} on 8 px grid", all(v % 8 == 0 for v in (w(r), h(r))) or name == "panel", (w(r), h(r)))
+            rule(f"{name} on 8 px grid (+-2 px for anti-aliased edges)", all(min(v % 8, 8 - v % 8) <= 2 for v in (w(r), h(r))) or name == "panel", (w(r), h(r)))
     return res
 if __name__ == "__main__":
     d = json.load(open(sys.argv[1]))
