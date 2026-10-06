@@ -17,7 +17,7 @@ class Panel(Gtk.Window):
   outer=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);outer.set_border_width(8);self.add(outer)
   def label(text):
    x=Gtk.Label(label=text);x.set_xalign(0);x.set_line_wrap(True);x.set_max_width_chars(32);outer.pack_start(x,False,False,0);return x
-  title=label('Quick settings');title.set_margin_start(8);title.set_margin_top(8)
+  title=label('Quick settings');title.set_margin_top(8)
   grid=Gtk.Grid(column_spacing=8,row_spacing=8);outer.pack_start(grid,False,False,0)
   def button(text,fn,w=-1,h=48):
    b=Gtk.Button(label=text);b.set_size_request(w,h);b.connect('clicked',lambda _:fn());return b

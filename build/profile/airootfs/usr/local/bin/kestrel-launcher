@@ -11,7 +11,7 @@ class Launcher(Gtk.Window):
   title=Gtk.Label(label='Kestrel apps');box.pack_start(title,False,False,0)
   self.search=Gtk.SearchEntry();self.search.set_size_request(-1,56);self.search.set_placeholder_text('Search apps');box.pack_start(self.search,False,False,0)
   scroll=Gtk.ScrolledWindow();box.pack_start(scroll,True,True,0)
-  self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(4);self.grid.set_max_children_per_line(4);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
+  self.grid=Gtk.FlowBox();self.grid.set_valign(Gtk.Align.START);self.grid.set_halign(Gtk.Align.CENTER);self.grid.set_selection_mode(Gtk.SelectionMode.NONE);self.grid.set_min_children_per_line(4);self.grid.set_max_children_per_line(4);self.grid.set_row_spacing(16);self.grid.set_column_spacing(16);scroll.add(self.grid)
   self.items=[]
   basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))

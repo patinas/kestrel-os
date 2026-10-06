@@ -1,0 +1,6 @@
+# 32-bit graphics libraries for Steam/Lutris; installed only when a game launcher is chosen in the installer
+lib32-mesa
+lib32-nvidia-utils
+lib32-vulkan-intel
+lib32-vulkan-nouveau
+lib32-vulkan-radeon

@@ -31,11 +31,6 @@ intel-media-driver
 intel-ucode
 iwd
 labwc
-lib32-mesa
-lib32-nvidia-utils
-lib32-vulkan-intel
-lib32-vulkan-nouveau
-lib32-vulkan-radeon
 libarchive
 libcups
 libdrm

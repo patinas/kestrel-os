@@ -43,6 +43,12 @@ esac
 PKGS=$(grep -vE '^\s*(#|$)' "$PKGLIST" | sort -u | tr '\n' ' ')
 [ -n "$PKGS" ] || die "empty package list"
 PKGS="$PKGS $EXTRA"
+# 32-bit graphics libraries are only needed for Steam/Wine, so they are not in the base ISO or base install.
+if [ "$GAMES" != none ]; then
+  GAMESLIST="$SRC/usr/share/kestrel/packages.games.txt"
+  [ -r "$GAMESLIST" ] || die "missing $GAMESLIST"
+  PKGS="$PKGS $(grep -vE '^\s*(#|$)' "$GAMESLIST" | sort -u | tr '\n' ' ')"
+fi
 PCONF=${KESTREL_PACMAN_CONF:-/etc/pacman.conf}
 grep -Eq '^\[multilib\]' "$PCONF" || die "$PCONF has no [multilib] section"
 grep -Eq '^SigLevel *= *Required' "$PCONF" || die "$PCONF does not require package signatures"
