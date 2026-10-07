@@ -19,7 +19,7 @@ subprocess.run(['systemd-nspawn','--quiet','-D','/var/lib/kestrel/devroot','/usr
 assert subprocess.run(['pacman','-Q','jq'],capture_output=True).returncode!=0, 'container package escaped onto host'
 assert 'ro' in subprocess.check_output(['findmnt','-no','OPTIONS','/'],text=True).strip().split(',')
 print('signed container jq transaction passed; host stayed read-only and jq absent')
-subprocess.run(['runuser','-u','kestrel','--','sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True,capture_output=True)
+subprocess.run(['runuser','-u','kestrel','--','sudo','-n','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True,capture_output=True,timeout=10)
 assert not D.joinpath('terminal-enabled').exists() and not D.joinpath('sudo-password').exists()
 assert subprocess.run(cmd,input=password+'\n',text=True,capture_output=True).returncode!=0
 print('advanced default-off, correct-password, wrong-password, disable revocation assertions passed')

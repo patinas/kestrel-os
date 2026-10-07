@@ -63,7 +63,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
    good=run(cmd,input=(data['password']+'\n').encode());bad=run(cmd,input=b'wrong-test-password\n')
    self.reply({**status(),'correct_sudo':good.returncode==0 and good.stdout.strip()==b'0','wrong_sudo_rejected':bad.returncode!=0})
   elif self.path=='/advanced-cleanup':
-   r=run(['runuser','-u','kestrel','--','sudo','/usr/local/bin/kestrel-advanced-toggle','disable'])
+   r=run(['runuser','-u','kestrel','--','sudo','-n','/usr/local/bin/kestrel-advanced-toggle','disable'])
    self.reply({**status(),'disabled':r.returncode==0})
   else:
    import tempfile

@@ -1,4 +1,5 @@
 Defaults:kestrel pam_service="kestrel-sudo", timestamp_timeout=0
-# This narrow root-owned helper is available even while general sudo is off.
-kestrel ALL=(root) NOPASSWD: /usr/local/bin/kestrel-advanced-toggle enable, /usr/local/bin/kestrel-advanced-toggle disable
+# General enabled-mode rule must precede the narrow helper exception.
 @include /var/lib/kestrel/sudoers
+# Last matching rule wins: helpers remain noninteractive even when enabled.
+kestrel ALL=(root) NOPASSWD: /usr/local/bin/kestrel-advanced-toggle enable, /usr/local/bin/kestrel-advanced-toggle disable

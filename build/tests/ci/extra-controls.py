@@ -207,7 +207,7 @@ def advanced_interactive():
   probe('/terminals-close',{});time.sleep(1);cdp('Page.bringToFront');js('refresh()')
   # Observe the real checkbox change and scoped disable response without
   # logging the bridge token, headers, password or unrelated traffic.
-  js("""(()=>{window.__disableEvidence={changes:[],responses:[]};let e=document.querySelector('#advanced');e.addEventListener('change',()=>window.__disableEvidence.changes.push(e.checked));let f=window.fetch;window.fetch=async(...a)=>{let r=await f(...a);if(a[0]==='/disable')window.__disableEvidence.responses.push(r.status);return r}})()""")
+  js("""(()=>{window.__disableEvidence={changes:[],started:0,responses:[],errors:[]};let e=document.querySelector('#advanced');e.addEventListener('change',()=>window.__disableEvidence.changes.push(e.checked));let f=window.fetch;window.fetch=async(...a)=>{let disable=a[0]==='/disable';if(disable)window.__disableEvidence.started++;try{let r=await f(...a);if(disable)window.__disableEvidence.responses.push(r.status);return r}catch(e){if(disable)window.__disableEvidence.errors.push(e.name);throw e}}})()""")
   point=js("(()=>{let e=document.querySelector('#advanced');e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
   if not settings_visible('extra-advanced-disable-before'):raise RuntimeError('Settings absent before disable')
   pixel=uim.settings_card(uim.load_ppm(v/'ui-extra-advanced-disable-before.ppm'))

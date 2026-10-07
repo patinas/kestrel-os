@@ -46,7 +46,7 @@ button{padding:8px 14px;background:#161b22;color:var(--fg);border:1px solid #596
 <p class="note">Live USB packages disappear on reboot. Installed root stays read-only; use the development container.</p></section>
 <div class="actions"><button onclick="location.href='https://www.google.com'">Close</button></div></dialog><footer hidden>alpha live image</footer>
 <script>
-async function callBridge(path){let r=await fetch(path,{method:'POST',headers:{'X-Kestrel-Token':'BRIDGE_TOKEN'}});if(!r.ok)document.getElementById('state').textContent='Action failed';else await refresh();}
+async function callBridge(path){try{let r=await fetch(path,{method:'POST',headers:{'X-Kestrel-Token':'BRIDGE_TOKEN'}});if(!r.ok)throw new Error('Action failed');await refresh();}catch(e){try{await refresh()}catch(_){}document.getElementById('state').textContent='Action failed. Try again.';}}
 async function toggleAdvanced(on){if(on&&!confirm('Enable advanced access? A terminal will ask for a new local password.')){document.getElementById('advanced').checked=false;return}await callBridge(on?'/enable':'/disable');}
 function fmtNet(t){for(const l of String(t).split('\n')){const f=l.split(/(?<!\\):/);if(f.length>=4&&f[0]!=='lo'&&f[2]==='connected')return f[3].replace(/\\:/g,':')+(f[1]==='ethernet'?'':' ('+(f[1]==='wifi'?'Wi-Fi':f[1])+')')}return t&&t!=='Unavailable'?'Not connected':'Unavailable'}
 function fmtAudio(t){const m=String(t).match(/Volume:\s*([\d.]+)/);if(!m)return 'Unavailable';const v=Math.round(parseFloat(m[1])*100)+'%';return /MUTED/.test(t)?'Muted ('+v+')':v}

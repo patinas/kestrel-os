@@ -42,7 +42,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
   elif self.path=='/mode-gaming':subprocess.Popen(['kestrel-mode','gaming'])
   elif self.path=='/mode-desktop':subprocess.Popen(['kestrel-mode','desktop'])
   elif self.path=='/enable':subprocess.Popen(['foot','sh','-c','sudo /usr/local/bin/kestrel-advanced-toggle enable; printf "Press Enter to close"; read reply'])
-  elif self.path=='/disable':subprocess.run(['sudo','/usr/local/bin/kestrel-advanced-toggle','disable'],check=True)
+  elif self.path=='/disable':
+   try:
+    r=subprocess.run(['sudo','-n','/usr/local/bin/kestrel-advanced-toggle','disable'],capture_output=True,timeout=10)
+   except subprocess.TimeoutExpired:
+    self.send_error(504,'Advanced disable timed out');return
+   if r.returncode:
+    self.send_error(500,'Advanced disable failed');return
   elif self.path=='/terminal' and Path('/var/lib/kestrel/terminal-enabled').exists():subprocess.Popen(['foot','bash','-c','printf "Advanced terminal. Install packages with: sudo kestrel-packages -S package\nInstalled packages use a development container; live packages use RAM.\n"; exec bash'])
   else:self.send_error(403);return
   self.send_response(204);self.end_headers()
