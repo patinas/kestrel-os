@@ -140,7 +140,7 @@ else:
  top=(white[3]+4) if white else lw[1]+100
  non=~U.mask(img,'#eef3fb',3);tl=[t for t in U.blocks(non,1,(lw[0],top,lw[2],lw[3]-1),2,2) if t[2]-t[0]>=80 and t[3]-t[1]>=80]
  rec('launcher rect',True,lw);rec('launcher is 640x480 with no titlebar',(lw[2]-lw[0],lw[3]-lw[1])==(640,480),(lw[2]-lw[0],lw[3]-lw[1]))
- rec('launcher tiles measured (5 expected)',len(tl)==5,tl)
+ rec('launcher built-in tiles plus installed app tiles measured',len(tl)>=5,tl)
  row1=[t for t in tl if t[1]==min(x[1] for x in tl)] if tl else [];last=[t for t in tl if t not in row1]
  d={'screen':[0,0,1280,800],'launcher':lw,'launcher_floating':True,'launcher_tiles':row1}
  if sh:d['shelf']=sh
@@ -148,7 +148,9 @@ else:
  rec('launcher: all tiles are one size',len({(t[2]-t[0],t[3]-t[1]) for t in tl})==1,sorted({(t[2]-t[0],t[3]-t[1]) for t in tl}))
  rec('launcher is centred horizontally on the screen (+-1 px)',abs((lw[0]+lw[2])/2-640)<=1,(lw[0]+lw[2])/2)
  rec('launcher bottom gap above shelf == shelf side gutter',bool(sh) and abs((sh[1]-lw[3])-sh[0])<=1,f'{sh[1]-lw[3] if sh else None} vs {sh[0] if sh else None}')
- for t in last:rec('launcher: short last row is centred in the window',abs((t[0]+t[2])/2-(lw[0]+lw[2])/2)<=1,f'{(t[0]+t[2])/2} vs {(lw[0]+lw[2])/2}')
+ if last:
+  lc=(min(t[0] for t in last)+max(t[2] for t in last))/2
+  rec('launcher: short last row group is centred in the window',abs(lc-(lw[0]+lw[2])/2)<=1,f'{lc} vs {(lw[0]+lw[2])/2}')
  if tl:
   state_check('launcher tile',img,tl[0],'launcher');rec('launcher still open after cancelled press',U.bbox(U.mask(frame('launcher-after-cancel'),'#eef3fb',2,(0,0,1280,744)),20000)==lw)
  if white:click((white[0]+white[2])//2,(white[1]+white[3])//2)   # focus the search field by mouse so typing cannot land on a tile

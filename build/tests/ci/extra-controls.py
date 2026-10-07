@@ -194,10 +194,17 @@ def advanced_interactive():
   text(password);key('ret');time.sleep(3)
   proof=probe('/advanced-check',{'password':password})
   record('Advanced real interactive password enables correct sudo and rejects wrong sudo',proof['enabled'] and proof['password_present'] and proof['correct_sudo'] and proof['wrong_sudo_rejected'])
-  # Close the setup terminal, then use the Settings Open terminal button.
-  key('alt','f4');cdp('Page.bringToFront');js('refresh()');time.sleep(1)
+  # Do not Alt-F4 an assumed terminal: if absent that closes Settings.
+  probe('/terminals-close',{});time.sleep(1);cdp('Page.bringToFront')
+  cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(2);js('refresh()');time.sleep(1)
+  enabled=probe()['enabled'];ui=js("document.querySelector('#advanced').checked && !document.querySelector('#terminal').disabled")
+  print('ADVANCED_STATE',json.dumps({'phase':'before-terminal','enabled':enabled,'uiEnabled':ui,'targetId':page['id']}),flush=True)
+  record('Advanced enabled state survives setup-terminal close',enabled and ui)
+  if not enabled or not ui:raise RuntimeError('Enabled flag/UI missing before terminal click')
   before=probe()['processes']['foot'];click('#terminal');time.sleep(2)
-  record('Settings enabled Terminal mouse opens foot',probe()['processes']['foot']>before);shot('extra-advanced-terminal');key('alt','f4');cdp('Page.bringToFront');click('#advanced');time.sleep(3)
+  opened=probe()['processes']['foot']>before
+  record('Settings enabled Terminal mouse opens foot',opened);shot('extra-advanced-terminal')
+  probe('/terminals-close',{});cdp('Page.bringToFront');click('#advanced');time.sleep(3)
   off=probe('/advanced-check',{'password':password})
   record('Advanced UI disable removes password and revokes sudo',not off['enabled'] and not off['password_present'] and not off['correct_sudo']);js('refresh()')
   record('Advanced disabled Terminal button unavailable again',js("document.querySelector('#terminal').disabled"))
@@ -260,16 +267,27 @@ def pwa_install():
   after=image_text('pwa-after-confirm')
   record('PWA Install confirmation dialog disappears', 'install app' not in after)
   if 'install app' in after:raise RuntimeError('Install dialog still visible after click')
-  fresh=[p for p in pages_now() if p['url'].startswith(manifest) and p['id']!=page['id']]
-  if not fresh:raise RuntimeError('No new PWA target after real confirmation click')
-  p=fresh[0];connect_page(p);cdp('Page.bringToFront')
-  installed=bool(js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"))
+  candidates=[p for p in pages_now() if p['url'].startswith(manifest)]
+  print('PWA_TARGETS',json.dumps([{'id':p['id'],'url':p['url']} for p in candidates]),flush=True)
+  installed=False
+  for candidate in candidates:
+   connect_page(candidate)
+   standalone=bool(js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"))
+   print('PWA_STANDALONE',candidate['id'],standalone,flush=True)
+   if standalone:installed=True;break
+  if not installed:raise RuntimeError('No standalone PWA among manifest targets (including reused IDs)')
+  cdp('Page.bringToFront')
   record('PWA installs and opens standalone through Chrome subsystem',installed);shot('extra-pwa-installed');cdp('Page.close');time.sleep(2)
   connect_page(next(p for p in pages_now() if not p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:'))))
   old={p['id'] for p in pages_now()};lw,tiles=launcher_tiles('CI PWA')
   record('Installed PWA has launcher tile',len(tiles)==1)
   if len(tiles)!=1:raise RuntimeError('PWA launcher tile missing')
-  guest_click(*uim.center(tiles[0]));time.sleep(4);fresh=next(p for p in pages_now() if p['id'] not in old and p['url'].startswith(manifest));connect_page(fresh)
+  guest_click(*uim.center(tiles[0]));time.sleep(4);candidates=[p for p in pages_now() if p['url'].startswith(manifest)]
+  relaunched=False
+  for candidate in candidates:
+   connect_page(candidate)
+   if js("matchMedia('(display-mode: standalone)').matches"):relaunched=True;break
+  if not relaunched:raise RuntimeError('No standalone target after launcher click')
   record('PWA mouse relaunch from Kestrel launcher remains standalone',js("matchMedia('(display-mode: standalone)').matches"));shot('extra-pwa-relaunched')
  finally:
   if installed:

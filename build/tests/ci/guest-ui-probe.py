@@ -39,7 +39,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
  def do_POST(self):
   # Only a disposable named-port VM exposes this test listener. Never add it to a shipped profile.
   if self.headers.get('Origin') or self.headers.get('Sec-Fetch-Site'):self.send_error(403);return
-  if self.path not in ('/advanced-check','/advanced-cleanup','/signature-check','/panels-close'):self.send_error(404);return
+  if self.path not in ('/advanced-check','/advanced-cleanup','/signature-check','/panels-close','/terminals-close'):self.send_error(404);return
   size=int(self.headers.get('Content-Length',0))
   if not 0<=size<=1024:self.send_error(400);return
   data=json.loads(self.rfile.read(size) or b'{}')
@@ -48,7 +48,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
    import traceback;traceback.print_exc()
    self.reply({'error':type(e).__name__,'message':str(e)[:300]})
  def action(self,data):
-  if self.path=='/panels-close':
+  if self.path=='/terminals-close':
+   run(['pkill','-u','kestrel','-x','foot']);self.reply(status())
+  elif self.path=='/panels-close':
    import signal
    for p in Path('/proc').glob('[0-9]*/cmdline'):
     try:
