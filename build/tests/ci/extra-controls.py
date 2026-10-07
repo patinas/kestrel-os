@@ -204,10 +204,27 @@ def advanced_interactive():
   before=probe()['processes']['foot'];click('#terminal');time.sleep(2)
   opened=probe()['processes']['foot']>before
   record('Settings enabled Terminal mouse opens foot',opened);shot('extra-advanced-terminal')
-  probe('/terminals-close',{});cdp('Page.bringToFront');click('#advanced');time.sleep(3)
-  off=probe('/advanced-check',{'password':password})
-  record('Advanced UI disable removes password and revokes sudo',not off['enabled'] and not off['password_present'] and not off['correct_sudo']);js('refresh()')
-  record('Advanced disabled Terminal button unavailable again',js("document.querySelector('#terminal').disabled"))
+  probe('/terminals-close',{});time.sleep(1);cdp('Page.bringToFront');js('refresh()')
+  # Observe the real checkbox change and scoped disable response without
+  # logging the bridge token, headers, password or unrelated traffic.
+  js("""(()=>{window.__disableEvidence={changes:[],responses:[]};let e=document.querySelector('#advanced');e.addEventListener('change',()=>window.__disableEvidence.changes.push(e.checked));let f=window.fetch;window.fetch=async(...a)=>{let r=await f(...a);if(a[0]==='/disable')window.__disableEvidence.responses.push(r.status);return r}})()""")
+  point=js("(()=>{let e=document.querySelector('#advanced');e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
+  if not settings_visible('extra-advanced-disable-before'):raise RuntimeError('Settings absent before disable')
+  pixel=uim.settings_card(uim.load_ppm(v/'ui-extra-advanced-disable-before.ppm'))
+  dom=js("(()=>{let r=document.querySelector('#settings').getBoundingClientRect();return [r.x,r.y]})()")
+  screen=[point[0]+pixel[0]-dom[0],point[1]+pixel[1]-dom[1]]
+  print('ADVANCED_STATE',json.dumps({'phase':'disable-before','enabled':probe()['enabled'],'checked':js("document.querySelector('#advanced').checked"),'screenPoint':screen}),flush=True)
+  guest_click(*screen)
+  for _ in range(12):
+   if not probe()['enabled']:break
+   time.sleep(1)
+  off=probe('/advanced-check',{'password':password});js('refresh()');time.sleep(1)
+  ui=js("({checked:document.querySelector('#advanced').checked,terminalDisabled:document.querySelector('#terminal').disabled,status:document.querySelector('#state').textContent,evidence:window.__disableEvidence})")
+  detail={'enabled':off['enabled'],'passwordPresent':off['password_present'],'correctSudo':off['correct_sudo'],'wrongSudoRejected':off['wrong_sudo_rejected'],'ui':ui}
+  print('ADVANCED_STATE',json.dumps({'phase':'disable-after',**detail}),flush=True);shot('extra-advanced-disable-after')
+  record('Advanced UI disable removes password and revokes sudo',not off['enabled'] and not off['password_present'] and not off['correct_sudo'],detail)
+  record('Advanced disabled Terminal button unavailable again',ui['terminalDisabled'] and not ui['checked'],ui)
+
  finally:
   # Accept/cancel only on the original target; do not replay a mutating click.
   try:cdp('Page.handleJavaScriptDialog',{'accept':False})
