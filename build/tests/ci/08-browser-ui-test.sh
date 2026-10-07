@@ -2,7 +2,7 @@
 # One-user, disposable Kestrel UI test. Never a general desktop service.
 . "$(dirname "$0")/env.sh"
 [ "$ACCEL" = kvm ] || { echo 'KVM required'; exit 1; }
-sudo apt-get install -y --no-install-recommends novnc websockify imagemagick fonts-dejavu-core python3-websocket python3-numpy
+sudo apt-get install -y --no-install-recommends novnc websockify imagemagick fonts-dejavu-core python3-websocket python3-numpy tesseract-ocr
 curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2026.9.3/cloudflared-linux-amd64 -o "$CI_DIR/cloudflared"
 echo "77e26d8d900e0b8469f416239d14b5f296525fdf79fee6f511ef55609e3fbac2  $CI_DIR/cloudflared" | sha256sum -c -
 chmod 755 "$CI_DIR/cloudflared"
@@ -15,7 +15,7 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -drive if=pflash,format=raw,readonly=on,file="$code" \
  -drive if=pflash,format=raw,file="$VM/UI_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
- -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765,hostfwd=tcp:127.0.0.1:19222-:9233 -device virtio-net,netdev=n \
+ -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765,hostfwd=tcp:127.0.0.1:19222-:9233,hostfwd=tcp:127.0.0.1:18766-:8766 -device virtio-net,netdev=n \
  -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent \
  -device virtio-serial-pci -chardev null,id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check -vnc 127.0.0.1:1 -display none -serial "file:$VM/ui-serial.log" -qmp "unix:$VM/ui-qmp.sock,server=on,wait=off" &
 qemu_pid=$!
@@ -24,6 +24,10 @@ test_status=0
 python3 "$REPO/build/tests/ci/window-controls-evidence.py" "$VM" 2>&1 | tee -a "$VM/ui-log.txt" || test_status=$?
 # Interaction states + pixel-measured symmetry (hover, pressed, focus, dismiss/reopen, media keys). Runs even if the first script failed.
 python3 "$REPO/build/tests/ci/ui-states-evidence.py" "$VM" 2>&1 | tee -a "$VM/ui-log.txt" || { st=$?; [ "$test_status" != 0 ] || test_status=$st; }
+for image in "$VM"/ui-extra-*.ppm; do
+ [ -f "$image" ] || continue
+ convert "$image" -quality 48 "${image%.ppm}.jpg"
+done
 for name in maximized-urlbar second-window alt-tab-previous minimized-taskbar restored unmaximized maximized-controls close-window launcher-grid click-launcher-search quick-settings click-quick-before-all click-quick-reopened click-settings-open settings-visible-check settings-top settings-middle settings-bottom titlebar-maximize-click-before titlebar-maximize-click titlebar-restore-click-before titlebar-restore-click taskbar-two-windows taskbar-after-middle-close quick-mouse-slider quick-mouse-mute quick-mouse-network quick-mouse-bluetooth quick-mouse-close click-all-settings-first click-all-settings-result settings-after-controls click-settings-closed click-network click-bluetooth click-advanced-off click-final-desktop shelf-mouse-launcher shelf-mouse-clock quick-mouse-close wallpaper owner-ready; do
  image="$VM/ui-$name.ppm"
  [ -f "$image" ] || continue

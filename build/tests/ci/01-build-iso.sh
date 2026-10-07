@@ -3,6 +3,20 @@
 . "$(dirname "$0")/env.sh"
 mkdir -p "$B"
 rsync -a --delete --exclude out --exclude work --exclude cache "$REPO/build/" "$B/"
+# Test observer is injected only into the disposable browser test copy, never the repo profile.
+if [ "${KESTREL_UI_PROBE:-0}" = 1 ]; then
+ install -Dm755 "$REPO/build/tests/ci/guest-ui-probe.py" "$B/profile/airootfs/usr/local/lib/kestrel-ci/guest-ui-probe.py"
+ mkdir -p "$B/profile/airootfs/etc/systemd/system/multi-user.target.wants"
+ cat > "$B/profile/airootfs/etc/systemd/system/kestrel-ci-ui-probe.service" <<'SERVICE'
+[Unit]
+ConditionPathExists=/dev/virtio-ports/kestrel-ci-check
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/lib/kestrel-ci/guest-ui-probe.py
+[Install]
+WantedBy=multi-user.target
+SERVICE
+ ln -s ../kestrel-ci-ui-probe.service "$B/profile/airootfs/etc/systemd/system/multi-user.target.wants/kestrel-ci-ui-probe.service"
+fi
 # Normalise modes without following symlinks (regular files only).
 find "$B/profile/airootfs/usr/local/bin" "$B/profile/airootfs/usr/local/lib/kestrel" -type f -exec chmod 755 {} +
 find "$B/scripts" "$B/tests" -type f -name '*.sh' -exec chmod 755 {} +

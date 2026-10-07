@@ -164,7 +164,13 @@ try:
  rec('media key Volume Down changes real volume',a0!=a1,f'{a0!r}->{a1!r}');rec('media key Volume Up restores volume',a2!=a1,f'{a1!r}->{a2!r}')
  key('audiomute');m1=audio();rec('media key Mute toggles real mute state',('MUTED' in a2)!=('MUTED' in m1),f'{a2!r}->{m1!r}');key('audiomute')
 except Exception as e:rec('media keys',False,repr(e))
-for c in ('Brightness keys','Play/Pause/Next/Prev keys','Taskbar click/middle-click close','Titlebar buttons by mouse (keyboard equivalents covered in window-controls-evidence)'):rec(c+' not exercised here',None,'UNMEASURED by design')
+for c in ('Brightness keys','Play/Pause/Next/Prev keys'):rec(c+' not exercised here',None,'Requires physical brightness device or a test MPRIS player; not proven')
+controls=json.loads(v.joinpath('control-results.json').read_text()) if v.joinpath('control-results.json').exists() else []
+for label,needed in (
+ ('Taskbar mouse activate/minimize/middle-close',('Taskbar browser mouse activation restores minimized target','Taskbar minimize keyboard makes current browser minimized','Taskbar middle-click closes that window')),
+ ('Titlebar maximize/restore by mouse',('Titlebar maximize/restore button by mouse changes window state','Titlebar maximize/restore button toggles back'))):
+ found=[next((r for r in controls if r['control']==n),None) for n in needed]
+ rec(label,all(r and r['result']=='PASS' for r in found),'Referenced actual controls evidence: '+str(found))
 v.joinpath('ui-state-results.json').write_text(json.dumps(results,indent=1))
 print('UI_STATE_SUMMARY',json.dumps({k:sum(1 for r in results if r['result']==k) for k in ('PASS','FAIL','UNMEASURED')}),flush=True)
 sys.exit(1 if any(r['result']=='FAIL' for r in results) else 0)

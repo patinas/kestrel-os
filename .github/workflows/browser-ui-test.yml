@@ -10,6 +10,8 @@ on:
       - "build/tests/ci/ui-states-evidence.py"
       - "build/tests/ci/window-controls-evidence.py"
       - "build/tests/ci/08-browser-ui-test.sh"
+      - "build/tests/ci/extra-controls.py"
+      - "build/tests/ci/guest-ui-probe.py"
 permissions:
   contents: write   # only to push the ui-evidence branch; no other scope
 concurrency:
@@ -21,6 +23,7 @@ jobs:
     timeout-minutes: 90
     env:
       KESTREL_CI_ALLOW_TCG: false
+      KESTREL_UI_PROBE: 1
     steps:
       - uses: actions/checkout@v4
       - name: Host setup

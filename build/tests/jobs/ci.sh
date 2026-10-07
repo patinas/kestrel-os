@@ -72,6 +72,15 @@ PY
    [ "$before" = "$(sha256sum $ENT/*.conf | sha256sum)" ] || fail "entries changed after bad signature"
    [ "$uuid" = "$(blkid -s UUID -o value /dev/disk/by-label/rootB)" ] || fail "rootB rewritten after bad signature"
    say "CI_STEP bad_signature_rejected_no_writes"
+   # Also reject a changed payload with a valid original detached signature.
+   /usr/local/lib/kestrel/make-test-update.sh "$KEY" $d > $d/make.log 2>&1 || fail "payload test fixture failed"
+   printf 'tampered payload' >> "$d/root.tar.zst"
+   rc=0
+   kestrel-update "$d/root.tar.zst" "$d/root.tar.zst.minisig" > "$d/bad-payload.log" 2>&1 || rc=$?
+   [ "$rc" -ne 0 ] && grep -q 'signature verification FAILED' "$d/bad-payload.log" || fail "tampered payload not rejected at signature gate"
+   [ "$before" = "$(sha256sum $ENT/*.conf | sha256sum)" ] || fail "entries changed after bad payload"
+   [ "$uuid" = "$(blkid -s UUID -o value /dev/disk/by-label/rootB)" ] || fail "rootB rewritten after bad payload"
+   say "CI_STEP tampered_payload_rejected_no_writes"
    rm -rf $d
    do_update ""
    [ -f $ENT/kestrel-A.conf ] && ls $ENT/kestrel-B+3.conf >/dev/null || fail "A known-good/B armed entries wrong"

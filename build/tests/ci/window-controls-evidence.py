@@ -267,10 +267,24 @@ try:
          {'buttons':[n0,n1],'windowsBefore':sorted(opened),'windowsAfter':sorted(closed)})
  else:record('Taskbar middle-click closes that window',False,'No measurable browser button to click')
 except Exception as e:record('Taskbar middle-click close',False);print('TASKBAR_ERROR',repr(e),flush=True)
+# Additional bounded tests use the disposable VM-only observer.
+exec(compile(Path(__file__).with_name('extra-controls.py').read_text(),'extra-controls.py','exec'))
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
-# Every unsupported effect remains blocked rather than fabricated as a test pass.
-for control in ['New quick-panel Close mouse','Quick panel Close pixel review','Shelf launcher/clock pixel review','Shelf launcher/clock mouse','Launcher Browser tile mouse','Launcher Mail/Video/Settings/Terminal tile launches','Quick panel Network setup mouse','PWA install/relaunch','Installer options','Hardware media/brightness/touchpad/lid','Chrome sync/keyring','Advanced password enable/disable','Signed OS update','Gaming mode','Refresh Chrome']:
+# Keep unavailable features and untested scopes explicit. Successful effects above
+# replace stale blanket labels, never turn missing features into passes.
+covered={
+ 'Settings network setup':'Settings network visible no-adapter dialog',
+ 'Settings bluetooth setup':'Settings bluetooth visible no-adapter dialog'}
+for old,new in covered.items():
+ if any(r['control']==new and r['result']=='PASS' for r in results):
+  results[:]=[r for r in results if not (r['control']==old and r['result']=='PIXEL_REVIEW')]
+for control in ['PWA human browser-menu install flow','Installer options (selection UI missing)',
+ 'Hardware brightness/touchpad/lid/lock-on-wake (physical device and missing configuration UI)',
+ 'Hardware Play/Pause/Next/Prev (no MPRIS player tested)', 'Chrome sync/keyring',
+ 'Signed OS update A/B write/reboot (requires installed sequence CI)',
+ 'Signed OS update production UI/key/server (missing)', 'Gaming mode (disabled UI)',
+ 'Refresh Chrome (disabled UI)']:
  results.append({'control':control,'result':'UNVERIFIED'})
 cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(4);shot('settings-after-controls')
 v.joinpath('control-results.json').write_text(json.dumps(results,indent=2));[print('CONTROL_FINAL',json.dumps(x),flush=True) for x in results]
