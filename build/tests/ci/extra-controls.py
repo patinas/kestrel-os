@@ -154,6 +154,23 @@ def click_with_confirm(point):
     cdp('Page.handleJavaScriptDialog',{'accept':True});return
  finally:ws.settimeout(60)
 
+def terminal_prompt(name):
+ park_pointer();shot('extra-'+name)
+ im=uim.load_ppm(v/('ui-extra-'+name+'.ppm'))
+ # Terminal has a large #242424 content rectangle; row support excludes
+ # dark page text and keeps the OCR inside the real terminal.
+ import numpy as np
+ m=uim.mask(im,'#242424',12,(0,100,1280,720));rows=np.where(m.sum(1)>500)[0]
+ if len(rows)<150:raise RuntimeError('Terminal content rectangle absent')
+ cols=np.where(m[rows].sum(0)>120)[0]
+ if len(cols)<500:raise RuntimeError('Terminal width not measurable')
+ x=int(cols.min());y=int(rows.min());right=int(cols.max()+1)
+ crop=v/(name+'-crop.png')
+ subprocess.run(['convert',str(v/('ui-extra-'+name+'.ppm')),'-crop',str(right-x)+'x100+'+str(x)+'+'+str(y),'-resize','400%','-negate',str(crop)],check=True,capture_output=True)
+ r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6'],capture_output=True,text=True,timeout=20)
+ if r.returncode:raise RuntimeError('Terminal crop OCR failed')
+ return r.stdout.lower()
+
 def advanced_interactive():
  password=''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(24))
  try:
@@ -169,10 +186,10 @@ def advanced_interactive():
   point=[point[0]+pixel[0]-dom[0],point[1]+pixel[1]-dom[1]]
   print('DIALOG_CLICK',json.dumps({'targetId':page['id'],'screenPoint':point,'offset':[pixel[0]-dom[0],pixel[1]-dom[1]]}),flush=True)
   click_with_confirm(point);time.sleep(3)
-  t=image_text('advanced-password-prompt')
-  if 'choose advanced sudo password' not in t:raise RuntimeError('Exact getpass prompt not visible; no secret typed')
+  t=terminal_prompt('advanced-password-prompt')
+  if not ('advanced sudo password' in t and '12 characters' in t and probe()['processes']['foot']>=1):raise RuntimeError('Exact getpass prompt not visible; no secret typed')
   text(password);key('ret');time.sleep(1)
-  t=image_text('advanced-repeat-prompt')
+  t=terminal_prompt('advanced-repeat-prompt')
   if 'repeat password' not in t:raise RuntimeError('Repeat getpass prompt not visible; second secret not typed')
   text(password);key('ret');time.sleep(3)
   proof=probe('/advanced-check',{'password':password})
@@ -205,6 +222,19 @@ def menu_click(needles,name):
  if not matches:raise RuntimeError('Menu item not visible: '+str(needles))
  # Select the first item in visual order; subsequent frames prove next menu.
  item=min(matches,key=lambda w:int(w['top']));guest_click(*uim.center(word_rect(item)))
+def pwa_confirm_install():
+ park_pointer();shot('extra-pwa-install-confirm')
+ # Only the lower action row of Chrome's centred install dialog. Excludes
+ # heading at y140 and address-bar Install at y89.
+ crop=v/'pwa-confirm-buttons.png'
+ subprocess.run(['convert',str(v/'ui-extra-pwa-install-confirm.ppm'),'-crop','450x100+415+215','-resize','300%',str(crop)],check=True,capture_output=True)
+ import csv,io
+ r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
+ found=[w for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t') if w.get('text','').lower()=='install' and float(w['conf'])>=50]
+ if len(found)!=1:raise RuntimeError('Install confirmation action not unique')
+ w=found[0];point=[415+(int(w['left'])+int(w['width'])/2)/3,215+(int(w['top'])+int(w['height'])/2)/3]
+ print('PWA_CONFIRM_CLICK',json.dumps(point),flush=True);guest_click(*point)
+
 def pwa_install():
  manifest='http://127.0.0.1:8766/pwa/';installed=False
  close_panels()
@@ -226,9 +256,15 @@ def pwa_install():
   install=[w for w in words if w['text'].lower()=='install' and 60<=int(w['top'])<=105 and 900<=int(w['left'])<1200]
   if len(install)!=1:raise RuntimeError('Address-bar Install button not unambiguously visible')
   guest_click(*uim.center(word_rect(install[0])));time.sleep(1)
-  menu_click(('install',),'pwa-install-confirm');installed=True;time.sleep(5)
-  p=next(p for p in pages_now() if p['url'].startswith(manifest) and p['id']!=page['id']);connect_page(p);cdp('Page.bringToFront')
-  record('PWA installs and opens standalone through Chrome subsystem',js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"));shot('extra-pwa-installed');cdp('Page.close');time.sleep(2)
+  pwa_confirm_install();time.sleep(5)
+  after=image_text('pwa-after-confirm')
+  record('PWA Install confirmation dialog disappears', 'install app' not in after)
+  if 'install app' in after:raise RuntimeError('Install dialog still visible after click')
+  fresh=[p for p in pages_now() if p['url'].startswith(manifest) and p['id']!=page['id']]
+  if not fresh:raise RuntimeError('No new PWA target after real confirmation click')
+  p=fresh[0];connect_page(p);cdp('Page.bringToFront')
+  installed=bool(js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"))
+  record('PWA installs and opens standalone through Chrome subsystem',installed);shot('extra-pwa-installed');cdp('Page.close');time.sleep(2)
   connect_page(next(p for p in pages_now() if not p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:'))))
   old={p['id'] for p in pages_now()};lw,tiles=launcher_tiles('CI PWA')
   record('Installed PWA has launcher tile',len(tiles)==1)
