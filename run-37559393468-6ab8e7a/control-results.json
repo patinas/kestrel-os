@@ -1,0 +1,268 @@
+[
+  {
+    "control": "Quick slider mouse effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Quick mute mouse effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Quick settings All settings",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Shelf process",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings direct entry",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings page is in the foreground and visible (pixel check of the 640 px card)",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: row labels share one left edge",
+    "result": "PASS",
+    "detail": "[353, 353, 353, 353, 353, 353, 353, 353, 353, 353]"
+  },
+  {
+    "control": "Settings: row buttons share one right edge",
+    "result": "PASS",
+    "detail": "[912, 912, 912, 912, 912]"
+  },
+  {
+    "control": "Settings: headings share the label left edge",
+    "result": "PASS",
+    "detail": "[353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353]"
+  },
+  {
+    "control": "Settings: no horizontal overflow",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: no raw nmcli text",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: Bluetooth and status lines are separate elements",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame top shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame middle shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame bottom shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-up effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-up display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-down effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-down display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings mute effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings mute display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Advanced initially off",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Terminal initially disabled",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Installer options unavailable disclosure",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Touchpad/lid/lock unavailable disclosure",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Hardware battery truthful",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Network state displayed",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Bluetooth unavailable truthful",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings Close returns to Google",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Titlebar maximize/restore button by mouse changes window state",
+    "result": "PASS",
+    "detail": "[{'windowId': 482063370, 'bounds': {'left': 0, 'top': 0, 'width': 1280, 'height': 718, 'windowState': 'maximized'}}, {'windowId': 482063370, 'bounds': {'left': 0, 'top': 0, 'width': 658, 'height': 736, 'windowState': 'normal'}}]"
+  },
+  {
+    "control": "Titlebar maximize/restore button toggles back",
+    "result": "PASS",
+    "detail": "[{'windowId': 482063370, 'bounds': {'left': 0, 'top': 0, 'width': 658, 'height': 736, 'windowState': 'normal'}}, {'windowId': 482063370, 'bounds': {'left': 0, 'top': 0, 'width': 1280, 'height': 718, 'windowState': 'maximized'}}]"
+  },
+  {
+    "control": "Taskbar shows Mail, Video and at least three browser buttons",
+    "result": "PASS",
+    "detail": "[(16, 748, 56, 788), (524, 748, 564, 788), (572, 748, 612, 788), (624, 752, 656, 784), (672, 752, 704, 784), (716, 748, 756, 788), (1085, 748, 1134, 788), (1142, 748, 1201, 788), (1209, 748, 1264, 788)]"
+  },
+  {
+    "control": "Taskbar middle-click closes that window",
+    "result": "PASS",
+    "detail": "{'buttons': [5, 4], 'windowsBefore': [482063370, 482063372, 482063379], 'windowsAfter': [482063370, 482063372]}"
+  },
+  {
+    "control": "Shelf launcher mouse opens visible launcher",
+    "result": "FAIL",
+    "detail": "[4, 4, 1268, 736]"
+  },
+  {
+    "control": "Shelf clock mouse opens visible Quick settings",
+    "result": "FAIL",
+    "detail": "None"
+  },
+  {
+    "control": "Shelf and Quick mouse effects",
+    "result": "FAIL",
+    "detail": "RuntimeError: No Quick settings after clock click"
+  },
+  {
+    "control": "Launcher tile mouse effects",
+    "result": "FAIL",
+    "detail": "RuntimeError: Filtered Browser tile count 2"
+  },
+  {
+    "control": "Settings network visible no-adapter dialog",
+    "result": "PASS",
+    "detail": "{'processes': [0, 1], 'text': 'kestrel - google chrome 2\\n\\n\u00a5  g google x  @ kestrel x + x\\n\u20ac > g a \u00a9 127.0.0.1:8765/#settings (ay wifi - 0 x) xe @:\\nno wi-fi adapter found. you can use a wired connection.\\n\\nse refresh networks wi-fi on/off disconnect\\nnet\\nnet\\nn\\nblu\\nwi\\nblue\\naday\\nau\\nvol awi-fi adapter is needed to see nearby networks.\\ny'}"
+  },
+  {
+    "control": "Settings network dialog closes and returns",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings bluetooth visible no-adapter dialog",
+    "result": "PASS",
+    "detail": "{'processes': [0, 1], 'text': 'oo} kestrel - google chrome\\n\\nyg google x  @ kestrel x +\\n\\n\u20ac > ge a \u00a9 127.0.0.1:8765/#settings\\n\\nsettings\\n\\nnetwork and bluetooth\\n\\nyw - 8\\n\\n* no bluetooth adapter found\\n\\nbluetooth devices cannot connect yet. if your computer has bluetooth,\\ncheck that it is enabled or plug in a usb bluetooth adapter.\\n\\nclo'}"
+  },
+  {
+    "control": "Settings bluetooth dialog closes and returns",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Taskbar minimize keyboard makes current browser minimized",
+    "result": "FAIL",
+    "detail": ""
+  },
+  {
+    "control": "Taskbar browser mouse activation restores minimized target",
+    "result": "PASS",
+    "detail": "{'targetId': '61C858111A0135D5F79E3F817D882914', 'windowId': 482063370}"
+  },
+  {
+    "control": "Advanced interactive enable/disable",
+    "result": "FAIL",
+    "detail": "RuntimeError: {'code': -32602, 'message': 'No dialog is showing'}"
+  },
+  {
+    "control": "Update signature/tamper live VM",
+    "result": "FAIL",
+    "detail": "RemoteDisconnected: Remote end closed connection without response"
+  },
+  {
+    "control": "PWA subsystem install and launcher relaunch",
+    "result": "FAIL",
+    "detail": "WebSocketTimeoutException: Connection timed out"
+  },
+  {
+    "control": "PWA human browser-menu install flow",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Installer options (selection UI missing)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Hardware brightness/touchpad/lid/lock-on-wake (physical device and missing configuration UI)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Hardware Play/Pause/Next/Prev (no MPRIS player tested)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Chrome sync/keyring",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Signed OS update A/B write/reboot (requires installed sequence CI)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Signed OS update production UI/key/server (missing)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Gaming mode (disabled UI)",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Refresh Chrome (disabled UI)",
+    "result": "UNVERIFIED"
+  }
+]
