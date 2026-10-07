@@ -2,7 +2,7 @@
 window#waybar {background:rgba(224,232,246,.96);color:#233044;border-radius:24px;}
 #custom-launcher,#custom-mail,#custom-video {font-family:"Kestrel Icons";font-size:28px;min-width:40px;min-height:40px;padding:0;margin:4px 4px;border-radius:24px;background:#d2dced;}
 #custom-launcher {margin-left:8px;}
-#taskbar button {min-width:0;min-height:0;padding:4px;margin:4px 4px;background-image:none;box-shadow:none;text-shadow:none;-gtk-icon-shadow:none;border-radius:24px;background:#d8e3f3;}
+#taskbar button {min-width:0;min-height:0;padding:4px;margin:4px 4px;background-image:none;box-shadow:none;text-shadow:none;-gtk-icon-shadow:none;border-radius:12px;background:#d8e3f3;}
 #taskbar button label {min-width:0;min-height:0;margin:0;padding:0;}
 #taskbar button.active {background:#a6c4eb;box-shadow:none;}
 #taskbar button.minimized {opacity:.65;}

@@ -67,8 +67,8 @@ def mouse(x,y):
 def click(selector):
  point=js("(()=>{let e=document.querySelector("+json.dumps(selector)+");e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
  mouse(*point);time.sleep(1)
-def record(name,condition):
- results.append({'control':name,'result':'PASS' if condition else 'FAIL'});print('CONTROL_RESULT',name,results[-1]['result'],flush=True)
+def record(name,condition,detail=''):
+ results.append({'control':name,'result':'PASS' if condition else 'FAIL','detail':str(detail)});print('CONTROL_RESULT',name,results[-1]['result'],detail,flush=True)
 def guest_click(x,y):
  # Deliver motion, allow the compositor to update hover/focus, then a human-length press.
  cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}}]})
@@ -82,7 +82,10 @@ def fmt_audio(t):
  v=str(math.floor(float(m.group(1))*100+0.5))+'%'
  return 'Muted ('+v+')' if 'MUTED' in t else v
 existing_settings={x['id'] for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json')) if '#settings' in x.get('url','')}
+def park_pointer():
+ cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(400*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(300*32767/800)}}]});time.sleep(.6)
 def quick_layout(name):
+ park_pointer()   # a hovered button has another fill colour and would not be found
  shot(name);lay=uim.qs_layout(uim.load_ppm(v/('ui-'+name+'.ppm')))
  return lay if lay and lay['mute'] and len(lay['tiles'])==2 and len(lay['wide'])==2 else None
 def open_quick(name):
@@ -119,7 +122,7 @@ def quick_section():
 try:
  quick_section()
 except Exception as e:
- print('QUICK_SECTION_ERROR',repr(e),flush=True);record('Quick settings mouse section',False)
+ import traceback;traceback.print_exc();print('QUICK_SECTION_ERROR',repr(e),flush=True);record('Quick settings mouse section',False,repr(e))
  # fall back to opening Settings directly so the Settings checks still run
  cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(5)
 print('SETTINGS_TARGETS_AFTER_MOUSE',json.dumps([{'id':p['id'],'url':p.get('url','')} for p in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json'))]),flush=True)
@@ -136,18 +139,34 @@ page=cand[0]
 ws=websocket.create_connection(page['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60)
 record('Quick settings All settings',js("document.querySelector('#settings').open"))
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
+def settings_visible(name):
+ """The Settings card (640 px wide, #f3f6fc, centred) is really on screen, not Google and not the 360 px Quick settings panel."""
+ shot(name);im=uim.load_ppm(v/('ui-'+name+'.ppm'));bb=uim.bbox(uim.mask(im,'#f3f6fc',3,(200,0,1080,744)),20000)
+ return bool(bb) and 632<=bb[2]-bb[0]<=648 and abs((bb[0]+bb[2])/2-640)<=8
+def foreground_settings():
+ for attempt in range(5):
+  key('esc');time.sleep(.5)
+  try:cdp('Page.bringToFront')
+  except Exception as e:print('BRING_TO_FRONT_ERROR',repr(e),flush=True)
+  time.sleep(2)
+  if settings_visible('settings-visible-check'):return True
+ return False
 def settings_layout():
+ vis=foreground_settings();record('Settings page is in the foreground and visible (pixel check of the 640 px card)',vis)
+ if not vis:
+  record('Settings layout and scroll frames',False,'Settings not visible, so nothing below was measured');return
  keys=js("[...document.querySelectorAll('#settings .row .key')].map(e=>e.getBoundingClientRect().left)")
  btns=js("[...document.querySelectorAll('#settings .row button')].map(e=>e.getBoundingClientRect().right)")
  heads=js("[...document.querySelectorAll('#settings h2,#settings h3')].map(e=>e.getBoundingClientRect().left)")
- record('Settings: row labels share one left edge',keys and max(keys)-min(keys)<=1)
- record('Settings: row buttons share one right edge',btns and max(btns)-min(btns)<=1)
- record('Settings: headings share the label left edge',heads and keys and max(heads+keys)-min(heads+keys)<=1)
+ record('Settings: row labels share one left edge',keys and max(keys)-min(keys)<=1,keys)
+ record('Settings: row buttons share one right edge',btns and max(btns)-min(btns)<=1,btns)
+ record('Settings: headings share the label left edge',heads and keys and max(heads+keys)-min(heads+keys)<=1,heads+keys)
  record('Settings: no horizontal overflow',js("document.querySelector('#settings').scrollWidth<=document.querySelector('#settings').clientWidth+1"))
  record('Settings: no raw nmcli text',not js("/enp0s3:|:connected|Volume: 0\\./.test(document.querySelector('#settings').textContent)"))
  record('Settings: Bluetooth and status lines are separate elements',js("document.querySelector('#bluetooth-state').textContent.split('\\n').length===1"))
  for pos,name in ((0,'top'),(0.5,'middle'),(1,'bottom')):
-  js("(()=>{let d=document.querySelector('#settings');d.scrollTop=(d.scrollHeight-d.clientHeight)*"+str(pos)+"})()");time.sleep(1);shot('settings-'+name)
+  js("(()=>{let d=document.querySelector('#settings');d.scrollTop=(d.scrollHeight-d.clientHeight)*"+str(pos)+"})()");time.sleep(1)
+  record('Settings scroll frame '+name+' shows the Settings card',settings_visible('settings-'+name))
  js("document.querySelector('#settings').scrollTop=0")
 settings_layout()
 for button in ['volume-up','volume-down','mute']:
@@ -187,10 +206,10 @@ try:
  shot('taskbar-two-windows');im=uim.load_ppm(v/'ui-taskbar-two-windows.ppm');shb=uim.bbox(uim.mask(im,'#e0e8f6',7,(0,700,1280,800)),2000)
  els=uim.shelf_elements(im,shb) if shb else []
  centre=[e for e in els if 300<=e[0] and e[2]<=980];n0=len(centre)
- record('Taskbar shows app buttons for two windows',n0>=4)
+ record('Taskbar shows app buttons for two windows',n0>=4,[tuple(e) for e in els])
  if n0>=4:
   guest_middle(*C(centre[-1]));shot('taskbar-after-middle-close');im2=uim.load_ppm(v/'ui-taskbar-after-middle-close.ppm');els2=uim.shelf_elements(im2,shb);n1=len([e for e in els2 if 300<=e[0] and e[2]<=980])
-  record('Taskbar middle-click closes that window',n1==n0-1)
+  record('Taskbar middle-click closes that window',n1==n0-1,f'{n0} -> {n1} centre buttons')
 except Exception as e:record('Taskbar middle-click close',False);print('TASKBAR_ERROR',repr(e),flush=True)
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')

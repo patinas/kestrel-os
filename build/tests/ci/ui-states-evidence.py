@@ -78,15 +78,20 @@ def shelf_report(img,label):
  if 'window open' in label:
   if not act:rec(label+': active taskbar button found by its #a6c4eb highlight',None,'none of the centre elements has the active fill')
   else:
-   a=act[0];ink=np.abs(img[a[1]+2:a[3]-2,a[0]+2:a[2]-2]-np.array(U.hexc('#a6c4eb'))).sum(2)>90;ys,xs=np.where(ink)
+   a=act[0];h=a[3]-a[1];w=a[2]-a[0];yy,xx=np.mgrid[0:h,0:w];circ=((xx-(w-1)/2)**2+(yy-(h-1)/2)**2)<=(min(w,h)/2-1.5)**2
+   diff=np.abs(img[a[1]:a[3],a[0]:a[2]]-np.array(U.hexc('#a6c4eb'))).sum(2)>90;ink=diff&circ;ys,xs=np.where(ink)
    if len(xs)<50:rec(label+': active taskbar icon measurable',None,'no icon ink')
    else:
-    ib=[a[0]+2+int(xs.min()),a[1]+2+int(ys.min()),a[0]+2+int(xs.max())+1,a[1]+2+int(ys.max())+1];dx=(ib[0]+ib[2])/2-(a[0]+a[2])/2;dy=(ib[1]+ib[3])/2-(a[1]+a[3])/2
+    ib=[a[0]+int(xs.min()),a[1]+int(ys.min()),a[0]+int(xs.max())+1,a[1]+int(ys.max())+1];dx=(ib[0]+ib[2])/2-(a[0]+a[2])/2;dy=(ib[1]+ib[3])/2-(a[1]+a[3])/2
     rec(label+': active taskbar icon is centred in its highlight (+-1 px both axes)',abs(dx)<=1 and abs(dy)<=1,f'highlight {a} icon {ib} offset ({dx:+.1f},{dy:+.1f})')
-    rec(label+': active highlight is 40x40 and centred in the shelf',abs((a[2]-a[0])-40)<=1 and abs((a[3]-a[1])-40)<=1 and abs((a[1]+a[3])/2-cy)<=1,a)
-    ring=img[a[1]-3:a[3]+3,a[0]-3:a[2]+3];halo=np.abs(ring-np.array(U.hexc(SHELF))).sum(2)
-    cols=np.where((halo>30).sum(0)>0)[0];rows=np.where((halo>30).sum(1)>0)[0]
-    if len(cols):rec(label+': no shadow or halo outside the highlight (equal margin left/right and top/bottom)',abs((cols.min()+a[0]-3)-a[0])<=1 and abs((cols.max()+1+a[0]-3)-a[2])<=1 and abs((rows.min()+a[1]-3)-a[1])<=1 and abs((rows.max()+1+a[1]-3)-a[3])<=1,f'halo x {cols.min()+a[0]-3}..{cols.max()+1+a[0]-3} y {rows.min()+a[1]-3}..{rows.max()+1+a[1]-3} vs highlight {a}')
+    rec(label+': active highlight is 40x40 and centred in the shelf',abs(w-40)<=1 and abs(h-40)<=1 and abs((a[1]+a[3])/2-cy)<=1,a)
+    # the highlight is a rounded square with a 4 px margin around the 32 px icon: its fill must reach the circle edge equally on all four sides at the middle row/column
+    mr=img[(a[1]+a[3])//2,a[0]-3:a[2]+3];mc=img[a[1]-3:a[3]+3,(a[0]+a[2])//2]
+    fl=lambda arr:[i for i,c in enumerate(arr) if np.abs(c-np.array(U.hexc('#a6c4eb'))).sum()<=40]
+    fr,fc=fl(mr),fl(mc)
+    if fr and fc:
+     L0,R0=fr[0]-3+a[0],fr[-1]+1-3+a[0];T0,B0=fc[0]-3+a[1],fc[-1]+1-3+a[1]
+     rec(label+': highlight is symmetric around the icon (equal left/right and top/bottom margin, +-2 px)',abs((ib[0]-L0)-(R0-ib[2]))<=2 and abs((ib[1]-T0)-(B0-ib[3]))<=2,f'fill x {L0}..{R0}, y {T0}..{B0}; icon {ib}')
  d={'screen':[0,0,1280,800],'shelf':sh}
  rules(label,d)
  return sh,els

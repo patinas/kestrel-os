@@ -6,7 +6,7 @@
 E=$VM/evidence-out; rm -rf "$E"; mkdir -p "$E"
 cp "$VM"/ui-*.jpg "$E"/ 2>/dev/null || true
 for j in ui-state-results.json control-results.json; do [ ! -f "$VM/$j" ] || cp "$VM/$j" "$E/$j"; done
-{ [ ! -f "$VM/ui-log.txt" ] || grep -E '^(CONTROL_RESULT|CONTROL_FINAL|UI_STATE|AUDIO_EFFECT|SETTINGS_TARGETS_AFTER_MOUSE|Traceback|  File |[A-Za-z]+Error|StopIteration|RuntimeError)' "$VM/ui-log.txt"; } > "$E/log-excerpt.txt" || true
+{ [ ! -f "$VM/ui-log.txt" ] || grep -E '^(QUICK_|BRING_TO_FRONT|TITLEBAR_|TASKBAR_|CONTROL_RESULT|CONTROL_FINAL|UI_STATE|AUDIO_EFFECT|SETTINGS_TARGETS_AFTER_MOUSE|Traceback|  File |[A-Za-z]+Error|StopIteration|RuntimeError)' "$VM/ui-log.txt"; } > "$E/log-excerpt.txt" || true
 # Privacy gate: only these file types, and refuse anything that looks like a URL, email or token.
 find "$E" -type f ! \( -name '*.jpg' -o -name '*.json' -o -name 'log-excerpt.txt' \) -delete
 if grep -Eil 'trycloudflare|@[a-z0-9-]+\.[a-z]|ghp_|github_pat_|gho_|ghs_|password=|token=' "$E"/*.json "$E"/log-excerpt.txt 2>/dev/null; then echo 'privacy gate: suspicious text in evidence, not publishing'; exit 1; fi

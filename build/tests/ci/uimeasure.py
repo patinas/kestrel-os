@@ -25,7 +25,7 @@ def shelf_elements(img,sh,shelf_hex='#e0e8f6'):
     out=[]
     for e in blocks(non,1,(sh[0],mid-4,sh[2],mid+4),1,3):
         if e[2]-e[0]<20:continue
-        col=non[sh[1]+4:sh[3]-4,e[0]:e[2]];ys=np.where(col.sum(1)>=0.6*(e[2]-e[0]))[0]
+        cx=(e[0]+e[2])//2;col=non[sh[1]+4:sh[3]-4,cx-3:cx+4];ys=np.where(col.sum(1)>=6)[0]   # centre columns: pills are circles/stadiums, so full-width rows near top and bottom are short
         if len(ys):out.append([e[0],int(sh[1]+4+ys.min()),e[2],int(sh[1]+4+ys.max()+1)])
     return out
 def blocks(m,rowmin,box,rgap=2,cgap=2):
