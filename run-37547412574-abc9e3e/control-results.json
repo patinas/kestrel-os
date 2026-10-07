@@ -1,0 +1,186 @@
+[
+  {
+    "control": "Quick slider mouse effect",
+    "result": "PASS"
+  },
+  {
+    "control": "Quick mute mouse effect",
+    "result": "PASS"
+  },
+  {
+    "control": "Quick settings mouse section",
+    "result": "FAIL"
+  },
+  {
+    "control": "Quick settings All settings",
+    "result": "PASS"
+  },
+  {
+    "control": "Shelf process",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings direct entry",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: row labels share one left edge",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: row buttons share one right edge",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: headings share the label left edge",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: no horizontal overflow",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: no raw nmcli text",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings: Bluetooth and status lines are separate elements",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings volume-up effect",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings volume-up display",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings volume-down effect",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings volume-down display",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings mute effect",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings mute display",
+    "result": "PASS"
+  },
+  {
+    "control": "Advanced initially off",
+    "result": "PASS"
+  },
+  {
+    "control": "Terminal initially disabled",
+    "result": "PASS"
+  },
+  {
+    "control": "Installer options unavailable disclosure",
+    "result": "PASS"
+  },
+  {
+    "control": "Touchpad/lid/lock unavailable disclosure",
+    "result": "PASS"
+  },
+  {
+    "control": "Hardware battery truthful",
+    "result": "PASS"
+  },
+  {
+    "control": "Network state displayed",
+    "result": "PASS"
+  },
+  {
+    "control": "Bluetooth unavailable truthful",
+    "result": "PASS"
+  },
+  {
+    "control": "Settings network setup",
+    "result": "PIXEL_REVIEW"
+  },
+  {
+    "control": "Settings bluetooth setup",
+    "result": "PIXEL_REVIEW"
+  },
+  {
+    "control": "Settings Close returns to Google",
+    "result": "PASS"
+  },
+  {
+    "control": "Titlebar maximize/restore button by mouse changes window state",
+    "result": "PASS"
+  },
+  {
+    "control": "Titlebar maximize/restore button toggles back",
+    "result": "PASS"
+  },
+  {
+    "control": "Taskbar shows app buttons for two windows",
+    "result": "FAIL"
+  },
+  {
+    "control": "New quick-panel Close mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Quick panel Close pixel review",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Shelf launcher/clock pixel review",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Shelf launcher/clock mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Launcher Browser tile mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Launcher Mail/Video/Settings/Terminal tile launches",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Quick panel Network setup mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "PWA install/relaunch",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Installer options",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Hardware media/brightness/touchpad/lid",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Chrome sync/keyring",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Advanced password enable/disable",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Signed OS update",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Gaming mode",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Refresh Chrome",
+    "result": "UNVERIFIED"
+  }
+]
