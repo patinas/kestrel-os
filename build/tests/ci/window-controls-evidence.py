@@ -53,14 +53,37 @@ for _ in range(30):
 if ws is None:raise RuntimeError('CI Chrome debug unavailable')
 seq=0
 results=[]
+import atexit
+def _write_results():
+ try:v.joinpath('control-results.json').write_text(json.dumps(results,indent=2))
+ except Exception as e:print('RESULTS_WRITE_ERROR',repr(e),flush=True)
+atexit.register(_write_results)
+def reconnect():
+ global ws
+ try:ws.close()
+ except Exception:pass
+ last=None
+ for _ in range(20):
+  try:
+   pages=[x for x in json.load(urllib.request.urlopen('http://127.0.0.1:19222/json',timeout=10)) if x['type']=='page']
+   pick=[x for x in pages if '8765' in x['url']] or pages
+   ws=websocket.create_connection(pick[0]['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222'),origin='http://localhost',timeout=60);return
+  except Exception as e:last=e;time.sleep(1)
+ raise RuntimeError('CDP reconnect failed: '+repr(last))
 def cdp(method,params={}):
  global seq
- seq+=1;ws.send(json.dumps({'id':seq,'method':method,'params':params}))
- while True:
-  x=json.loads(ws.recv())
-  if x.get('id')==seq:
-   if 'error' in x:raise RuntimeError(x['error'])
-   return x.get('result',{})
+ for attempt in range(4):
+  try:
+   seq+=1;ws.send(json.dumps({'id':seq,'method':method,'params':params}))
+   while True:
+    x=json.loads(ws.recv())
+    if x.get('id')==seq:
+     if 'error' in x:raise RuntimeError(x['error'])
+     return x.get('result',{})
+  except (ConnectionError,websocket.WebSocketException,OSError) as e:
+   print('CDP_RECONNECT',method,type(e).__name__,flush=True)
+   if attempt==3:raise
+   time.sleep(1);reconnect()
 def js(expression):return cdp('Runtime.evaluate',{'expression':expression,'returnByValue':True,'awaitPromise':True}).get('result',{}).get('value')
 def mouse(x,y):
  for type in ['mousePressed','mouseReleased']:cdp('Input.dispatchMouseEvent',{'type':type,'x':x,'y':y,'button':'left','clickCount':1})
@@ -145,8 +168,8 @@ def settings_visible(name):
  return bool(bb) and 632<=bb[2]-bb[0]<=648 and abs((bb[0]+bb[2])/2-640)<=8
 def foreground_settings():
  for attempt in range(5):
-  key('esc');time.sleep(.5)
-  try:cdp('Page.bringToFront')
+  try:
+   cdp('Page.bringToFront');print('SETTINGS_DIALOG_OPEN',js("(()=>{let d=document.querySelector('#settings');if(!d.open)d.showModal();return d.open})()"),flush=True)
   except Exception as e:print('BRING_TO_FRONT_ERROR',repr(e),flush=True)
   time.sleep(2)
   if settings_visible('settings-visible-check'):return True

@@ -63,6 +63,7 @@ let refreshing=null;async function refresh(){if(refreshing)return refreshing;ref
 function go(e){e.preventDefault();var v=document.getElementById('q').value.trim();if(!v)return;
 location.href=/^[^\s]+\.[^\s]+$/.test(v)?(/^https?:/.test(v)?v:'https://'+v):'https://duckduckgo.com/?q='+encodeURIComponent(v)}
 function t(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+document.getElementById('settings').addEventListener('close',()=>{location.href='https://www.google.com'});
 document.getElementById('settings').showModal();
 t();setInterval(t,15000)
 </script></body></html>
