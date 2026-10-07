@@ -97,7 +97,12 @@ def launch_tile(name,needle):
   park_pointer();shot('extra-tile-dismiss-'+name.lower())
   record('Launcher '+name+' tile dismisses launcher',probe()['processes']['kestrel-launcher']==0)
   fresh=[p for p in pages_now() if p['id'] not in old and not p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:'))]
-  record('Launcher '+name+' mouse launch',bool(fresh) and (needle is None or any(needle in p['url'] for p in fresh)),[p['url'][:120] for p in fresh])
+  from urllib.parse import urlparse
+  def destination(url):
+   if name=='Mail':
+    u=urlparse(url);return u.hostname in ('mail.google.com','accounts.google.com') or (u.hostname=='workspace.google.com' and '/gmail/' in u.path)
+   return needle is None or needle in url
+  record('Launcher '+name+' mouse launch',bool(fresh) and any(destination(p['url']) for p in fresh),[p['url'][:180] for p in fresh])
   park_pointer();shot('extra-tile-'+name.lower())
   if fresh:
    connect_page(fresh[0]);cdp('Page.bringToFront')
@@ -152,6 +157,7 @@ def click_with_confirm(point):
 def advanced_interactive():
  password=''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(24))
  try:
+  print('ADVANCED_OWNERSHIP',json.dumps(probe().get('ownership',{})),flush=True)
   close_panels();cdp('Page.bringToFront');cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(3);cdp('Page.enable')
   # Click through the real checkbox and JS confirmation, then type only into getpass.
   point=js("(()=>{let e=document.querySelector('#advanced');e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
@@ -164,7 +170,7 @@ def advanced_interactive():
   print('DIALOG_CLICK',json.dumps({'targetId':page['id'],'screenPoint':point,'offset':[pixel[0]-dom[0],pixel[1]-dom[1]]}),flush=True)
   click_with_confirm(point);time.sleep(3)
   t=image_text('advanced-password-prompt')
-  if 'password' not in t:raise RuntimeError('Password prompt not visible; no secret typed')
+  if 'choose advanced sudo password' not in t:raise RuntimeError('Exact getpass prompt not visible; no secret typed')
   text(password);key('ret');time.sleep(1)
   t=image_text('advanced-repeat-prompt')
   if 'repeat password' not in t:raise RuntimeError('Repeat getpass prompt not visible; second secret not typed')
@@ -207,9 +213,19 @@ def pwa_install():
   print('PWA_INSTALLABILITY',json.dumps(cdp('Page.getInstallabilityErrors')),flush=True)
   print('PWA_MANIFEST',json.dumps(cdp('Page.getAppManifest'))[:700],flush=True)
   # PWA experimental CDP is absent in this Chrome. Exercise the real menu.
-  cdp('Page.bringToFront');key('alt','f');time.sleep(1)
-  menu_click(('cast','save','share'),'pwa-menu');time.sleep(1)
-  menu_click(('install',),'pwa-install-menu');time.sleep(1)
+  cdp('Page.bringToFront');time.sleep(1)
+  key('esc');park_pointer();shot('extra-pwa-address-install')
+  crop=v/'pwa-address.png'
+  subprocess.run(['convert',str(v/'ui-extra-pwa-address-install.ppm'),'-crop','250x45+950+65','-resize','300%',str(crop)],check=True,capture_output=True)
+  import csv,io
+  r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
+  words=[]
+  for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t'):
+   if w.get('text','').strip():
+    w['left']=str(950+int(w['left'])//3);w['top']=str(65+int(w['top'])//3);w['width']=str(max(1,int(w['width'])//3));w['height']=str(max(1,int(w['height'])//3));words.append(w)
+  install=[w for w in words if w['text'].lower()=='install' and 60<=int(w['top'])<=105 and 900<=int(w['left'])<1200]
+  if len(install)!=1:raise RuntimeError('Address-bar Install button not unambiguously visible')
+  guest_click(*uim.center(word_rect(install[0])));time.sleep(1)
   menu_click(('install',),'pwa-install-confirm');installed=True;time.sleep(5)
   p=next(p for p in pages_now() if p['url'].startswith(manifest) and p['id']!=page['id']);connect_page(p);cdp('Page.bringToFront')
   record('PWA installs and opens standalone through Chrome subsystem',js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"));shot('extra-pwa-installed');cdp('Page.close');time.sleep(2)

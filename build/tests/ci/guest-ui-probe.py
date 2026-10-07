@@ -11,7 +11,12 @@ def status():
    args=p.read_bytes().split(b'\0');names={Path(x.decode()).name for x in args[:2] if x}
    for n in counts:counts[n]+=int(n in names)
   except (OSError,UnicodeError):pass
- return {'processes':counts,'enabled':(D/'terminal-enabled').exists(),'password_present':(D/'sudo-password').exists()}
+ ownership={}
+ for name in ('/etc/sudoers','/etc/sudoers.d','/etc/sudoers.d/kestrel-advanced','/etc/pam.d/kestrel-sudo','/usr/local/bin/kestrel-advanced-toggle'):
+  p=Path(name)
+  if p.exists():
+   st=p.stat();ownership[name]={'uid':st.st_uid,'gid':st.st_gid,'mode':oct(st.st_mode & 0o777)}
+ return {'ownership':ownership,'processes':counts,'enabled':(D/'terminal-enabled').exists(),'password_present':(D/'sudo-password').exists()}
 class Handler(http.server.BaseHTTPRequestHandler):
  def log_message(self,*a):pass
  def do_GET(self):

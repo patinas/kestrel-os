@@ -85,7 +85,9 @@ for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/sudoers.d etc
 done
 find "$T/usr/local/bin" -maxdepth 1 -type f -name "kestrel-*" -exec chmod 755 {} +
 find "$T/usr/local/lib/kestrel" -maxdepth 1 -type f -name "*.sh" -exec chmod 755 {} +
-chown -R root:root "$T/usr/local/bin" "$T/usr/local/lib/kestrel"
+chown -R root:root "$T/usr/local/bin" "$T/usr/local/lib/kestrel" "$T/etc/sudoers.d"
+chown root:root "$T/etc/pam.d/kestrel-sudo"
+chmod 750 "$T/etc/sudoers.d"
 mkdir -p "$T/etc/systemd/system/getty@tty1.service.d" "$T/etc/systemd/system/multi-user.target.wants"
 for unit in kestrel-gpu-select.service kestrel-firstboot.service kestrel-health.service; do
   cp "$SRC/etc/systemd/system/$unit" "$T/etc/systemd/system/"
