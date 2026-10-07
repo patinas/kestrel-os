@@ -60,3 +60,26 @@ def glyph_box(img,r,thresh=70):
     if len(xs)<8:return None
     return [int(i[0]+xs.min()),int(i[1]+ys.min()),int(i[0]+xs.max()+1),int(i[1]+ys.max()+1)]
 def luma(c): return 0.299*c[0]+0.587*c[1]+0.114*c[2]
+
+def settings_card(img):
+    """640 px Settings card, excluding sparse same-colour page pixels.
+    JPEG evidence shifts #f3f6fc a few values (observed #f4f7ff); the
+    tolerance covers that shift. Require sustained row/column support,
+    card height and symmetry rather than one bbox of every matching pixel.
+    The Settings dialog is 90vh of the 630 px page viewport (about 567 px);
+    this also rejects the similarly coloured 640x480 launcher.
+    """
+    m=mask(img,'#f3f6fc',10,(200,120,1080,744))
+    rows=np.where(m.sum(1)>=300)[0]
+    if len(rows)<250:return None
+    cols=np.where(m[rows].sum(0)>=100)[0]
+    if len(cols)<600:return None
+    b=[int(cols.min()),int(rows.min()),int(cols.max()+1),int(rows.max()+1)]
+    return b if (632<=b[2]-b[0]<=648 and 540<=b[3]-b[1]<=580
+                 and 130<=b[1]<=175
+                 and abs((b[0]+b[2])/2-img.shape[1]/2)<=8) else None
+
+def shelf_band(img):
+    """Find the shelf only in its 48 px screen band, never in page content."""
+    h,w=img.shape[:2]
+    return bbox(mask(img,'#e0e8f6',7,(0,h-56,w,h-8)),2000)

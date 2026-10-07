@@ -164,8 +164,9 @@ record('Quick settings All settings',js("document.querySelector('#settings').ope
 record('Shelf process',bool(state.get('waybar_running')));record('Settings direct entry',js("document.querySelector('#settings').open"));shot('click-settings-open')
 def settings_visible(name):
  """The Settings card (640 px wide, #f3f6fc, centred) is really on screen, not Google and not the 360 px Quick settings panel."""
- shot(name);im=uim.load_ppm(v/('ui-'+name+'.ppm'));bb=uim.bbox(uim.mask(im,'#f3f6fc',3,(200,0,1080,744)),20000)
- return bool(bb) and 632<=bb[2]-bb[0]<=648 and abs((bb[0]+bb[2])/2-640)<=8
+ park_pointer();shot(name);im=uim.load_ppm(v/('ui-'+name+'.ppm'));bb=uim.settings_card(im)
+ print('SETTINGS_CARD',name,json.dumps(bb),flush=True)
+ return bb is not None
 def foreground_settings():
  for attempt in range(5):
   try:
@@ -212,27 +213,57 @@ for button in ['network','bluetooth']:
   shot('click-bluetooth-unavailable');record('Bluetooth setup disabled without hardware',True);continue
  click('button[onclick="callBridge(\'/'+button+'\')"]');time.sleep(3);shot('click-'+button);key('alt','f4');results.append({'control':'Settings '+button+' setup','result':'PIXEL_REVIEW'})
 click('button[onclick="location.href=\'https://www.google.com\'"]');time.sleep(3);record('Settings Close returns to Google',js("location.hostname==='www.google.com'"));shot('click-settings-closed')
-# Window controls by real mouse (Chrome titlebar buttons at their measured 1280x800 positions) and taskbar middle-click close.
-def wstate():
- try:return cdp('Browser.getWindowForTarget')['bounds'].get('windowState')
- except Exception as e:return 'error '+repr(e)
+# Window controls by real mouse. The max glyph is 39 px from the right
+# edge, 13 px from the top in the installed SSD theme (both real frames).
+# Re-read bounds before each click: a restored window may be only 640 px wide.
+titlebar_target=page['id']
+def target_window(step):
+ info=cdp('Browser.getWindowForTarget',{'targetId':titlebar_target})
+ print('TITLEBAR_TARGET',step,json.dumps({'targetId':titlebar_target,**info}),flush=True)
+ return info
+def click_target_maximize(step):
+ cdp('Page.bringToFront');time.sleep(1)
+ info=target_window(step+'-before');b=info['bounds']
+ if b.get('windowState') not in ('normal','maximized'):raise RuntimeError('Target not visible: '+str(b))
+ x=b['left']+b['width']-39;y=b['top']+13
+ if not (0<=x<1280 and 0<=y<744):raise RuntimeError('Target titlebar outside screen: '+str(b))
+ print('TITLEBAR_CLICK',step,json.dumps({'targetId':titlebar_target,'windowId':info['windowId'],'bounds':b,'point':[x,y]}),flush=True)
+ guest_click(x,y);time.sleep(2);park_pointer();shot('titlebar-'+step)
+ return info,target_window(step+'-after')
+def browser_windows():
+ pages=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json',timeout=10))
+ ids=set()
+ for p in pages:
+  if p['type']!='page' or p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:')):continue
+  ids.add(cdp('Browser.getWindowForTarget',{'targetId':p['id']})['windowId'])
+ return ids
 def guest_middle(x,y):
  cmd('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':int(x*32767/1280)}},{'type':'abs','data':{'axis':'y','value':int(y*32767/800)}}]});time.sleep(.3)
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':True,'button':'middle'}}]});time.sleep(.12)
  cmd('input-send-event',{'events':[{'type':'btn','data':{'down':False,'button':'middle'}}]});time.sleep(2)
 try:
- w0=wstate();guest_click(1241,13);time.sleep(2);w1=wstate();shot('titlebar-maximize-click');record('Titlebar maximize/restore button by mouse changes window state',w0!=w1 and not str(w1).startswith('error'))
- guest_click(1241,13);time.sleep(2);w2=wstate();record('Titlebar maximize/restore button toggles back',w2==w0)
+ w0,w1=click_target_maximize('maximize-click')
+ record('Titlebar maximize/restore button by mouse changes window state',
+        w0['windowId']==w1['windowId'] and w0['bounds']['windowState']!=w1['bounds']['windowState'],[w0,w1])
+ w1b,w2=click_target_maximize('restore-click')
+ record('Titlebar maximize/restore button toggles back',
+        w1b['windowId']==w2['windowId']==w0['windowId'] and w2['bounds']['windowState']==w0['bounds']['windowState'],[w1b,w2])
 except Exception as e:record('Titlebar maximize/restore by mouse',False);print('TITLEBAR_ERROR',repr(e),flush=True)
 try:
- key('ctrl','n');time.sleep(6)
- shot('taskbar-two-windows');im=uim.load_ppm(v/'ui-taskbar-two-windows.ppm');shb=uim.bbox(uim.mask(im,'#e0e8f6',7,(0,700,1280,800)),2000)
+ cdp('Page.bringToFront');time.sleep(1);before=browser_windows()
+ key('ctrl','n');time.sleep(6);opened=browser_windows()
+ park_pointer();shot('taskbar-two-windows');im=uim.load_ppm(v/'ui-taskbar-two-windows.ppm');shb=uim.shelf_band(im)
  els=uim.shelf_elements(im,shb) if shb else []
  centre=[e for e in els if 300<=e[0] and e[2]<=980];n0=len(centre)
- record('Taskbar shows app buttons for two windows',n0>=4,[tuple(e) for e in els])
+ print('TASKBAR_LAYOUT',json.dumps({'shelf':shb,'centre':centre,'windows':sorted(opened)}),flush=True)
+ record('Taskbar shows app buttons for two or more windows',len(opened)>=2 and len(opened)==len(before)+1 and n0==len(opened)+2,[tuple(e) for e in els])
  if n0>=4:
-  guest_middle(*C(centre[-1]));shot('taskbar-after-middle-close');im2=uim.load_ppm(v/'ui-taskbar-after-middle-close.ppm');els2=uim.shelf_elements(im2,shb);n1=len([e for e in els2 if 300<=e[0] and e[2]<=980])
-  record('Taskbar middle-click closes that window',n1==n0-1,f'{n0} -> {n1} centre buttons')
+  guest_middle(*uim.center(centre[-1]));park_pointer();shot('taskbar-after-middle-close')
+  im2=uim.load_ppm(v/'ui-taskbar-after-middle-close.ppm');shb2=uim.shelf_band(im2)
+  els2=uim.shelf_elements(im2,shb2) if shb2 else [];n1=len([e for e in els2 if 300<=e[0] and e[2]<=980]);closed=browser_windows()
+  record('Taskbar middle-click closes that window',n1==n0-1 and len(closed)==len(opened)-1 and closed==before,
+         {'buttons':[n0,n1],'windowsBefore':sorted(opened),'windowsAfter':sorted(closed)})
+ else:record('Taskbar middle-click closes that window',False,'No measurable browser button to click')
 except Exception as e:record('Taskbar middle-click close',False);print('TASKBAR_ERROR',repr(e),flush=True)
 # Launcher search via real keys, no script-generated result.
 key('meta_l');time.sleep(2);text('mail');time.sleep(2);shot('click-launcher-search');key('esc')
