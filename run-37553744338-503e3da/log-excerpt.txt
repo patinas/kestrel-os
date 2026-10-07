@@ -1,0 +1,185 @@
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+ConnectionResetError [Errno 104] Connection reset by peer
+CONTROL_RESULT Quick slider mouse effect PASS 
+CONTROL_RESULT Quick mute mouse effect PASS 
+SETTINGS_TARGETS_AFTER_MOUSE [{"id": "8F6CAC474DA8AFCB827882F80F8C8157", "url": "http://127.0.0.1:8765/#settings"}, {"id": "7025BFE892BF7C3250AE2838AED71E07", "url": "chrome://newtab/"}, {"id": "6AB5672F9701A33311DEF0497F888609", "url": "chrome-untrusted://new-tab-page/one-google-bar?paramsencoded="}, {"id": "5B0CBC4212AC63D34785C6200CCEF94C", "url": "chrome://omnibox-popup.top-chrome/"}, {"id": "A942DCC2D227229560EB8682B28D354A", "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html"}, {"id": "96974DF0FF8713FD9335D6288F8D7A16", "url": "https://www.google.com/?zx=1791335083869"}, {"id": "04E271E5B05F021CA10A7FDE35012B96", "url": "chrome://omnibox-popup.top-chrome/"}, {"id": "BF2178B6FF97C1AF94D5F9E556C9EC8C", "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html"}]
+CONTROL_RESULT Quick settings All settings PASS 
+CONTROL_RESULT Shelf process PASS 
+CONTROL_RESULT Settings direct entry PASS 
+SETTINGS_DIALOG_OPEN True
+SETTINGS_DIALOG_OPEN True
+SETTINGS_DIALOG_OPEN True
+SETTINGS_DIALOG_OPEN True
+SETTINGS_DIALOG_OPEN True
+CONTROL_RESULT Settings page is in the foreground and visible (pixel check of the 640 px card) FAIL 
+CONTROL_RESULT Settings layout and scroll frames FAIL Settings not visible, so nothing below was measured
+AUDIO_EFFECT volume-up 'Volume: 0.49' 'Volume: 0.54'
+CONTROL_RESULT Settings volume-up effect PASS 
+CONTROL_RESULT Settings volume-up display PASS 
+AUDIO_EFFECT volume-down 'Volume: 0.54' 'Volume: 0.49'
+CONTROL_RESULT Settings volume-down effect PASS 
+CONTROL_RESULT Settings volume-down display PASS 
+AUDIO_EFFECT mute 'Volume: 0.49' 'Volume: 0.49 [MUTED]'
+CONTROL_RESULT Settings mute effect PASS 
+CONTROL_RESULT Settings mute display PASS 
+CONTROL_RESULT Advanced initially off PASS 
+CONTROL_RESULT Terminal initially disabled PASS 
+CONTROL_RESULT Installer options unavailable disclosure PASS 
+CONTROL_RESULT Touchpad/lid/lock unavailable disclosure PASS 
+CONTROL_RESULT Hardware battery truthful PASS 
+CONTROL_RESULT Network state displayed PASS 
+CONTROL_RESULT Bluetooth unavailable truthful PASS 
+CONTROL_RESULT Settings Close returns to Google PASS 
+CONTROL_RESULT Titlebar maximize/restore button by mouse changes window state PASS 
+CONTROL_RESULT Titlebar maximize/restore button toggles back FAIL 
+CONTROL_RESULT Taskbar shows app buttons for two windows FAIL [(9, 707, 1271, 784)]
+CONTROL_FINAL {"control": "Quick slider mouse effect", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Quick mute mouse effect", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Quick settings All settings", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Shelf process", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings direct entry", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings page is in the foreground and visible (pixel check of the 640 px card)", "result": "FAIL", "detail": ""}
+CONTROL_FINAL {"control": "Settings layout and scroll frames", "result": "FAIL", "detail": "Settings not visible, so nothing below was measured"}
+CONTROL_FINAL {"control": "Settings volume-up effect", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings volume-up display", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings volume-down effect", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings volume-down display", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings mute effect", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings mute display", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Advanced initially off", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Terminal initially disabled", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Installer options unavailable disclosure", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Touchpad/lid/lock unavailable disclosure", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Hardware battery truthful", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Network state displayed", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Bluetooth unavailable truthful", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Settings network setup", "result": "PIXEL_REVIEW"}
+CONTROL_FINAL {"control": "Settings bluetooth setup", "result": "PIXEL_REVIEW"}
+CONTROL_FINAL {"control": "Settings Close returns to Google", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Titlebar maximize/restore button by mouse changes window state", "result": "PASS", "detail": ""}
+CONTROL_FINAL {"control": "Titlebar maximize/restore button toggles back", "result": "FAIL", "detail": ""}
+CONTROL_FINAL {"control": "Taskbar shows app buttons for two windows", "result": "FAIL", "detail": "[(9, 707, 1271, 784)]"}
+CONTROL_FINAL {"control": "New quick-panel Close mouse", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Quick panel Close pixel review", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Shelf launcher/clock pixel review", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Shelf launcher/clock mouse", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Launcher Browser tile mouse", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Launcher Mail/Video/Settings/Terminal tile launches", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Quick panel Network setup mouse", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "PWA install/relaunch", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Installer options", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Hardware media/brightness/touchpad/lid", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Chrome sync/keyring", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Advanced password enable/disable", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Signed OS update", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Gaming mode", "result": "UNVERIFIED"}
+CONTROL_FINAL {"control": "Refresh Chrome", "result": "UNVERIFIED"}
+Traceback (most recent call last):
+  File "/home/runner/work/kestrel-os/kestrel-os/build/tests/ci/window-controls-evidence.py", line 250, in <module>
+RuntimeError: A control assertion failed; inspect CONTROL_RESULTS
+UI_STATE PASS shelf (no windows): shelf elements measured [[16, 748, 56, 788], [596, 748, 636, 788], [644, 748, 684, 788], [1085, 748, 1134, 788], [1142, 748, 1201, 788], [1209, 748, 1264, 788]]
+UI_STATE PASS shelf (no windows): every element is 40 px tall [40, 40, 40, 40, 40, 40]
+UI_STATE PASS shelf (no windows): every element is vertically centred in the 48 px shelf [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+UI_STATE PASS shelf (no windows): icon buttons (left+centre) are one size [(40, 40)]
+UI_STATE PASS shelf (no windows): centre group is centred on the screen (+-2 px) centre 640.0 vs 640
+UI_STATE PASS shelf (no windows): centre group gaps equal [8]
+UI_STATE PASS shelf (no windows): right group gaps equal [8, 8]
+UI_STATE PASS shelf (no windows): left margin == right margin inside shelf 7 vs 7
+UI_STATE PASS shelf (no windows): space left of centre group vs right of it (informational, centre is pinned to screen centre) 540 vs 401
+UI_STATE PASS shelf (no windows): glyph/text is centred inside its pill (+-2 px both axes) [(0.0, 0.0), (0.0, -0.5), (0.0, -0.5), (-0.5, 0.5), (-0.5, 0.0), (0.0, 0.5)]
+UI_STATE PASS shelf (no windows): shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS shelf (no windows): shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS shelf (no windows): shelf height 48 48
+UI_STATE PASS shelf (no windows): shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS shelf (no windows): shelf on 8 px grid (+-2 px for anti-aliased edges) (1262, 48)
+UI_STATE PASS shelf launcher button hover is darker than idle 219->209
+UI_STATE UNMEASURED shelf launcher button pressed state hover 209 pressed 209; Waybar custom modules are GTK event boxes that never get :active, so no pressed styling is possible there (known limitation, buttons in the taskbar do)
+UI_STATE PASS shelf (window open): shelf elements measured [[16, 748, 56, 788], [572, 748, 612, 788], [620, 748, 660, 788], [668, 748, 708, 788], [1085, 748, 1134, 788], [1142, 748, 1201, 788], [1209, 748, 1264, 788]]
+UI_STATE PASS shelf (window open): every element is 40 px tall [40, 40, 40, 40, 40, 40, 40]
+UI_STATE PASS shelf (window open): every element is vertically centred in the 48 px shelf [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+UI_STATE PASS shelf (window open): icon buttons (left+centre) are one size [(40, 40)]
+UI_STATE PASS shelf (window open): centre group is centred on the screen (+-2 px) centre 640.0 vs 640
+UI_STATE PASS shelf (window open): centre group gaps equal [8, 8]
+UI_STATE PASS shelf (window open): right group gaps equal [8, 8]
+UI_STATE PASS shelf (window open): left margin == right margin inside shelf 7 vs 7
+UI_STATE PASS shelf (window open): space left of centre group vs right of it (informational, centre is pinned to screen centre) 516 vs 377
+UI_STATE PASS shelf (window open): glyph/text is centred inside its pill (+-2 px both axes) [(0.0, 0.0), (0.0, -0.5), (0.0, -0.5), (0.0, 0.0), (-0.5, 0.5), (-0.5, 0.0), (0.0, 0.5)]
+UI_STATE PASS shelf (window open): active taskbar icon is centred in its highlight (+-1 px both axes) highlight [668, 748, 708, 788] icon [672, 752, 704, 784] offset (+0.0,+0.0)
+UI_STATE PASS shelf (window open): active highlight is 40x40 and centred in the shelf [668, 748, 708, 788]
+UI_STATE PASS shelf (window open): highlight is symmetric around the icon (equal left/right and top/bottom margin, +-2 px) fill x 668..708, y 748..788; icon [672, 752, 704, 784]
+UI_STATE PASS shelf (window open): shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS shelf (window open): shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS shelf (window open): shelf height 48 48
+UI_STATE PASS shelf (window open): shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS shelf (window open): shelf on 8 px grid (+-2 px for anti-aliased edges) (1262, 48)
+UI_STATE PASS panel rect [912, 316, 1272, 736]
+UI_STATE PASS quick: 2 tiles, Mute, All settings, Close found {'panel': [912, 316, 1272, 736], 'tiles': [[921, 362, 1087, 423], [1097, 362, 1263, 423]], 'mute': [921, 490, 1087, 535], 'wide': [[921, 601, 1263, 647], [921, 658, 1263, 703]]}
+UI_STATE PASS quick: shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS quick: shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS quick: shelf height 48 48
+UI_STATE PASS quick: shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS quick: panel bottom gap above shelf == shelf side gutter 8 vs 9
+UI_STATE PASS quick: panel right gutter == shelf right gutter 8 vs 9
+UI_STATE PASS quick: panel width 360 360
+UI_STATE PASS quick: panel tiles same size [(166, 61)]
+UI_STATE PASS quick: panel tiles column pitch equal [176]
+UI_STATE PASS quick: panel tiles row pitch equal []
+UI_STATE PASS quick: panel_tiles left inset == right inset inside panel 9 vs 9
+UI_STATE PASS quick: shelf on 8 px grid (+-2 px for anti-aliased edges) (1262, 48)
+UI_STATE PASS quick: panel on 8 px grid (+-2 px for anti-aliased edges) (360, 420)
+UI_STATE PASS quick: tile row, Mute+slider row and wide buttons share the same left and right edges tiles (921, 1263), mute 921, wide [(921, 1263), (921, 1263)]
+UI_STATE PASS quick: Mute width == tile width (aligned to tile column) (166, 166)
+UI_STATE PASS quick: Mute, All settings and Close are all 48 px tall [45, 46, 45]
+UI_STATE PASS quick: wide button 0 left inset == right inset in panel 9 vs 9
+UI_STATE PASS quick: wide button 1 left inset == right inset in panel 9 vs 9
+UI_STATE PASS quick: panel has no titlebar (top of panel is the Quick settings heading) [912, 316, 1272, 736]
+UI_STATE PASS quick Network tile hover is darker than idle 233->230
+UI_STATE PASS quick Network tile pressed is darker than hover 230->214
+UI_STATE PASS quick panel still open after a cancelled press (no accidental click) 
+UI_STATE PASS quick focus ring visible after Tab 1133
+UI_STATE PASS quick Mute button toggles real mute state 'Volume: 0.49'->'Volume: 0.49 [MUTED]'
+UI_STATE PASS quick Close button dismisses panel 
+UI_STATE PASS quick panel reopens at the same rect [912, 316, 1272, 736] vs [912, 316, 1272, 736]
+UI_STATE PASS quick panel Escape dismisses 
+UI_STATE PASS quick All settings closes the panel None
+UI_STATE PASS quick All settings opens the Settings page ['http://127.0.0.1:8765/#settings', 'chrome://omnibox-popup.top-chrome/', 'chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html']
+UI_STATE PASS launcher rect [320, 256, 960, 736]
+UI_STATE PASS launcher is 640x480 with no titlebar (640, 480)
+UI_STATE PASS launcher tiles measured (5 expected) [[387, 372, 503, 512], [517, 372, 633, 512], [647, 372, 763, 512], [777, 372, 893, 512], [582, 526, 698, 666]]
+UI_STATE PASS launcher: shelf left gutter == right gutter 9 vs 9
+UI_STATE PASS launcher: shelf bottom gutter == side gutter 8 vs 9
+UI_STATE PASS launcher: shelf height 48 48
+UI_STATE PASS launcher: shelf centered on screen 640.0 vs 640.0
+UI_STATE PASS launcher: launcher tiles same size [(116, 140)]
+UI_STATE PASS launcher: launcher tiles column pitch equal [130, 130, 130]
+UI_STATE PASS launcher: launcher tiles row pitch equal []
+UI_STATE PASS launcher: launcher_tiles left inset == right inset inside launcher 67 vs 67
+UI_STATE PASS launcher: shelf on 8 px grid (+-2 px for anti-aliased edges) (1262, 48)
+UI_STATE PASS launcher: launcher on 8 px grid (+-2 px for anti-aliased edges) (640, 480)
+UI_STATE PASS launcher: all tiles are one size [(116, 140)]
+UI_STATE PASS launcher is centred horizontally on the screen (+-1 px) 640.0
+UI_STATE PASS launcher bottom gap above shelf == shelf side gutter 8 vs 9
+UI_STATE PASS launcher: short last row is centred in the window 640.0 vs 640.0
+UI_STATE PASS launcher tile hover is darker than idle 233->218
+UI_STATE PASS launcher tile pressed is darker than hover 218->193
+UI_STATE PASS launcher still open after cancelled press 
+UI_STATE PASS launcher search "mail" leaves exactly 1 tile [[582, 372, 698, 512]]
+UI_STATE PASS launcher filtered tile is centred 640.0
+UI_STATE PASS launcher Escape dismisses 
+UI_STATE PASS launcher reopens at the same rect [320, 256, 960, 736] vs [320, 256, 960, 736]
+UI_STATE PASS media key Volume Down changes real volume 'Volume: 0.49'->'Volume: 0.39'
+UI_STATE PASS media key Volume Up restores volume 'Volume: 0.39'->'Volume: 0.49'
+UI_STATE PASS media key Mute toggles real mute state 'Volume: 0.49'->'Volume: 0.49 [MUTED]'
+UI_STATE UNMEASURED Brightness keys not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Play/Pause/Next/Prev keys not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Taskbar click/middle-click close not exercised here UNMEASURED by design
+UI_STATE UNMEASURED Titlebar buttons by mouse (keyboard equivalents covered in window-controls-evidence) not exercised here UNMEASURED by design
+UI_STATE_SUMMARY {"PASS": 92, "FAIL": 0, "UNMEASURED": 5}
