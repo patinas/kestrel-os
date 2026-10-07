@@ -83,3 +83,25 @@ def shelf_band(img):
     """Find the shelf only in its 48 px screen band, never in page content."""
     h,w=img.shape[:2]
     return bbox(mask(img,'#e0e8f6',7,(0,h-56,w,h-8)),2000)
+
+def titlebar_maximize(img,bounds):
+    """Locate the installed SSD's minimize, maximize, close glyph triplet.
+    CDP bounds guide the search only. labwc can expose a 658 px CDP width
+    for a visibly 640 px window, so never derive a click from that width.
+    Fail closed unless exactly one regularly spaced glyph triplet is found.
+    """
+    h,w=img.shape[:2];top=int(bounds['top']);right=int(bounds['left']+bounds['width'])
+    x0=max(0,right-125);x1=min(w,right+10);y0=max(0,top+6);y1=min(h,top+22)
+    dark=np.max(img[y0:y1,x0:x1],axis=2)<110
+    glyphs=[]
+    for a,b in runs(dark.sum(0),1):
+        if not 4<=b-a<=9:continue
+        ys=np.where(dark[:,a:b].sum(1)>0)[0]
+        glyphs.append([int(x0+a),int(y0+ys.min()),int(x0+b),int(y0+ys.max()+1)])
+    matches=[]
+    for a,b,c in zip(glyphs,glyphs[1:],glyphs[2:]):
+        ca,cb,cc=center(a),center(b),center(c)
+        if (a[3]-a[1]<=3 and 5<=b[3]-b[1]<=9 and 5<=c[3]-c[1]<=9
+            and 24<=cb[0]-ca[0]<=28 and 24<=cc[0]-cb[0]<=28
+            and abs(cb[1]-cc[1])<=1):matches.append({'point':list(cb),'glyphs':[a,b,c]})
+    return matches[0] if len(matches)==1 else None

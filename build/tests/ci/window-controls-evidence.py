@@ -213,9 +213,8 @@ for button in ['network','bluetooth']:
   shot('click-bluetooth-unavailable');record('Bluetooth setup disabled without hardware',True);continue
  click('button[onclick="callBridge(\'/'+button+'\')"]');time.sleep(3);shot('click-'+button);key('alt','f4');results.append({'control':'Settings '+button+' setup','result':'PIXEL_REVIEW'})
 click('button[onclick="location.href=\'https://www.google.com\'"]');time.sleep(3);record('Settings Close returns to Google',js("location.hostname==='www.google.com'"));shot('click-settings-closed')
-# Window controls by real mouse. The max glyph is 39 px from the right
-# edge, 13 px from the top in the installed SSD theme (both real frames).
-# Re-read bounds before each click: a restored window may be only 640 px wide.
+# Window controls by real mouse. Locate visible SSD glyphs before each click.
+# CDP normal bounds can be larger than the visible labwc window.
 titlebar_target=page['id']
 def target_window(step):
  info=cdp('Browser.getWindowForTarget',{'targetId':titlebar_target})
@@ -225,9 +224,12 @@ def click_target_maximize(step):
  cdp('Page.bringToFront');time.sleep(1)
  info=target_window(step+'-before');b=info['bounds']
  if b.get('windowState') not in ('normal','maximized'):raise RuntimeError('Target not visible: '+str(b))
- x=b['left']+b['width']-39;y=b['top']+13
+ park_pointer();shot('titlebar-'+step+'-before')
+ hit=uim.titlebar_maximize(uim.load_ppm(v/('ui-titlebar-'+step+'-before.ppm')),b)
+ if not hit:raise RuntimeError('Unambiguous titlebar glyph triplet not found: '+str(b))
+ x,y=hit['point']
  if not (0<=x<1280 and 0<=y<744):raise RuntimeError('Target titlebar outside screen: '+str(b))
- print('TITLEBAR_CLICK',step,json.dumps({'targetId':titlebar_target,'windowId':info['windowId'],'bounds':b,'point':[x,y]}),flush=True)
+ print('TITLEBAR_CLICK',step,json.dumps({'targetId':titlebar_target,'windowId':info['windowId'],'bounds':b,'pixelGlyphs':hit['glyphs'],'point':[x,y]}),flush=True)
  guest_click(x,y);time.sleep(2);park_pointer();shot('titlebar-'+step)
  return info,target_window(step+'-after')
 def browser_windows():
@@ -256,7 +258,7 @@ try:
  els=uim.shelf_elements(im,shb) if shb else []
  centre=[e for e in els if 300<=e[0] and e[2]<=980];n0=len(centre)
  print('TASKBAR_LAYOUT',json.dumps({'shelf':shb,'centre':centre,'windows':sorted(opened)}),flush=True)
- record('Taskbar shows app buttons for two or more windows',len(opened)>=2 and len(opened)==len(before)+1 and n0==len(opened)+2,[tuple(e) for e in els])
+ record('Taskbar shows Mail, Video and at least three browser buttons',len(opened)>=3 and len(opened)==len(before)+1 and n0==len(opened)+2,[tuple(e) for e in els])
  if n0>=4:
   guest_middle(*uim.center(centre[-1]));park_pointer();shot('taskbar-after-middle-close')
   im2=uim.load_ppm(v/'ui-taskbar-after-middle-close.ppm');shb2=uim.shelf_band(im2)
