@@ -30,6 +30,9 @@ exec docker run --name kestrel-iso-build --rm --privileged --cpus=1 --memory=3g 
   chown 1000:1000 /src/work/x86_64/airootfs/home/kestrel/.bash_profile
   chown -R 0:0 /src/work/x86_64/airootfs/etc/sudoers.d
   chmod 750 /src/work/x86_64/airootfs/etc/sudoers.d
+  # Validate before mkarchiso applies profiledef, so set both included files now.
+  chown 0:0 /src/work/x86_64/airootfs/etc/sudoers.d/kestrel-advanced /src/work/x86_64/airootfs/var/lib/kestrel/sudoers
+  chmod 440 /src/work/x86_64/airootfs/etc/sudoers.d/kestrel-advanced /src/work/x86_64/airootfs/var/lib/kestrel/sudoers
   arch-chroot /src/work/x86_64/airootfs visudo -c
   mkarchiso -v -w /src/work -o /src/out /src/profile
   sha256sum /src/out/*.iso > /src/out/SHA256SUMS
