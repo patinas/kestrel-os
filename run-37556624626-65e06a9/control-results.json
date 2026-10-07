@@ -1,0 +1,235 @@
+[
+  {
+    "control": "Quick slider mouse effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Quick mute mouse effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Quick settings All settings",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Shelf process",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings direct entry",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings page is in the foreground and visible (pixel check of the 640 px card)",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: row labels share one left edge",
+    "result": "PASS",
+    "detail": "[353, 353, 353, 353, 353, 353, 353, 353, 353, 353]"
+  },
+  {
+    "control": "Settings: row buttons share one right edge",
+    "result": "PASS",
+    "detail": "[912, 912, 912, 912, 912]"
+  },
+  {
+    "control": "Settings: headings share the label left edge",
+    "result": "PASS",
+    "detail": "[353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353, 353]"
+  },
+  {
+    "control": "Settings: no horizontal overflow",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: no raw nmcli text",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings: Bluetooth and status lines are separate elements",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame top shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame middle shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings scroll frame bottom shows the Settings card",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-up effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-up display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-down effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings volume-down display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings mute effect",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings mute display",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Advanced initially off",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Terminal initially disabled",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Installer options unavailable disclosure",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Touchpad/lid/lock unavailable disclosure",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Hardware battery truthful",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Network state displayed",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Bluetooth unavailable truthful",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Settings network setup",
+    "result": "PIXEL_REVIEW"
+  },
+  {
+    "control": "Settings bluetooth setup",
+    "result": "PIXEL_REVIEW"
+  },
+  {
+    "control": "Settings Close returns to Google",
+    "result": "PASS",
+    "detail": ""
+  },
+  {
+    "control": "Titlebar maximize/restore button by mouse changes window state",
+    "result": "PASS",
+    "detail": "[{'windowId': 920619660, 'bounds': {'left': 0, 'top': 0, 'width': 1280, 'height': 718, 'windowState': 'maximized'}}, {'windowId': 920619660, 'bounds': {'left': 0, 'top': 0, 'width': 658, 'height': 736, 'windowState': 'normal'}}]"
+  },
+  {
+    "control": "Titlebar maximize/restore by mouse",
+    "result": "FAIL",
+    "detail": ""
+  },
+  {
+    "control": "Taskbar shows app buttons for two or more windows",
+    "result": "PASS",
+    "detail": "[(16, 748, 56, 788), (548, 748, 588, 788), (596, 748, 636, 788), (648, 752, 680, 784), (692, 748, 732, 788), (1085, 748, 1134, 788), (1142, 748, 1201, 788), (1209, 748, 1264, 788)]"
+  },
+  {
+    "control": "Taskbar middle-click closes that window",
+    "result": "PASS",
+    "detail": "{'buttons': [4, 3], 'windowsBefore': [920619662, 920619672], 'windowsAfter': [920619662]}"
+  },
+  {
+    "control": "New quick-panel Close mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Quick panel Close pixel review",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Shelf launcher/clock pixel review",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Shelf launcher/clock mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Launcher Browser tile mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Launcher Mail/Video/Settings/Terminal tile launches",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Quick panel Network setup mouse",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "PWA install/relaunch",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Installer options",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Hardware media/brightness/touchpad/lid",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Chrome sync/keyring",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Advanced password enable/disable",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Signed OS update",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Gaming mode",
+    "result": "UNVERIFIED"
+  },
+  {
+    "control": "Refresh Chrome",
+    "result": "UNVERIFIED"
+  }
+]
