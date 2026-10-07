@@ -11,6 +11,8 @@ if [ "${KESTREL_UI_PROBE:-0}" = 1 ]; then
 [Unit]
 ConditionPathExists=/dev/virtio-ports/kestrel-ci-check
 [Service]
+StandardOutput=journal
+StandardError=journal
 ExecStart=/usr/bin/python3 /usr/local/lib/kestrel-ci/guest-ui-probe.py
 [Install]
 WantedBy=multi-user.target

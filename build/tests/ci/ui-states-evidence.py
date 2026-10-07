@@ -167,7 +167,7 @@ except Exception as e:rec('media keys',False,repr(e))
 for c in ('Brightness keys','Play/Pause/Next/Prev keys'):rec(c+' not exercised here',None,'Requires physical brightness device or a test MPRIS player; not proven')
 controls=json.loads(v.joinpath('control-results.json').read_text()) if v.joinpath('control-results.json').exists() else []
 for label,needed in (
- ('Taskbar mouse activate/minimize/middle-close',('Taskbar browser mouse activation restores minimized target','Taskbar minimize keyboard makes current browser minimized','Taskbar middle-click closes that window')),
+ ('Taskbar mouse activate/minimize/middle-close',('Taskbar browser mouse activation restores minimized target','Taskbar minimize mouse hides current browser pixels','Taskbar middle-click closes that window')),
  ('Titlebar maximize/restore by mouse',('Titlebar maximize/restore button by mouse changes window state','Titlebar maximize/restore button toggles back'))):
  found=[next((r for r in controls if r['control']==n),None) for n in needed]
  rec(label,all(r and r['result']=='PASS' for r in found),'Referenced actual controls evidence: '+str(found))
