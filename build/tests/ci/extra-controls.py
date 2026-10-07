@@ -60,11 +60,15 @@ def launcher_tiles(name):
  query='ci' if name=='CI PWA' else name.lower()
  text(query);time.sleep(2)
  words=ocr_words('launcher-'+name+'-filtered')
- entry=[w for w in words if search[0]<=int(w['left'])<search[2] and search[1]<=int(w['top'])<search[3] and w['text'].lower()==query]
- record('Launcher '+name+' search focus and query visible',bool(entry),search)
- if not entry:raise RuntimeError('Search text not visible; refusing tile click')
+ # Query text plus caret is unreliable OCR. Prove the search produced one
+ # tile with the exact requested label and nonempty entry ink instead.
  needle='pwa' if name=='CI PWA' else name.lower()
- tiles=[word_rect(w) for w in words if w['text'].lower().strip('()')==needle and int(w['top'])>search[3]+24 and int(w['top'])<720]
+ tiles=[word_rect(w) for w in words if w['text'].lower().strip('()')==needle and int(w['top'])>search[3]+24 and int(w['top'])<720 and search[0]<=int(w['left'])<search[2]]
+ im=uim.load_ppm(v/('ui-extra-launcher-'+name+'-filtered.ppm'))
+ import numpy as np
+ ink=int((np.max(im[search[1]+10:search[3]-10,search[0]+36:search[0]+200],axis=2)<160).sum())
+ record('Launcher '+name+' search focus and query visible',len(tiles)==1 and ink>=15,{'entryInk':ink,'filteredTile':tiles})
+ if len(tiles)!=1 or ink<15:raise RuntimeError('Filtered tile or entry ink absent; refusing tile click')
  return search,tiles
 
 def shelf_launcher():
@@ -151,6 +155,13 @@ def advanced_interactive():
   close_panels();cdp('Page.bringToFront');cdp('Page.navigate',{'url':'http://127.0.0.1:8765/#settings'});time.sleep(3);cdp('Page.enable')
   # Click through the real checkbox and JS confirmation, then type only into getpass.
   point=js("(()=>{let e=document.querySelector('#advanced');e.scrollIntoView({block:'center'});let r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()")
+  # QMP uses full-screen coordinates, unlike DOM viewport coordinates.
+  bb=settings_visible('extra-advanced-before')
+  if not bb:raise RuntimeError('Settings not visible before Advanced')
+  pixel=uim.settings_card(uim.load_ppm(v/'ui-extra-advanced-before.ppm'))
+  dom=js("(()=>{let r=document.querySelector('#settings').getBoundingClientRect();return [r.x,r.y]})()")
+  point=[point[0]+pixel[0]-dom[0],point[1]+pixel[1]-dom[1]]
+  print('DIALOG_CLICK',json.dumps({'targetId':page['id'],'screenPoint':point,'offset':[pixel[0]-dom[0],pixel[1]-dom[1]]}),flush=True)
   click_with_confirm(point);time.sleep(3)
   t=image_text('advanced-password-prompt')
   if 'password' not in t:raise RuntimeError('Password prompt not visible; no secret typed')
@@ -182,20 +193,12 @@ def signatures():
  record('Real updater rejects tampered signature before entry changes',proof['real_updater_rejected_tamper'] and proof['entries_unchanged'],proof['scope'])
 safe_section('Update signature/tamper live VM',signatures)
 
-def browser_cdp(method,params):
- # PWA commands belong to the browser endpoint, not the page session.
- info=json.load(urllib.request.urlopen('http://127.0.0.1:19222/json/version',timeout=10))
- url=info['webSocketDebuggerUrl'].replace('localhost:9222','127.0.0.1:19222').replace('127.0.0.1:9222','127.0.0.1:19222')
- conn=websocket.create_connection(url,origin='http://localhost',timeout=25)
- try:
-  conn.send(json.dumps({'id':1,'method':method,'params':params}))
-  while True:
-   reply=json.loads(conn.recv())
-   if reply.get('id')==1:
-    print('PWA_REPLY',method,json.dumps(reply)[:700],flush=True)
-    if 'error' in reply:raise RuntimeError(reply['error'])
-    return reply.get('result',{})
- finally:conn.close()
+def menu_click(needles,name):
+ words=ocr_words(name)
+ matches=[w for w in words if any(n in w['text'].lower() for n in needles) and int(w['left'])>(300 if name=='pwa-install-confirm' else 600)]
+ if not matches:raise RuntimeError('Menu item not visible: '+str(needles))
+ # Select the first item in visual order; subsequent frames prove next menu.
+ item=min(matches,key=lambda w:int(w['top']));guest_click(*uim.center(word_rect(item)))
 def pwa_install():
  manifest='http://127.0.0.1:8766/pwa/';installed=False
  close_panels()
@@ -203,9 +206,12 @@ def pwa_install():
   cdp('Page.navigate',{'url':manifest});time.sleep(3)
   print('PWA_INSTALLABILITY',json.dumps(cdp('Page.getInstallabilityErrors')),flush=True)
   print('PWA_MANIFEST',json.dumps(cdp('Page.getAppManifest'))[:700],flush=True)
-  browser_cdp('PWA.install',{'manifestId':manifest,'installUrlOrBundleUrl':manifest});installed=True;time.sleep(4)
-  launch=browser_cdp('PWA.launch',{'manifestId':manifest});time.sleep(3)
-  p=next(p for p in pages_now() if p['id']==launch['targetId']);connect_page(p);cdp('Page.bringToFront')
+  # PWA experimental CDP is absent in this Chrome. Exercise the real menu.
+  cdp('Page.bringToFront');key('alt','f');time.sleep(1)
+  menu_click(('cast','save','share'),'pwa-menu');time.sleep(1)
+  menu_click(('install',),'pwa-install-menu');time.sleep(1)
+  menu_click(('install',),'pwa-install-confirm');installed=True;time.sleep(5)
+  p=next(p for p in pages_now() if p['url'].startswith(manifest) and p['id']!=page['id']);connect_page(p);cdp('Page.bringToFront')
   record('PWA installs and opens standalone through Chrome subsystem',js("matchMedia('(display-mode: standalone)').matches && document.title==='Kestrel CI PWA'"));shot('extra-pwa-installed');cdp('Page.close');time.sleep(2)
   connect_page(next(p for p in pages_now() if not p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:'))))
   old={p['id'] for p in pages_now()};lw,tiles=launcher_tiles('CI PWA')
@@ -214,6 +220,8 @@ def pwa_install():
   guest_click(*uim.center(tiles[0]));time.sleep(4);fresh=next(p for p in pages_now() if p['id'] not in old and p['url'].startswith(manifest));connect_page(fresh)
   record('PWA mouse relaunch from Kestrel launcher remains standalone',js("matchMedia('(display-mode: standalone)').matches"));shot('extra-pwa-relaunched')
  finally:
-  if installed:browser_cdp('PWA.uninstall',{'manifestId':manifest})
+  if installed:
+   # Disposable profile expires with the VM; do not call unsupported PWA cleanup.
+   print('PWA_CLEANUP','Fixture remains only in disposable VM profile',flush=True)
   close_panels();connect_page(next(p for p in pages_now() if not p['url'].startswith(('chrome://omnibox-popup','chrome-untrusted:'))))
 safe_section('PWA subsystem install and launcher relaunch',pwa_install)

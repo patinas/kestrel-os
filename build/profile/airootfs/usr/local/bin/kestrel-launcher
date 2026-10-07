@@ -5,7 +5,7 @@ from gi.repository import Gtk,Gio,Gdk,GLib
 GLib.set_prgname('kestrel-launcher')
 class Launcher(Gtk.Window):
  def __init__(self):
-  super().__init__(title='Kestrel apps');self.set_default_size(640,480);self.set_resizable(False);self.set_keep_above(True)
+  super().__init__(title='Kestrel apps');self.set_default_size(640,480);self.resize(640,480);self.set_resizable(False);self.set_keep_above(True)
   self.connect('destroy',Gtk.main_quit);self.connect('key-press-event',self.key)
   box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=16);box.set_border_width(8);self.add(box)
   title=Gtk.Label(label='Kestrel apps');box.pack_start(title,False,False,0)
@@ -19,7 +19,7 @@ class Launcher(Gtk.Window):
   for app in Gio.AppInfo.get_all():
    if app.should_show() and app.get_id().startswith('chrome-') and '--app-id=' in (app.get_commandline() or ''):self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
   self.search.connect('search-changed',lambda _:self.refilter());self.refilter()
-  self.show_all();self.search.grab_focus()
+  self.show_all();self.unmaximize();self.resize(640,480);self.search.grab_focus()
  def add_app(self,name,icon,fn):
   button=Gtk.Button();button.name=name;box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8);box.set_size_request(96,120)
   image=Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.DIALOG) if isinstance(icon,str) else Gtk.Image.new_from_gicon(icon,Gtk.IconSize.DIALOG);image.set_pixel_size(64)
