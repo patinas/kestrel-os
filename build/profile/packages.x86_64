@@ -95,6 +95,7 @@ libnotify
 mako
 wl-clipboard
 swayidle
+swaylock
 wlopm
 playerctl
 brightnessctl

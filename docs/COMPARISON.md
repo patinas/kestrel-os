@@ -16,7 +16,8 @@ Sources:
 | Virtual desks | 4 labwc workspaces: Super+] / Super+[ switch, Super+Shift+] / [ move the window | implemented in source |
 | Overview of open windows (Show windows key) | Super+Tab and Ctrl+F4 open labwc's window list menu. This is a list, not live thumbnails | partial |
 | Close window shortcut | Alt+F4 | implemented in source |
-| Idle dim, screen off, lock on lid close | none | gap |
+| Idle dim, then screen off | `kestrel-idle` (swayidle): dim at 5 min, screen off at 7 min, wake on input. Skipped on the CI test VM | implemented in source, not run in a VM |
+| Lock (Search+L) | Optional lock password in Settings, off by default. Super+L, idle at 7 min and before sleep lock with swaylock only when a password is set; otherwise a notice says it is off. Scrypt hash in the user's home, mode 600. Protects the screen, not the disk | helper and bridge unit-tested (`lock-unit.sh`, `lock-bridge.sh`); swaylock/PAM path not run in a VM |
 | Snap Groups with shared divider | none | gap |
 | Shelf pin/unpin by the user | Fixed launcher, mail, video, task list | gap |
 

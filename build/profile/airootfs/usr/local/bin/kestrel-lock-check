@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+# Optional screen-lock password. Runs as the desktop user, never as root.
+# set: stdin line 1 = new password (>= 8 chars), line 2 = current password (required when one is set).
+# clear: current password on stdin.
+# (no argument): PAM check, password from pam_exec on stdin. Missing file means failure.
+import hashlib,hmac,json,os,secrets,sys
+from pathlib import Path
+F=Path(os.environ.get('KESTREL_LOCK_FILE') or Path.home()/'.config/kestrel/lock-password.json')
+def digest(pw,salt):return hashlib.scrypt(pw,salt=salt,n=16384,r=8,p=1).hex()
+def lines():return sys.stdin.buffer.read(1100).rstrip(b'\0').split(b'\n')
+def read_pw():return lines()[0]
+def verify(pw):
+ try:
+  d=json.loads(F.read_text());return hmac.compare_digest(digest(pw,bytes.fromhex(d['salt'])),d['hash'])
+ except Exception:return False
+cmd=sys.argv[1] if len(sys.argv)>1 else 'check'
+if cmd=='set':
+ ln=lines();pw=ln[0]
+ if len(pw)<8 or len(pw)>256:sys.exit(2)
+ if F.exists() and not verify(ln[1] if len(ln)>1 else b''):sys.exit(3)
+ salt=secrets.token_bytes(32);F.parent.mkdir(parents=True,exist_ok=True)
+ tmp=F.with_suffix('.tmp');fd=os.open(tmp,os.O_CREAT|os.O_TRUNC|os.O_WRONLY,0o600)
+ with os.fdopen(fd,'w') as f:json.dump({'salt':salt.hex(),'hash':digest(pw,salt)},f)
+ os.replace(tmp,F);sys.exit(0)
+if cmd=='clear':
+ if verify(read_pw()):F.unlink();sys.exit(0)
+ sys.exit(3)
+if cmd=='enabled':sys.exit(0 if F.exists() else 1)
+sys.exit(0 if verify(read_pw()) else 1)

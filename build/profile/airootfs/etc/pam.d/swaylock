@@ -1,0 +1,2 @@
+auth required pam_exec.so expose_authtok quiet /usr/local/bin/kestrel-lock-check
+account required pam_permit.so

@@ -1,0 +1,28 @@
+name: unit-checks
+# Fast checks on the free public runner. No VM, no secrets, no artifacts.
+on:
+  push:
+    branches: [main]
+    paths: ["build/**", ".github/workflows/unit-checks.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell and Python syntax
+        run: |
+          for f in build/profile/airootfs/usr/local/bin/*; do
+            case "$(head -c 40 "$f")" in *python*) python3 -m py_compile "$f" ;; *) bash -n "$f" ;; esac
+          done
+          bash -n build/profile/profiledef.sh
+          python3 -c "import xml.dom.minidom as m;m.parse('build/profile/airootfs/etc/kestrel/labwc/rc.xml')"
+      - name: Installed package list is current
+        run: build/scripts/gen-installed-packages.sh --check
+      - name: Screen-lock helper
+        run: build/tests/ci/lock-unit.sh
+      - name: Screen-lock bridge
+        run: build/tests/ci/lock-bridge.sh

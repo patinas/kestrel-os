@@ -13,6 +13,7 @@ def status():
  'waybar_running':subprocess.run(['pgrep','-u',str(os.getuid()),'-x','waybar'],stdout=subprocess.DEVNULL).returncode==0,
  'waybar_log':Path.home().joinpath('.local/state/kestrel/waybar.log').read_text()[-6000:] if Path.home().joinpath('.local/state/kestrel/waybar.log').exists() else '',
  'enabled':Path('/var/lib/kestrel/terminal-enabled').exists(),
+ 'lock_enabled':subprocess.run(['kestrel-lock-check','enabled']).returncode==0,
  'network':readcmd(['nmcli','-t','-f','DEVICE,TYPE,STATE,CONNECTION','device']),
  'bluetooth':readcmd(['bluetoothctl','show']),
  'bluetooth_connections':readcmd(['bluetoothctl','devices','Connected']),
@@ -33,7 +34,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
   self.send_response(200);self.send_header('Content-Type',kind);self.send_header('Cache-Control','no-store');self.send_header('X-Frame-Options','DENY');self.end_headers();self.wfile.write(data)
  def do_POST(self):
   if self.headers.get('Host')!='127.0.0.1:8765' or self.headers.get('Origin')!=ORIGIN or self.headers.get('X-Kestrel-Token')!=TOKEN:self.send_error(403);return
-  if self.path=='/network':subprocess.Popen(['kestrel-network'])
+  if self.path in ('/lock-set','/lock-clear'):
+   try:
+    n=int(self.headers.get('Content-Length','0'))
+    if n>600:raise ValueError
+    b=json.loads(self.rfile.read(n) or b'{}')
+    pw=str(b.get('password',''));cur=str(b.get('current',''))
+    if '\n' in pw or '\n' in cur:raise ValueError
+    r=subprocess.run(['kestrel-lock-check','set' if self.path=='/lock-set' else 'clear'],input=((pw+'\n'+cur) if self.path=='/lock-set' else cur).encode(),capture_output=True,timeout=10)
+   except Exception:
+    self.send_error(400);return
+   if r.returncode:
+    self.send_error(403 if r.returncode==3 else 400);return
+  elif self.path=='/network':subprocess.Popen(['kestrel-network'])
   elif self.path=='/bluetooth':subprocess.Popen(['kestrel-bluetooth'])
   elif self.path=='/volume-up':subprocess.run(['wpctl','set-volume','-l','1.0','@DEFAULT_AUDIO_SINK@','5%+'])
   elif self.path=='/volume-down':subprocess.run(['wpctl','set-volume','@DEFAULT_AUDIO_SINK@','5%-'])

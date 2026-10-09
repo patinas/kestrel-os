@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Lock the screen (ChromeOS: Search+L). Off by default: only locks once the user
+# has chosen a lock password in Settings, because the live USB user has none.
+if ! kestrel-lock-check enabled; then
+ notify-send 'Screen lock is off' 'Choose a lock password in Settings to use Super+L.' 2>/dev/null
+ exit 0
+fi
+pgrep -u "$(id -u)" -x swaylock >/dev/null && exit 0
+exec swaylock -f -c 1b1f23 --indicator-radius 80
