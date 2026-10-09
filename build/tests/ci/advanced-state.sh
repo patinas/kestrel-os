@@ -20,3 +20,29 @@ chk "$(page b)" 'id="state">Advanced access on' "page shows on (flag survives a 
 rm "$T/enabled"
 chk "$(page c)" 'id="state">Advanced access off' "page shows off after flag removed"
 echo "advanced-state: all passed"
+# Regression for a refresh that is already in flight when the flag flips: a second refresh()
+# call must run after it, not reuse its stale answer (it used to be coalesced into it).
+T2="$(mktemp -d)"; rm -f "$T/enabled"
+python3 - "$T/s.py" "$T2/s2.py" "$T/enabled" <<'PY'
+import sys
+s=open(sys.argv[1]).read()
+hook="""
+import time as _t
+_n=[0];_orig=status
+def status():
+ r=_orig()
+ if _n[0]==0:
+  _n[0]=1;_t.sleep(2);open('%s','w').write('')
+ return r
+"""%sys.argv[3]
+s=s.replace("# Disposable CI guest only",hook+"# Disposable CI guest only",1)
+s=s.replace("ORIGIN='http://127.0.0.1:8765'","ORIGIN='http://127.0.0.1:8765'",1)
+open(sys.argv[2],'w').write(s)
+PY
+kill $SP 2>/dev/null; sleep 0.5
+sed "s|</script>|refresh()</script>|" "$R/usr/share/kestrel/shell/index.html" > "$T2/index.html"
+sed -i "s|$R/usr/share/kestrel/shell/index.html|$T2/index.html|" "$T2/s2.py"
+python3 "$T2/s2.py" >"$T2/log" 2>&1 & SP=$!
+for i in $(seq 40); do (echo > /dev/tcp/127.0.0.1/8765) 2>/dev/null && break; sleep 0.25; done
+chk "$(google-chrome --headless=new --no-sandbox --disable-gpu --user-data-dir="$T/profd" --virtual-time-budget=9000 --dump-dom http://127.0.0.1:8765/ 2>/dev/null | grep -o 'id="state">[^<]*')" 'id="state">Advanced access on' "refresh requested during an in-flight stale refresh ends up current"
+echo "advanced-state (in-flight): passed"
