@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Idle policy modelled on public ChromeOS power behaviour: dim, then screen off,
+# and wake on any input. No lock here: the live USB autologin has no user password.
+# Not run on the CI test VM, where a dimmed or blank screen would spoil captures.
+[ -e /dev/virtio-ports/kestrel-ci-check ] && exit 0
+exec swayidle -w \
+ timeout 300 'brightnessctl -s set 10%' resume 'brightnessctl -r' \
+ timeout 420 'wlopm --off "*"' resume 'wlopm --on "*"; brightnessctl -r'

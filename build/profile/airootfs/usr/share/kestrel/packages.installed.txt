@@ -79,6 +79,7 @@ socat
 sof-firmware
 sudo
 swaybg
+swayidle
 ttf-liberation
 vulkan-icd-loader
 vulkan-intel
@@ -88,6 +89,7 @@ vulkan-tools
 waybar
 wireplumber
 wl-clipboard
+wlopm
 wofi
 xdg-utils
 xf86-input-libinput

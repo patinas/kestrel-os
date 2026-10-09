@@ -16,7 +16,6 @@ Sources:
 | Virtual desks | 4 labwc workspaces: Super+] / Super+[ switch, Super+Shift+] / [ move the window | implemented in source |
 | Overview of open windows (Show windows key) | Super+Tab and Ctrl+F4 open labwc's window list menu. This is a list, not live thumbnails | partial |
 | Close window shortcut | Alt+F4 | implemented in source |
-| Lock screen (Search+L) | none | gap: needs a user password; the live USB autologin has none |
 | Idle dim, screen off, lock on lid close | none | gap |
 | Snap Groups with shared divider | none | gap |
 | Shelf pin/unpin by the user | Fixed launcher, mail, video, task list | gap |

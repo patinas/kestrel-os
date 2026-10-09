@@ -18,6 +18,7 @@ declare -A file_permissions=(
   ["/usr/local/bin/kestrel-advanced-toggle"]="0:0:755"
   ["/usr/local/bin/kestrel-shell-server"]="0:0:755"
   ["/usr/local/bin/kestrel-desktop"]="0:0:755"
+  ["/usr/local/bin/kestrel-idle"]="0:0:755"
   ["/etc/sudoers.d"]="0:0:750"
   ["/etc/sudoers.d/kestrel-advanced"]="0:0:440"
   ["/var/lib/kestrel/sudoers"]="0:0:440"
