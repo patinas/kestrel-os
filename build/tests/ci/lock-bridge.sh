@@ -3,7 +3,7 @@
 set -euo pipefail
 R="$(cd "$(dirname "$0")/../../profile/airootfs" && pwd)"
 T="$(mktemp -d)"; export HOME="$T" KESTREL_LOCK_FILE="$T/lock.json" PATH="$R/usr/local/bin:$PATH"
-sed "s|/usr/share/kestrel/shell/index.html|$R/usr/share/kestrel/shell/index.html|" "$R/usr/local/bin/kestrel-shell-server" > "$T/server.py"
+sed "s|/usr/share/kestrel/shell/index.html|$R/usr/share/kestrel/shell/index.html|;s|/usr/local/bin/kestrel-lock-check|$R/usr/local/bin/kestrel-lock-check|" "$R/usr/local/bin/kestrel-shell-server" > "$T/server.py"
 python3 "$T/server.py" & SP=$!; trap 'kill $SP 2>/dev/null' EXIT
 for i in $(seq 40); do curl -s -o /dev/null -H 'Host: 127.0.0.1:8765' http://127.0.0.1:8765/status && break; sleep 0.25; done
 TOK=$(curl -s -H 'Host: 127.0.0.1:8765' http://127.0.0.1:8765/ | grep -o "'X-Kestrel-Token':'[^']*'" | head -1 | cut -d"'" -f4)

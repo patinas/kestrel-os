@@ -26,3 +26,5 @@ jobs:
         run: build/tests/ci/lock-unit.sh
       - name: Screen-lock bridge
         run: build/tests/ci/lock-bridge.sh
+      - name: Advanced state regression
+        run: build/tests/ci/advanced-state.sh
