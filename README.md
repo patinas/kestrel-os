@@ -49,6 +49,7 @@ A small browser shell, broad Linux hardware support and an optional gaming sessi
 - [Update proposal](docs/UPDATES.md)
 - [Lockdown proposal](docs/LOCKDOWN.md)
 - [Repository layout](docs/LAYOUT.md)
+- [Comparison with ChromeOS behaviour](docs/COMPARISON.md)
 - [Roadmap](ROADMAP.md)
 
 ## License

@@ -8,4 +8,6 @@ if [ "${1:-}" = region ]; then
 else
  grim "$path"
 fi
-notify-send 'Screenshot saved' "$path"
+# Like ChromeOS: keep a file and also put the image on the clipboard.
+command -v wl-copy >/dev/null 2>&1 && wl-copy --type image/png < "$path" || true
+notify-send 'Screenshot saved' "Copied to clipboard. $path"

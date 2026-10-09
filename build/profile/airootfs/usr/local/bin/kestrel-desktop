@@ -2,6 +2,8 @@
 /usr/local/bin/kestrel-shell-server &
 # BlueZ pairing agent and graphical device manager. No terminal or secret logs.
 blueman-applet >/dev/null 2>&1 &
+# Notification daemon: notify-send (screenshots etc.) had no receiver before.
+mako >/dev/null 2>&1 &
 swaybg -i /usr/share/kestrel/wallpaper.png -m fill &
 if [ -e /dev/virtio-ports/kestrel-ci-check ]; then socat TCP-LISTEN:9233,bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:9222 & fi
 mkdir -p "$HOME/.local/state/kestrel"

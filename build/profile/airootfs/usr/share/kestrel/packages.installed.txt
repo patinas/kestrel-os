@@ -49,6 +49,7 @@ libxrandr
 libxss
 linux
 linux-firmware
+mako
 mangohud
 mesa
 mesa-utils
@@ -86,6 +87,7 @@ vulkan-radeon
 vulkan-tools
 waybar
 wireplumber
+wl-clipboard
 wofi
 xdg-utils
 xf86-input-libinput
