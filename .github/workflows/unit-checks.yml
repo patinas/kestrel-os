@@ -30,7 +30,15 @@ jobs:
         run: build/tests/ci/advanced-state.sh
       - name: Chrome profile defaults (vertical tabs, single close button)
         run: build/tests/ci/chrome-profile.sh
+      - name: Upload Chrome screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-profile-shot
+          path: /tmp/chrome-profile-shot.png
+          if-no-files-found: ignore
       - name: Grouped taskbar against a mock compositor
+        if: always()
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq python3-gi gir1.2-gdkpixbuf-2.0 python3-gi-cairo python3-pil libwayland-client0 libwayland-server0
