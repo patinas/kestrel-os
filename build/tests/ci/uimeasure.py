@@ -77,7 +77,7 @@ def settings_card(img):
     b=[int(cols.min()),int(rows.min()),int(cols.max()+1),int(rows.max()+1)]
     return b if (632<=b[2]-b[0]<=648 and 540<=b[3]-b[1]<=580
                  and 130<=b[1]<=175
-                 and abs((b[0]+b[2])/2-img.shape[1]/2)<=8) else None
+                 and min(abs((b[0]+b[2])/2-img.shape[1]/2-d) for d in (0,120))<=8) else None  # 120: page centre shifts right of the 240 px vertical-tab strip
 
 def shelf_band(img):
     """Find the shelf only in its 48 px screen band, never in page content."""

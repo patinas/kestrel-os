@@ -12,6 +12,10 @@ RUN=os.path.join(os.environ.get('XDG_RUNTIME_DIR','/tmp'),'kestrel-taskbar')
 SOCK=os.path.join(RUN,'sock');SLOTS=os.path.join(RUN,'slots.json')
 SIGNAL=os.environ.get('KESTREL_TASKBAR_SIGNAL','RTMIN+8')
 
+def log(m):
+ try:open(os.path.join(RUN,'log'),'a').write(m+'\n')
+ except OSError:pass
+
 def ask(msg):
  s=socket.socket(socket.AF_UNIX);s.settimeout(5);s.connect(SOCK);s.sendall((json.dumps(msg)+'\n').encode())
  data=b''
@@ -30,6 +34,7 @@ def menu(items):
 
 def client(argv):
  cmd=argv[0] if argv else ''
+ if cmd=='click':log('click '+' '.join(argv[1:]))
  if cmd=='slot':
   try:print(json.load(open(SLOTS)).get(argv[1],''))
   except Exception:print('')
@@ -93,8 +98,10 @@ def daemon():
  def activate(i):
   t=st['tops'].get(i)
   if not t:return False
-  if t['minimized']:t['handle'].unset_minimized()
-  t['handle'].activate(st['seat']);display.flush();return True
+  was=t['minimized']
+  if was:t['handle'].unset_minimized();display.flush();display.roundtrip()
+  t['handle'].activate(st['seat']);display.flush();display.roundtrip()
+  log(f"activate id={i} app={t['app_id']} was_minimized={was}");return True
  def handle(msg):
   gs=core.groups(wins())
   if msg.get('cmd')=='status':return {'groups':[{'app_id':g['app_id'],'count':g['count'],'active':g['active'],'minimized':g['minimized'],'windows':[{'id':w['id'],'title':w['title']} for w in g['windows']]} for g in gs]}

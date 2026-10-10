@@ -38,15 +38,17 @@ def parse_choice(line,items):
 def signature(gs):
  return [(g['app_id'],g['count'],g['active'],g['minimized']) for g in gs]
 
+PILL_IDLE=(0xd8/255,0xe3/255,0xf3/255)
+
 def render_png(path,icon,count,active,minimized):
  """40x40 slot image. icon: a 32x32 cairo surface or None. Active pill is drawn here because
  Waybar image modules cannot take CSS classes."""
  import cairo
  s=cairo.ImageSurface(cairo.FORMAT_ARGB32,40,40);c=cairo.Context(s)
- if active:
+ if True:
   r=12;c.new_sub_path()
   for cx,cy,a0 in ((40-r,r,-90),(40-r,40-r,0),(r,40-r,90),(r,r,180)):c.arc(cx,cy,r,math.radians(a0),math.radians(a0+90))
-  c.close_path();c.set_source_rgb(*PILL_ACTIVE);c.fill()
+  c.close_path();c.set_source_rgb(*(PILL_ACTIVE if active else PILL_IDLE));c.fill()
  if icon is not None:
   c.set_source_surface(icon,4,4);c.paint_with_alpha(.65 if minimized else 1)
  if count>1:
