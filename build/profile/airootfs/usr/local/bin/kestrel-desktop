@@ -9,6 +9,9 @@ swaybg -i /usr/share/kestrel/wallpaper.png -m fill &
 if [ -e /dev/virtio-ports/kestrel-ci-check ]; then socat TCP-LISTEN:9233,bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:9222 & fi
 mkdir -p "$HOME/.local/state/kestrel"
 fc-cache -f /usr/share/fonts/kestrel
-waybar -c /etc/kestrel/waybar/config.json -s /etc/kestrel/waybar/style.css >"$HOME/.local/state/kestrel/waybar.log" 2>&1 &
+# Grouped taskbar (one icon per app) needs pywayland; fall back to plain per-window buttons.
+WB=/etc/kestrel/waybar/config-plain.json
+if python3 -c 'import pywayland' 2>/dev/null; then WB=/etc/kestrel/waybar/config.json; /usr/local/bin/kestrel-taskbar daemon >"$HOME/.local/state/kestrel/taskbar.log" 2>&1 & fi
+waybar -c "$WB" -s /etc/kestrel/waybar/style.css >"$HOME/.local/state/kestrel/waybar.log" 2>&1 &
 /usr/local/bin/kestrel-browser &
 wait

@@ -114,3 +114,4 @@ libva-utils
 mesa-utils
 vulkan-icd-loader
 pciutils
+python-pywayland

@@ -258,15 +258,11 @@ try:
  els=uim.shelf_elements(im,shb) if shb else []
  centre=[e for e in els if 300<=e[0] and e[2]<=980];n0=len(centre)
  print('TASKBAR_LAYOUT',json.dumps({'shelf':shb,'centre':centre,'windows':sorted(opened)}),flush=True)
- record('Taskbar shows Mail, Video and at least three browser buttons',len(opened)>=3 and len(opened)==len(before)+1 and n0==len(opened)+2,[tuple(e) for e in els])
- if n0>=4:
-  guest_middle(*uim.center(centre[-1]));park_pointer();shot('taskbar-after-middle-close')
-  im2=uim.load_ppm(v/'ui-taskbar-after-middle-close.ppm');shb2=uim.shelf_band(im2)
-  els2=uim.shelf_elements(im2,shb2) if shb2 else [];n1=len([e for e in els2 if 300<=e[0] and e[2]<=980]);closed=browser_windows()
-  record('Taskbar middle-click closes that window',n1==n0-1 and len(closed)==len(opened)-1 and closed==before,
-         {'buttons':[n0,n1],'windowsBefore':sorted(opened),'windowsAfter':sorted(closed)})
- else:record('Taskbar middle-click closes that window',False,'No measurable browser button to click')
-except Exception as e:record('Taskbar middle-click close',False);print('TASKBAR_ERROR',repr(e),flush=True)
+ record('Taskbar groups all browser windows into one icon (Mail, Video, one browser group)',len(opened)>=3 and len(opened)==len(before)+1 and n0==3,{'centre':[tuple(e) for e in centre],'windows':sorted(opened)})
+ key('ctrl','shift','w');time.sleep(3);closed=browser_windows();park_pointer();shot('taskbar-after-close');im2=uim.load_ppm(v/'ui-taskbar-after-close.ppm');shb2=uim.shelf_band(im2)
+ els2=uim.shelf_elements(im2,shb2) if shb2 else [];n1=len([e for e in els2 if 300<=e[0] and e[2]<=980])
+ record('Closing one of the grouped windows keeps one browser icon',len(closed)==len(opened)-1 and n1==3,{'icons':[n0,n1],'windowsBefore':sorted(opened),'windowsAfter':sorted(closed)})
+except Exception as e:record('Taskbar grouped-icon check',False);print('TASKBAR_ERROR',repr(e),flush=True)
 # Additional bounded tests use the disposable VM-only observer.
 exec(compile(Path(__file__).with_name('extra-controls.py').read_text(),'extra-controls.py','exec'))
 # Launcher search via real keys, no script-generated result.

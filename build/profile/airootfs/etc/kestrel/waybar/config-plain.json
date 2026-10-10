@@ -1,0 +1,79 @@
+{
+  "layer": "top",
+  "position": "bottom",
+  "height": 48,
+  "modules-left": [
+    "custom/launcher"
+  ],
+  "modules-center": [
+    "custom/mail",
+    "custom/video",
+    "wlr/taskbar"
+  ],
+  "modules-right": [
+    "pulseaudio",
+    "network",
+    "battery",
+    "clock"
+  ],
+  "wlr/taskbar": {
+    "format": "{icon}",
+    "icon-size": 32,
+    "tooltip-format": "{title}",
+    "on-click": "activate",
+    "on-click-middle": "close",
+    "icon-theme": [
+      "hicolor",
+      "Papirus"
+    ],
+    "app_ids-mapping": {
+      "chrome": "google-chrome",
+      "google-chrome": "google-chrome",
+      "kestrel-quick-settings": "kestrel-quick-settings",
+      "kestrel-launcher": "kestrel-launcher"
+    },
+    "ignore-list": [
+      "kestrel-quick-settings",
+      "kestrel-launcher"
+    ]
+  },
+  "network": {
+    "format-wifi": "Wi-Fi",
+    "format-ethernet": "Wired",
+    "format-disconnected": "Offline",
+    "tooltip-format": "{ifname}: {ipaddr}",
+    "on-click": "kestrel-quick-settings"
+  },
+  "pulseaudio": {
+    "format": "{volume}%",
+    "format-muted": "Muted",
+    "on-click": "kestrel-quick-settings"
+  },
+  "battery": {
+    "format": "{capacity}%",
+    "tooltip-format": "{status}"
+  },
+  "clock": {
+    "format": "{:%H:%M}",
+    "tooltip-format": "Quick settings",
+    "on-click": "kestrel-quick-settings"
+  },
+  "margin-bottom": 8,
+  "margin-left": 8,
+  "margin-right": 8,
+  "custom/launcher": {
+    "format": "\ue000",
+    "tooltip-format": "Launcher",
+    "on-click": "kestrel-launcher"
+  },
+  "custom/mail": {
+    "format": "\ue002",
+    "tooltip-format": "Mail",
+    "on-click": "kestrel-browser https://mail.google.com"
+  },
+  "custom/video": {
+    "format": "\ue003",
+    "tooltip-format": "Video",
+    "on-click": "kestrel-browser https://www.youtube.com"
+  }
+}

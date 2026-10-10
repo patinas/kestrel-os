@@ -23,3 +23,7 @@ Sources:
 | Shelf pin/unpin by the user | Fixed launcher, mail, video, task list. Waybar takes icons from a font, so user pins would need per-app image modules and a regenerated config. That changes the measured shelf geometry, so it needs its own design and retest | gap, deliberately deferred |
 
 Nothing here has been run in the VM or on hardware. The next UI test must check desk switching, the window list menu, the clipboard copy and that the screenshot toast appears.
+
+## Grouped taskbar (one icon per app)
+
+ChromeOS's shelf shows one icon per app and lists the windows when an app has several. Waybar 0.15.0 (Arch) cannot group: `squash-list` was merged on 2026-07-04, after that release. `kestrel-taskbar` fills the gap. It reads the open windows through the public wlr-foreign-toplevel-management protocol, draws one 40x40 icon per app (active pill, dimmed when minimised, count badge for 2+ windows) and Waybar shows those images. One window: click focuses it, or restores it if minimised. Several windows: click opens a list to pick from. If pywayland is missing, `kestrel-desktop` falls back to the plain per-window Waybar config. Test: `build/tests/ci/taskbar-test.py` runs the daemon against a mock compositor.

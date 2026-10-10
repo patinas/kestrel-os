@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+# One taskbar icon per app. Waybar 0.15 (Arch) cannot group windows, so this talks to the compositor
+# (wlr-foreign-toplevel-management), renders one 40x40 image per app and Waybar shows them as image modules.
+#   kestrel-taskbar daemon     run once per session
+#   kestrel-taskbar slot K     print the image path for slot K (empty = slot unused); used by Waybar `exec`
+#   kestrel-taskbar click K    1 window: activate it; 2+: pick from a list
+#   kestrel-taskbar status     JSON of the groups (tests)
+import json,os,socket,subprocess,sys,selectors
+sys.path.insert(0,os.environ.get('KESTREL_LIB','/usr/local/lib/kestrel'))
+import taskbar_core as core
+RUN=os.path.join(os.environ.get('XDG_RUNTIME_DIR','/tmp'),'kestrel-taskbar')
+SOCK=os.path.join(RUN,'sock');SLOTS=os.path.join(RUN,'slots.json')
+SIGNAL=os.environ.get('KESTREL_TASKBAR_SIGNAL','RTMIN+8')
+
+def ask(msg):
+ s=socket.socket(socket.AF_UNIX);s.settimeout(5);s.connect(SOCK);s.sendall((json.dumps(msg)+'\n').encode())
+ data=b''
+ while not data.endswith(b'\n'):
+  chunk=s.recv(65536)
+  if not chunk:break
+  data+=chunk
+ return json.loads(data or b'{}')
+
+def menu(items):
+ cmd=os.environ.get('KESTREL_TASKBAR_MENU')
+ argv=cmd.split() if cmd else ['wofi','--dmenu','--prompt','Windows','--location','bottom','--yoffset','-64','--width','420','--style','/etc/kestrel/wofi/style.css']
+ try:r=subprocess.run(argv,input='\n'.join(core.menu_lines(items)),capture_output=True,text=True,timeout=120)
+ except Exception:return None
+ return core.parse_choice(r.stdout,items) if r.returncode==0 else None
+
+def client(argv):
+ cmd=argv[0] if argv else ''
+ if cmd=='slot':
+  try:print(json.load(open(SLOTS)).get(argv[1],''))
+  except Exception:print('')
+ elif cmd=='click':
+  r=ask({'cmd':'click','slot':int(argv[1])})
+  if r.get('menu'):
+   chosen=menu([(i,t) for i,t in r['menu']])
+   if chosen is not None:ask({'cmd':'activate','id':chosen})
+ elif cmd=='status':print(json.dumps(ask({'cmd':'status'})))
+ else:sys.exit(2)
+
+def daemon():
+ from pywayland.client import Display
+ from pywayland.protocol.wayland import WlSeat
+ from wlr_foreign_toplevel import ZwlrForeignToplevelManagerV1
+ os.makedirs(RUN,exist_ok=True);os.chmod(RUN,0o700)
+ try:os.unlink(SOCK)
+ except FileNotFoundError:pass
+ srv=socket.socket(socket.AF_UNIX);srv.bind(SOCK);srv.listen(8);srv.setblocking(False)
+ display=Display();display.connect();reg=display.get_registry()
+ st={'seat':None,'mgr':None,'tops':{},'next':1,'gen':0,'sig':None,'icons':{}}
+ def on_global(r,name,iface,ver):
+  if iface=='wl_seat' and st['seat'] is None:st['seat']=r.bind(name,WlSeat,1)
+  elif iface=='zwlr_foreign_toplevel_manager_v1':
+   st['mgr']=r.bind(name,ZwlrForeignToplevelManagerV1,min(ver,3));st['mgr'].dispatcher['toplevel']=on_toplevel
+ def on_toplevel(m,h):
+  t={'handle':h,'id':st['next'],'seq':st['next'],'title':'','app_id':'','minimized':False,'activated':False,'p':{}};st['next']+=1;st['tops'][t['id']]=t
+  h.dispatcher['title']=lambda h,v:t['p'].__setitem__('title',v)
+  h.dispatcher['app_id']=lambda h,v:t['p'].__setitem__('app_id',v)
+  h.dispatcher['state']=lambda h,v:t['p'].__setitem__('state',list(v) if not isinstance(v,(bytes,bytearray)) else [int.from_bytes(v[i:i+4],'little') for i in range(0,len(v),4)])
+  def done(h):
+   p=t['p']
+   if 'title' in p:t['title']=p['title']
+   if 'app_id' in p:t['app_id']=p['app_id']
+   if 'state' in p:t['minimized']=1 in p['state'];t['activated']=2 in p['state']
+   t['p']={};refresh()
+  def closed(h):
+   st['tops'].pop(t['id'],None)
+   try:h.destroy()
+   except Exception:pass
+   refresh()
+  h.dispatcher['done']=done;h.dispatcher['closed']=closed
+ def wins():return [{k:t[k] for k in ('id','seq','title','app_id','minimized','activated')} for t in st['tops'].values() if t['app_id'] or t['title']]
+ def icon_for(app_id):
+  if app_id not in st['icons']:
+   try:st['icons'][app_id]=core.icon_surface(app_id)
+   except Exception as e:print('icon',app_id,e,file=sys.stderr);st['icons'][app_id]=None
+  return st['icons'][app_id]
+ def refresh():
+  gs=core.groups(wins());sig=core.signature(gs)
+  if sig==st['sig']:return
+  st['sig']=sig;st['gen']+=1;paths={}
+  for i,g in enumerate(gs):
+   p=os.path.join(RUN,f"slot{i}-{st['gen']}.png");core.render_png(p,icon_for(g['app_id']),g['count'],g['active'],g['minimized']);paths[str(i)]=p
+  tmp=SLOTS+'.tmp';json.dump(paths,open(tmp,'w'));os.replace(tmp,SLOTS)
+  for f in os.listdir(RUN):
+   if f.startswith('slot') and f.endswith('.png') and os.path.join(RUN,f) not in paths.values():
+    try:os.unlink(os.path.join(RUN,f))
+    except OSError:pass
+  subprocess.run(['pkill','-'+SIGNAL,'-x','waybar'],stderr=subprocess.DEVNULL)
+ def activate(i):
+  t=st['tops'].get(i)
+  if not t:return False
+  if t['minimized']:t['handle'].unset_minimized()
+  t['handle'].activate(st['seat']);display.flush();return True
+ def handle(msg):
+  gs=core.groups(wins())
+  if msg.get('cmd')=='status':return {'groups':[{'app_id':g['app_id'],'count':g['count'],'active':g['active'],'minimized':g['minimized'],'windows':[{'id':w['id'],'title':w['title']} for w in g['windows']]} for g in gs]}
+  if msg.get('cmd')=='click':
+   k=msg.get('slot',-1)
+   if not 0<=k<len(gs):return {'error':'no such slot'}
+   kind,arg=core.click_plan(gs[k])
+   if kind=='activate':return {'ok':activate(arg)}
+   return {'menu':arg}
+  if msg.get('cmd')=='activate':return {'ok':activate(msg.get('id'))}
+  return {'error':'unknown'}
+ reg.dispatcher['global']=on_global;display.roundtrip();display.roundtrip()
+ if st['mgr'] is None:print('compositor has no foreign-toplevel-management',file=sys.stderr);sys.exit(3)
+ sel=selectors.DefaultSelector();sel.register(display.get_fd(),selectors.EVENT_READ,'wl');sel.register(srv,selectors.EVENT_READ,'srv')
+ refresh()
+ while True:
+  display.flush()
+  for key,_ in sel.select():
+   if key.data=='wl':display.dispatch(block=True)
+   else:
+    c,_a=srv.accept();c.settimeout(2)
+    try:
+     buf=b''
+     while not buf.endswith(b'\n'):
+      d=c.recv(4096)
+      if not d:break
+      buf+=d
+     c.sendall((json.dumps(handle(json.loads(buf or b'{}')))+'\n').encode())
+    except Exception as e:
+     try:c.sendall((json.dumps({'error':str(e)})+'\n').encode())
+     except Exception:pass
+    finally:c.close()
+if __name__=='__main__':
+ if sys.argv[1:2]==['daemon']:daemon()
+ else:client(sys.argv[1:])

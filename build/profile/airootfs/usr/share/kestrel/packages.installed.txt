@@ -72,6 +72,7 @@ playerctl
 python
 python-dbus
 python-gobject
+python-pywayland
 rpm-tools
 rsync
 slurp

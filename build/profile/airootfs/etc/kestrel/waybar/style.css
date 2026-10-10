@@ -11,3 +11,6 @@ window#waybar {background:rgba(224,232,246,.96);color:#233044;border-radius:24px
 
 #custom-launcher:hover,#custom-mail:hover,#custom-video:hover,#taskbar button:hover {background:#c2d3ea;}
 #custom-launcher:active,#custom-mail:active,#custom-video:active,#taskbar button:active {background:#abc5e8;}
+/* Grouped taskbar: one image slot per app, drawn by kestrel-taskbar (pill, count badge). */
+#image.task0,#image.task1,#image.task2,#image.task3,#image.task4,#image.task5,#image.task6,#image.task7,#task0,#task1,#task2,#task3,#task4,#task5,#task6,#task7 {min-width:40px;min-height:40px;margin:4px 4px;border-radius:12px;background:#d8e3f3;}
+#task0:hover,#task1:hover,#task2:hover,#task3:hover,#task4:hover,#task5:hover,#task6:hover,#task7:hover {background:#c2d3ea;}
