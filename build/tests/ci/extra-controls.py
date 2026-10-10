@@ -140,6 +140,8 @@ def taskbar_activate():
   if settings_visible('extra-taskbar-activate-'+str(i)):found=True;break
  record('Taskbar browser mouse activation restores minimized target',found and cdp('Browser.getWindowForTarget',{'targetId':target})['windowId']==info['windowId'],{'targetId':target,'windowId':info['windowId']})
 safe_section('Taskbar activate/minimize',taskbar_activate)
+try:print('TASKBAR_DAEMON_LOG',json.dumps(probe('/taskbar-log')),flush=True)
+except Exception as e:print('TASKBAR_DAEMON_LOG_ERROR',repr(e),flush=True)
 
 def click_with_confirm(point):
  # Arm the same target before QMP clicking. QMP is not blocked by the
@@ -270,14 +272,17 @@ def pwa_install():
   cdp('Page.bringToFront');time.sleep(1)
   key('esc');park_pointer();shot('extra-pwa-address-install')
   crop=v/'pwa-address.png'
-  subprocess.run(['convert',str(v/'ui-extra-pwa-address-install.ppm'),'-crop','250x45+950+65','-resize','300%',str(crop)],check=True,capture_output=True)
+  subprocess.run(['convert',str(v/'ui-extra-pwa-address-install.ppm'),'-crop','400x45+800+65','-resize','300%',str(crop)],check=True,capture_output=True)
   import csv,io
   r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
   words=[]
   for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t'):
    if w.get('text','').strip():
-    w['left']=str(950+int(w['left'])//3);w['top']=str(65+int(w['top'])//3);w['width']=str(max(1,int(w['width'])//3));w['height']=str(max(1,int(w['height'])//3));words.append(w)
-  install=[w for w in words if w['text'].lower()=='install' and 60<=int(w['top'])<=105 and 900<=int(w['left'])<1200]
+    w['left']=str(800+int(w['left'])//3);w['top']=str(65+int(w['top'])//3);w['width']=str(max(1,int(w['width'])//3));w['height']=str(max(1,int(w['height'])//3));words.append(w)
+  install=[w for w in words if w['text'].lower()=='install' and 60<=int(w['top'])<=105 and 850<=int(w['left'])<1200]
+  print('PWA_OCR_WORDS',json.dumps([(w['text'],w['left'],w['top']) for w in words]),flush=True)
+  # Several 'Install' hits can appear (tooltip text next to the pill): the omnibox pill is the right-most one.
+  install=sorted(install,key=lambda w:int(w['left']))[-1:]
   if len(install)!=1:raise RuntimeError('Address-bar Install button not unambiguously visible')
   guest_click(*uim.center(word_rect(install[0])));time.sleep(1)
   pwa_confirm_install();time.sleep(5)

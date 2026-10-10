@@ -44,7 +44,7 @@ def render_png(path,icon,count,active,minimized):
  """40x40 slot image. icon: a 32x32 cairo surface or None. Active pill is drawn here because
  Waybar image modules cannot take CSS classes."""
  import cairo
- s=cairo.ImageSurface(cairo.FORMAT_ARGB32,40,40);c=cairo.Context(s)
+ s=cairo.ImageSurface(cairo.FORMAT_ARGB32,48,48);c=cairo.Context(s);c.translate(4,4)
  if True:
   r=12;c.new_sub_path()
   for cx,cy,a0 in ((40-r,r,-90),(40-r,40-r,0),(r,40-r,90),(r,r,180)):c.arc(cx,cy,r,math.radians(a0),math.radians(a0+90))

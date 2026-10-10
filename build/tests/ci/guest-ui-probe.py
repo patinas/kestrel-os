@@ -31,6 +31,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
    body=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',192,192,8,2,0,0,0))+chunk(b'IDAT',zlib.compress((b'\0'+bytes([70,111,167])*192)*192))+chunk(b'IEND',b'');kind='image/png'
   elif self.path=='/diagnostics':
    r=run(['journalctl','-u','kestrel-ci-ui-probe.service','--no-pager','-n','35','-o','cat']);self.reply({'stderr':r.stdout.decode(errors='replace')[-4000:]});return
+  elif self.path=='/taskbar-log':
+   out={}
+   for f in list(Path('/run/user').glob('*/kestrel-taskbar/log'))+list(Path('/home').glob('*/.local/state/kestrel/taskbar.log'))+list(Path('/home').glob('*/.local/state/kestrel/waybar.log')):
+    try:out[str(f)]=f.read_text(errors='replace')[-4000:]
+    except OSError as e:out[str(f)]=repr(e)
+   r=run(['pgrep','-a','-f','kestrel-taskbar|waybar']);out['processes']=r.stdout.decode(errors='replace')
+   self.reply(out);return
   elif self.path=='/status':self.reply(status());return
   else:self.send_error(404);return
   self.send_response(200);self.send_header('Content-Type',kind);self.end_headers();self.wfile.write(body)

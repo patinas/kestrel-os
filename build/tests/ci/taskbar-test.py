@@ -47,8 +47,8 @@ try:
  check('slot 0 and 1 have images, slot 2 is empty (hidden)',Path(s0).is_file() and Path(s1).is_file() and s2=='',(s0,s1,s2))
  from PIL import Image
  a=Image.open(s0).convert('RGBA');b=Image.open(s1).convert('RGBA')
- check('slot images are 40x40',a.size==(40,40) and b.size==(40,40),(a.size,b.size))
- def badge(im):return im.getpixel((32,32))
+ check('slot images are 48x48 (40x40 pill + 4px margin)',a.size==(48,48) and b.size==(48,48),(a.size,b.size))
+ def badge(im):return im.getpixel((36,36))
  check('count badge drawn on the 2-window icon only',badge(a)[3]>200 and badge(a)[:3]!=badge(b)[:3] or badge(b)[3]<50,(badge(a),badge(b)))
  # single window: activate
  tb('click','1');time.sleep(.5)
@@ -56,7 +56,7 @@ try:
  send('state 2 activated');g=wait(lambda g:g[1]['active'])
  check('compositor activation shows as active icon',g is not None and g[1]['active'] and not g[0]['active'],g)
  ia=Image.open(tb('slot','1').stdout.strip()).convert('RGBA')
- check('active icon has the #a6c4eb pill',ia.getpixel((3,20))[:3]==(0xa6,0xc4,0xeb),ia.getpixel((3,20)))
+ check('active icon has the #a6c4eb pill',ia.getpixel((7,24))[:3]==(0xa6,0xc4,0xeb),ia.getpixel((7,24)))
  # minimized single window: click must unminimize then activate
  send('state 2 minimized');wait(lambda g:g[1]['minimized'])
  tb('click','1');time.sleep(.5)

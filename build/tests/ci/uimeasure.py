@@ -69,14 +69,14 @@ def settings_card(img):
     The Settings dialog is 90vh of the 630 px page viewport (about 567 px);
     this also rejects the similarly coloured 640x480 launcher.
     """
-    m=mask(img,'#f3f6fc',10,(200,120,1080,744))
+    m=mask(img,'#f3f6fc',10,(200,80,1100,744))
     rows=np.where(m.sum(1)>=300)[0]
     if len(rows)<250:return None
     cols=np.where(m[rows].sum(0)>=100)[0]
     if len(cols)<600:return None
     b=[int(cols.min()),int(rows.min()),int(cols.max()+1),int(rows.max()+1)]
-    return b if (632<=b[2]-b[0]<=648 and 540<=b[3]-b[1]<=580
-                 and 130<=b[1]<=175
+    return b if (632<=b[2]-b[0]<=648 and 540<=b[3]-b[1]<=640
+                 and 90<=b[1]<=175
                  and min(abs((b[0]+b[2])/2-img.shape[1]/2-d) for d in (0,120))<=8) else None  # 120: page centre shifts right of the 240 px vertical-tab strip
 
 def shelf_band(img):

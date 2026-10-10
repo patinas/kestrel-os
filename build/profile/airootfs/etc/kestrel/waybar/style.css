@@ -11,7 +11,6 @@ window#waybar {background:rgba(224,232,246,.96);color:#233044;border-radius:24px
 
 #custom-launcher:hover,#custom-mail:hover,#custom-video:hover,#taskbar button:hover {background:#c2d3ea;}
 #custom-launcher:active,#custom-mail:active,#custom-video:active,#taskbar button:active {background:#abc5e8;}
-/* Grouped taskbar: one 40x40 image per app, drawn by kestrel-taskbar (pill, count badge). Unused slots hide their
+/* Grouped taskbar: one 48x48 image per app (40x40 pill plus 4px transparent margin = the 8px gap), drawn by kestrel-taskbar (pill, count badge). Unused slots hide their
    image; the box must have no size of its own or the 8 slots push the centre group off-centre. */
 #task0,#task1,#task2,#task3,#task4,#task5,#task6,#task7 {min-width:0;min-height:0;margin:0;padding:0;background:none;}
-#task0 image,#task1 image,#task2 image,#task3 image,#task4 image,#task5 image,#task6 image,#task7 image {margin:4px 4px;}

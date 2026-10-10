@@ -64,7 +64,7 @@
   },
   "image#task0": {
     "exec": "kestrel-taskbar slot 0",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 0",
@@ -72,7 +72,7 @@
   },
   "image#task1": {
     "exec": "kestrel-taskbar slot 1",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 1",
@@ -80,7 +80,7 @@
   },
   "image#task2": {
     "exec": "kestrel-taskbar slot 2",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 2",
@@ -88,7 +88,7 @@
   },
   "image#task3": {
     "exec": "kestrel-taskbar slot 3",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 3",
@@ -96,7 +96,7 @@
   },
   "image#task4": {
     "exec": "kestrel-taskbar slot 4",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 4",
@@ -104,7 +104,7 @@
   },
   "image#task5": {
     "exec": "kestrel-taskbar slot 5",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 5",
@@ -112,7 +112,7 @@
   },
   "image#task6": {
     "exec": "kestrel-taskbar slot 6",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 6",
@@ -120,7 +120,7 @@
   },
   "image#task7": {
     "exec": "kestrel-taskbar slot 7",
-    "size": 40,
+    "size": 48,
     "signal": 8,
     "interval": "once",
     "on-click": "kestrel-taskbar click 7",
