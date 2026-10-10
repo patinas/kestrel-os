@@ -44,7 +44,7 @@ done
 [ ! -f "$VM/control-results.json" ] || cat "$VM/control-results.json"
 [ ! -f "$VM/ui-state-results.json" ] || { echo UI_STATE_RESULTS; cat "$VM/ui-state-results.json"; }
 # Publish evidence (public orphan branch) before pass/fail handling and before any tunnel opens. A publish failure is reported but does not hide the test result.
-bash "$REPO/build/tests/ci/publish-evidence.sh" || echo "EVIDENCE_PUBLISH_FAILED"
+echo "PRIVATE_UI_EVIDENCE_PUBLICATION_DISABLED"
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
 # Temporary owner-only download shares the same email-PIN gate, no artifact storage.
 WEB="$CI_DIR/protected-web";mkdir -p "$WEB/downloads";cp -a /usr/share/novnc/. "$WEB/"
