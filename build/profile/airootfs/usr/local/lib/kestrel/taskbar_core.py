@@ -31,9 +31,16 @@ def menu_lines(items):
  return [f"{i+1}. {t.replace(chr(10),' ')}" for i,(_,t) in enumerate(items)]
 
 def parse_choice(line,items):
- try:n=int(line.strip().split('.',1)[0])
- except ValueError:return None
- return items[n-1][0] if 1<=n<=len(items) else None
+ """A list row ("2. Title"), or free text typed in the list: the first window whose title contains it."""
+ line=line.strip()
+ if not line:return None
+ head=line.split('.',1)[0]
+ if head.isdigit():
+  n=int(head);return items[n-1][0] if 1<=n<=len(items) else None
+ q=line.lower()
+ for i,t in items:
+  if q in (t or '').lower():return i
+ return None
 
 def signature(gs):
  return [(g['app_id'],g['count'],g['active'],g['minimized']) for g in gs]

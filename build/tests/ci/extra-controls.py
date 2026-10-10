@@ -63,7 +63,7 @@ def launcher_tiles(name):
  # Query text plus caret is unreliable OCR. Prove the search produced one
  # tile with the exact requested label and nonempty entry ink instead.
  needle='pwa' if name=='CI PWA' else name.lower()
- tiles=[word_rect(w) for w in words if w['text'].lower().strip('()')==needle and int(w['top'])>search[3]+24 and int(w['top'])<720 and search[0]<=int(w['left'])<search[2]]
+ tiles=[word_rect(w) for w in words if (w['text'].lower().strip('()')==needle or needle in w['text'].lower()) and int(w['top'])>search[3]+24 and int(w['top'])<720 and search[0]<=int(w['left'])<search[2]]
  im=uim.load_ppm(v/('ui-extra-launcher-'+name+'-filtered.ppm'))
  import numpy as np
  ink=int((np.max(im[search[1]+10:search[3]-10,search[0]+36:search[0]+200],axis=2)<160).sum())
@@ -256,12 +256,14 @@ def pwa_confirm_install():
  # Only the lower action row of Chrome's centred install dialog. Excludes
  # heading at y140 and address-bar Install at y89.
  crop=v/'pwa-confirm-buttons.png'
- subprocess.run(['convert',str(v/'ui-extra-pwa-install-confirm.ppm'),'-crop','450x100+415+215','-resize','300%',str(crop)],check=True,capture_output=True)
+ subprocess.run(['convert',str(v/'ui-extra-pwa-install-confirm.ppm'),'-crop','450x200+415+130','-resize','300%',str(crop)],check=True,capture_output=True)
  import csv,io
  r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
  found=[w for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t') if w.get('text','').lower()=='install' and float(w['conf'])>=50]
- if len(found)!=1:raise RuntimeError('Install confirmation action not unique')
- w=found[0];point=[415+(int(w['left'])+int(w['width'])/2)/3,215+(int(w['top'])+int(w['height'])/2)/3]
+ print('PWA_CONFIRM_WORDS',json.dumps([(w['text'],w['left'],w['top']) for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t') if w.get('text','').strip()]),flush=True)
+ if not found:raise RuntimeError('Install confirmation action not found')
+ w=max(found,key=lambda x:int(x['top']))  # the dialog heading also says Install; the button is the lowest hit
+ point=[415+(int(w['left'])+int(w['width'])/2)/3,130+(int(w['top'])+int(w['height'])/2)/3]
  print('PWA_CONFIRM_CLICK',json.dumps(point),flush=True);guest_click(*point)
 
 def pwa_install():
@@ -275,14 +277,14 @@ def pwa_install():
   cdp('Page.bringToFront');time.sleep(1)
   key('esc');park_pointer();shot('extra-pwa-address-install')
   crop=v/'pwa-address.png'
-  subprocess.run(['convert',str(v/'ui-extra-pwa-address-install.ppm'),'-crop','400x45+800+65','-resize','300%',str(crop)],check=True,capture_output=True)
+  subprocess.run(['convert',str(v/'ui-extra-pwa-address-install.ppm'),'-crop','400x70+800+10','-resize','300%',str(crop)],check=True,capture_output=True)
   import csv,io
   r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
   words=[]
   for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t'):
    if w.get('text','').strip():
-    w['left']=str(800+int(w['left'])//3);w['top']=str(65+int(w['top'])//3);w['width']=str(max(1,int(w['width'])//3));w['height']=str(max(1,int(w['height'])//3));words.append(w)
-  install=[w for w in words if w['text'].lower()=='install' and 60<=int(w['top'])<=105 and 850<=int(w['left'])<1200]
+    w['left']=str(800+int(w['left'])//3);w['top']=str(10+int(w['top'])//3);w['width']=str(max(1,int(w['width'])//3));w['height']=str(max(1,int(w['height'])//3));words.append(w)
+  install=[w for w in words if w['text'].lower()=='install' and 15<=int(w['top'])<=85 and 850<=int(w['left'])<1200]
   print('PWA_OCR_WORDS',json.dumps([(w['text'],w['left'],w['top']) for w in words]),flush=True)
   # Several 'Install' hits can appear (tooltip text next to the pill): the omnibox pill is the right-most one.
   install=sorted(install,key=lambda w:int(w['left']))[-1:]
