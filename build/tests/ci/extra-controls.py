@@ -66,6 +66,10 @@ def launcher_tiles(name):
  tiles=[word_rect(w) for w in words if (w['text'].lower().strip('()')==needle or needle in w['text'].lower()) and int(w['top'])>search[3]+24 and int(w['top'])<720 and search[0]<=int(w['left'])<search[2]]
  im=uim.load_ppm(v/('ui-extra-launcher-'+name+'-filtered.ppm'))
  import numpy as np
+ if len(tiles)!=1:
+  g=uim.bbox(uim.mask(im,'#e2e8f4',6,(search[0],search[3]+10,search[2],720)),3000)
+  print('LAUNCHER_TILE_GEOMETRY',name,json.dumps(g),flush=True)
+  if g and 90<=g[2]-g[0]<=140 and 90<=g[3]-g[1]<=170:tiles=[[g[0],g[3]-30,g[2],g[3]-12]]
  ink=int((np.max(im[search[1]+10:search[3]-10,search[0]+36:search[0]+200],axis=2)<160).sum())
  record('Launcher '+name+' search focus and query visible',len(tiles)==1 and ink>=15,{'entryInk':ink,'filteredTile':tiles})
  if len(tiles)!=1 or ink<15:raise RuntimeError('Filtered tile or entry ink absent; refusing tile click')
@@ -261,9 +265,16 @@ def pwa_confirm_install():
  r=subprocess.run(['tesseract',str(crop),'stdout','--psm','6','tsv'],capture_output=True,text=True,timeout=20)
  found=[w for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t') if w.get('text','').lower()=='install' and float(w['conf'])>=50]
  print('PWA_CONFIRM_WORDS',json.dumps([(w['text'],w['left'],w['top']) for w in csv.DictReader(io.StringIO(r.stdout),delimiter='\t') if w.get('text','').strip()]),flush=True)
- if not found:raise RuntimeError('Install confirmation action not found')
- w=max(found,key=lambda x:int(x['top']))  # the dialog heading also says Install; the button is the lowest hit
- point=[415+(int(w['left'])+int(w['width'])/2)/3,130+(int(w['top'])+int(w['height'])/2)/3]
+ # OCR is not needed: Install is the light-blue pill (#d4e3ff) in the dialog area, Cancel is the dark focused one.
+ im=uim.load_ppm(v/'ui-extra-pwa-install-confirm.ppm')
+ import numpy as np
+ m=uim.mask(im,'#d4e3ff',10,(480,150,1010,300));cr=uim.runs(m.sum(0),15,gap=4);g=None
+ if cr:  # right-most run of columns: the Install pill; the focused Cancel button's light halo has far fewer pixels per column
+  x0,x1=int(cr[-1][0]),int(cr[-1][1]);ys=np.where(m[:,x0:x1].sum(1)>=25)[0]
+  if len(ys):g=[x0,int(ys.min()),x1,int(ys.max())+1]
+ print('PWA_INSTALL_PILL',json.dumps(g),flush=True)
+ if not g or not 60<=g[2]-g[0]<=130 or not 30<=g[3]-g[1]<=55:raise RuntimeError('Install pill not found in the dialog area')
+ point=list(uim.center(g))
  print('PWA_CONFIRM_CLICK',json.dumps(point),flush=True);guest_click(*point)
 
 def pwa_install():
