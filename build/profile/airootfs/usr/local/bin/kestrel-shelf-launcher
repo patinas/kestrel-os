@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""Waybar launcher feedback; activation happens on release inside the pill."""
+"""Waybar launcher feedback; keep the existing press-to-open action."""
 import json,os,subprocess,sys,time
 from pathlib import Path
 state=Path(os.environ.get('XDG_RUNTIME_DIR','/tmp'))/('kestrel-shelf-press-'+str(os.getuid()))
 cmd=sys.argv[1] if len(sys.argv)>1 else 'watch'
 if cmd=='press':
  state.write_text(str(time.monotonic()))
+ subprocess.Popen(['kestrel-launcher'],start_new_session=True)
 elif cmd=='release':
  was=state.exists();state.unlink(missing_ok=True)
- try:x,y=map(float,sys.argv[2:4])
- except (ValueError,TypeError):sys.exit(1)
- if was and 0<=x<=100 and 0<=y<=100:subprocess.Popen(['kestrel-launcher'],start_new_session=True)
 elif cmd=='watch':
  last=None
  while True:

@@ -54,7 +54,7 @@
     "return-type": "json",
     "exec-on-event": false,
     "on-click": "kestrel-shelf-launcher press",
-    "on-click-release": "kestrel-shelf-launcher release {x} {y}"
+    "on-click-release": "kestrel-shelf-launcher release"
   },
   "custom/mail": {
     "format": "\ue002",
