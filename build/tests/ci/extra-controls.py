@@ -136,7 +136,10 @@ def taskbar_activate():
  im=uim.load_ppm(v/'ui-extra-taskbar-minimized.ppm');els=uim.shelf_elements(im,uim.shelf_band(im));buttons=[e for e in els if 300<=e[0] and e[2]<=980][2:]
  found=False
  for i,e in enumerate(buttons):
-  guest_click(*uim.center(e))
+  guest_click(*uim.center(e));time.sleep(1.5)
+  # With 2+ browser windows the icon opens the window list (wofi). Pick the Settings window by typing its title.
+  if 'wofi' in probe('/taskbar-log').get('processes',''):
+   print('TASKBAR_LIST_OPEN',flush=True);text('kestrel');time.sleep(.5);key('ret');time.sleep(2)
   if settings_visible('extra-taskbar-activate-'+str(i)):found=True;break
  record('Taskbar browser mouse activation restores minimized target',found and cdp('Browser.getWindowForTarget',{'targetId':target})['windowId']==info['windowId'],{'targetId':target,'windowId':info['windowId']})
 safe_section('Taskbar activate/minimize',taskbar_activate)

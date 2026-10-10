@@ -17,7 +17,7 @@ def log(m):
  except OSError:pass
 
 def ask(msg):
- s=socket.socket(socket.AF_UNIX);s.settimeout(5);s.connect(SOCK);s.sendall((json.dumps(msg)+'\n').encode())
+ s=socket.socket(socket.AF_UNIX);s.settimeout(5);log('ask '+msg['cmd']);s.connect(SOCK);s.sendall((json.dumps(msg)+'\n').encode())
  data=b''
  while not data.endswith(b'\n'):
   chunk=s.recv(65536)
@@ -28,8 +28,9 @@ def ask(msg):
 def menu(items):
  cmd=os.environ.get('KESTREL_TASKBAR_MENU')
  argv=cmd.split() if cmd else ['wofi','--dmenu','--prompt','Windows','--location','bottom','--yoffset','-64','--width','420','--style','/etc/kestrel/wofi/style.css']
- try:r=subprocess.run(argv,input='\n'.join(core.menu_lines(items)),capture_output=True,text=True,timeout=120)
- except Exception:return None
+ try:r=subprocess.run(argv,input='\n'.join(core.menu_lines(items)),capture_output=True,text=True,timeout=int(os.environ.get('KESTREL_TASKBAR_MENU_TIMEOUT','30')))
+ except Exception as e:log('menu failed: '+repr(e));return None
+ log('menu choice '+repr(r.stdout.strip()))
  return core.parse_choice(r.stdout,items) if r.returncode==0 else None
 
 def client(argv):
@@ -99,16 +100,18 @@ def daemon():
   t=st['tops'].get(i)
   if not t:return False
   was=t['minimized']
-  if was:t['handle'].unset_minimized();display.flush();display.roundtrip()
-  t['handle'].activate(st['seat']);display.flush();display.roundtrip()
-  log(f"activate id={i} app={t['app_id']} was_minimized={was}");return True
+  # No roundtrip here: the daemon is the only reader of this connection and a blocking wait inside a request
+  # handler can stall the whole daemon. Requests are ordered, so unminimize then activate is enough.
+  log(f"activate id={i} app={t['app_id']} was_minimized={was}")
+  if was:t['handle'].unset_minimized()
+  t['handle'].activate(st['seat']);display.flush();log(f"activate id={i} sent");return True
  def handle(msg):
   gs=core.groups(wins())
   if msg.get('cmd')=='status':return {'groups':[{'app_id':g['app_id'],'count':g['count'],'active':g['active'],'minimized':g['minimized'],'windows':[{'id':w['id'],'title':w['title']} for w in g['windows']]} for g in gs]}
   if msg.get('cmd')=='click':
    k=msg.get('slot',-1)
    if not 0<=k<len(gs):return {'error':'no such slot'}
-   kind,arg=core.click_plan(gs[k])
+   kind,arg=core.click_plan(gs[k]);log(f"click slot={k} plan={kind} windows={len(gs[k]['windows'])}")
    if kind=='activate':return {'ok':activate(arg)}
    return {'menu':arg}
   if msg.get('cmd')=='activate':return {'ok':activate(msg.get('id'))}

@@ -36,7 +36,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
    for f in list(Path('/run/user').glob('*/kestrel-taskbar/log'))+list(Path('/home').glob('*/.local/state/kestrel/taskbar.log'))+list(Path('/home').glob('*/.local/state/kestrel/waybar.log')):
     try:out[str(f)]=f.read_text(errors='replace')[-4000:]
     except OSError as e:out[str(f)]=repr(e)
-   r=run(['pgrep','-a','-f','kestrel-taskbar|waybar']);out['processes']=r.stdout.decode(errors='replace')
+   r=run(['pgrep','-a','-f','kestrel-taskbar|waybar|wofi']);out['processes']=r.stdout.decode(errors='replace')
    self.reply(out);return
   elif self.path=='/status':self.reply(status());return
   else:self.send_error(404);return
