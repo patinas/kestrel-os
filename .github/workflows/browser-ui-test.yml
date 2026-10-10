@@ -24,6 +24,7 @@ jobs:
     env:
       KESTREL_CI_ALLOW_TCG: false
       KESTREL_UI_PROBE: 1
+      KESTREL_UI_GATE_ONLY: 1
     steps:
       - uses: actions/checkout@v4
       - name: Host setup

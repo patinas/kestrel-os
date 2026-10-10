@@ -98,7 +98,7 @@ def shelf_report(img,label):
 # ---- 0. shelf, empty desktop ----
 clear();time.sleep(3);img0=frame('shelf');sh,els=shelf_report(img0,'shelf (no windows)')
 launch=[e for e in els if e[2]<300]
-if launch:state_check('shelf launcher button',img0,launch[0],'shelf',pressed=False);key('esc')
+if launch:state_check('shelf launcher button',img0,launch[0],'shelf',pressed=True);key('esc')
 # ---- 0b. shelf with a window open ----
 clear();key('meta_l','b');time.sleep(12);move(640,300);imgw=frame('shelf-window');shelf_report(imgw,'shelf (window open)')
 clear()
@@ -166,7 +166,24 @@ try:
  rec('media key Volume Down changes real volume',a0!=a1,f'{a0!r}->{a1!r}');rec('media key Volume Up restores volume',a2!=a1,f'{a1!r}->{a2!r}')
  key('audiomute');m1=audio();rec('media key Mute toggles real mute state',('MUTED' in a2)!=('MUTED' in m1),f'{a2!r}->{m1!r}');key('audiomute')
 except Exception as e:rec('media keys',False,repr(e))
-for c in ('Brightness keys','Play/Pause/Next/Prev keys'):rec(c+' not exercised here',None,'Requires physical brightness device or a test MPRIS player; not proven')
+def media_probe(path,data):
+ req=urllib.request.Request('http://127.0.0.1:18766'+path,data=json.dumps(data).encode(),headers={'Content-Type':'application/json'})
+ ans=json.load(urllib.request.urlopen(req,timeout=60))
+ if 'error' in ans:raise RuntimeError(ans)
+ return ans
+try:
+ start=media_probe('/media-start',{});rec('MPRIS test player starts paused',start['player']=={'events':[],'playback':'Paused'},start)
+ for name,events,playing in [('play',['PlayPause'],'Playing'),('play',['PlayPause','PlayPause'],'Paused'),('next',['PlayPause','PlayPause','Next'],'Paused'),('previous',['PlayPause','PlayPause','Next','Previous'],'Paused')]:
+  st=media_probe('/media-key',{'key':name});rec('Media '+name+' key reaches real playerctl and test MPRIS ('+str(len(events))+')',st['player']=={'events':events,'playback':playing},st['player'])
+ up=media_probe('/media-key',{'key':'bright-up'});down=media_probe('/media-key',{'key':'bright-down'})
+ rec('Brightness Up key dispatches +5% to test backlight command',up['brightness']=={'value':55,'events':[['set','+5%']]},up['brightness'])
+ rec('Brightness Down key dispatches -5% and restores test backlight',down['brightness']=={'value':50,'events':[['set','+5%'],['set','5%-']]},down['brightness'])
+ print('HARDWARE_SCOPE Physical panel brightness is not certified by this VM. Key binding and command arguments are proven against a disposable test double.',flush=True)
+except Exception as e:rec('Media/brightness fixture key dispatch',False,repr(e))
+finally:
+ try:rec('Media test fixture cleanup',media_probe('/media-stop',{})=={'stopped':True})
+ except Exception as e:rec('Media test fixture cleanup',False,repr(e))
+
 controls=json.loads(v.joinpath('control-results.json').read_text()) if v.joinpath('control-results.json').exists() else []
 for label,needed in (
  ('Taskbar mouse activate/minimize/grouped close',('Taskbar browser mouse activation restores minimized target','Taskbar minimize mouse hides current browser pixels','Closing one of the grouped windows keeps one browser icon')),
@@ -175,4 +192,4 @@ for label,needed in (
  rec(label,all(r and r['result']=='PASS' for r in found),'Referenced actual controls evidence: '+str(found))
 v.joinpath('ui-state-results.json').write_text(json.dumps(results,indent=1))
 print('UI_STATE_SUMMARY',json.dumps({k:sum(1 for r in results if r['result']==k) for k in ('PASS','FAIL','UNMEASURED')}),flush=True)
-sys.exit(1 if any(r['result']=='FAIL' for r in results) else 0)
+sys.exit(1 if any(r['result']!='PASS' for r in results) else 0)

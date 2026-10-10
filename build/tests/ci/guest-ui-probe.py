@@ -17,6 +17,56 @@ def status():
   if p.exists():
    st=p.stat();ownership[name]={'uid':st.st_uid,'gid':st.st_gid,'mode':oct(st.st_mode & 0o777)}
  return {'ownership':ownership,'processes':counts,'enabled':(D/'terminal-enabled').exists(),'password_present':(D/'sudo-password').exists()}
+# Test doubles below exist only in a named-port disposable CI VM.
+MEDIA=Path('/tmp/kestrel-ci-media');player=None;input_fd=None
+KEYS={'play':164,'next':163,'previous':165,'bright-up':225,'bright-down':224}
+def media_status():
+ out={}
+ for name in ('player','brightness'):
+  p=MEDIA/(name+'.json');out[name]=json.loads(p.read_text()) if p.exists() else None
+ return out
+
+def media_stop():
+ global player,input_fd
+ if player:
+  import signal
+  try:os.killpg(player.pid,signal.SIGTERM);player.wait(timeout=5)
+  except (OSError,subprocess.TimeoutExpired):pass
+  player=None
+ if input_fd is not None:
+  import fcntl
+  fcntl.ioctl(input_fd,0x5502);os.close(input_fd);input_fd=None
+ Path('/usr/local/bin/brightnessctl').unlink(missing_ok=True)
+
+def media_start():
+ global player,input_fd
+ import fcntl,struct,time,pwd
+ media_stop();MEDIA.mkdir(exist_ok=True);uid=pwd.getpwnam('kestrel').pw_uid;gid=pwd.getpwnam('kestrel').pw_gid;os.chown(MEDIA,uid,gid)
+ for p in MEDIA.glob('*.json'):p.unlink()
+ (MEDIA/'brightness.json').write_text(json.dumps({'value':50,'events':[]}));os.chown(MEDIA/'brightness.json',uid,gid)
+ wrapper=Path('/usr/local/bin/brightnessctl');assert not wrapper.exists()
+ wrapper.write_text("#!/usr/bin/python3\nimport json,sys\nfrom pathlib import Path\np=Path('/tmp/kestrel-ci-media/brightness.json');d=json.loads(p.read_text());a=sys.argv[1:];assert a in [['set','+5%'],['set','5%-']];d['events'].append(a);d['value']+=5 if a[1]=='+5%' else -5;p.write_text(json.dumps(d));print(d['value'])\n");wrapper.chmod(0o755)
+ env=['env','XDG_RUNTIME_DIR=/run/user/'+str(uid),'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/'+str(uid)+'/bus']
+ player=subprocess.Popen(['runuser','-u','kestrel','--',*env,'python3','/usr/local/lib/kestrel-ci/test-media-player.py',str(MEDIA/'player.json')],start_new_session=True)
+ for _ in range(40):
+  r=run(['runuser','-u','kestrel','--',*env,'playerctl','--list-all'])
+  if b'kestrel_ci' in r.stdout:break
+  if player.poll() is not None:raise RuntimeError('MPRIS fixture exited')
+  time.sleep(.1)
+ else:raise RuntimeError('MPRIS fixture not registered')
+ run(['modprobe','uinput']);input_fd=os.open('/dev/uinput',os.O_WRONLY|os.O_NONBLOCK)
+ for typ in (0,1):fcntl.ioctl(input_fd,0x40045564,typ)
+ for code in [30,*KEYS.values()]:fcntl.ioctl(input_fd,0x40045565,code)
+ os.write(input_fd,struct.pack('80sHHHHI',b'Kestrel CI keyboard',3,0x1234,1,1,0)+bytes(4*64*4));fcntl.ioctl(input_fd,0x5501);time.sleep(3)
+ return {**media_status(),'scope':'Real compositor key dispatch and real playerctl to test MPRIS; brightness command dispatch to a test double, not physical backlight.'}
+
+def media_key(name):
+ import struct,time
+ assert input_fd is not None and name in KEYS
+ for down in (1,0):
+  os.write(input_fd,struct.pack('llHHi',0,0,1,KEYS[name],down));os.write(input_fd,struct.pack('llHHi',0,0,0,0,0));time.sleep(.15)
+ time.sleep(.6);return media_status()
+
 class Handler(http.server.BaseHTTPRequestHandler):
  def log_message(self,*a):pass
  def do_GET(self):
@@ -46,7 +96,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
  def do_POST(self):
   # Only a disposable named-port VM exposes this test listener. Never add it to a shipped profile.
   if self.headers.get('Origin') or self.headers.get('Sec-Fetch-Site'):self.send_error(403);return
-  if self.path not in ('/advanced-check','/advanced-cleanup','/signature-check','/panels-close','/terminals-close'):self.send_error(404);return
+  if self.path not in ('/advanced-check','/advanced-cleanup','/signature-check','/panels-close','/terminals-close','/media-start','/media-key','/media-stop'):self.send_error(404);return
   size=int(self.headers.get('Content-Length',0))
   if not 0<=size<=1024:self.send_error(400);return
   data=json.loads(self.rfile.read(size) or b'{}')
@@ -55,7 +105,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
    import traceback;traceback.print_exc()
    self.reply({'error':type(e).__name__,'message':str(e)[:300]})
  def action(self,data):
-  if self.path=='/terminals-close':
+  if self.path=='/media-start':self.reply(media_start())
+  elif self.path=='/media-key':self.reply(media_key(data['key']))
+  elif self.path=='/media-stop':media_stop();self.reply({'stopped':True})
+  elif self.path=='/terminals-close':
    run(['pkill','-u','kestrel','-x','foot']);self.reply(status())
   elif self.path=='/panels-close':
    import signal

@@ -14,3 +14,5 @@ window#waybar {background:rgba(224,232,246,.96);color:#233044;border-radius:24px
 /* Grouped taskbar: one 48x48 image per app (40x40 pill plus 4px transparent margin = the 8px gap), drawn by kestrel-taskbar (pill, count badge). Unused slots hide their
    image; the box must have no size of its own or the 8 slots push the centre group off-centre. */
 #task0,#task1,#task2,#task3,#task4,#task5,#task6,#task7 {min-width:0;min-height:0;margin:0;padding:0;background:none;}
+
+#custom-launcher.pressed,#custom-launcher.pressed:hover {background:#abc5e8;}

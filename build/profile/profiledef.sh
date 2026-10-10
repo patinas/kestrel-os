@@ -13,6 +13,7 @@ pacman_conf="pacman.conf"
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'xz' '-Xbcj' 'x86' '-b' '1M' '-Xdict-size' '100%')
 declare -A file_permissions=(
+  ["/usr/local/bin/kestrel-shelf-launcher"]="0:0:755"
   ["/usr/local/bin/kestrel-sudo-password"]="0:0:755"
   ["/usr/local/bin/kestrel-packages"]="0:0:755"
   ["/usr/local/bin/kestrel-taskbar"]="0:0:755"

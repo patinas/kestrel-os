@@ -46,6 +46,8 @@ done
 # Publish evidence (public orphan branch) before pass/fail handling and before any tunnel opens. A publish failure is reported but does not hide the test result.
 echo "PRIVATE_UI_EVIDENCE_PUBLICATION_DISABLED"
 [ "$test_status" = 0 ] || { echo "Click test failed; screenshots above are diagnostic, not a pass"; exit "$test_status"; }
+# Automated gate skips the optional interactive owner hold.
+if [ "${KESTREL_UI_GATE_ONLY:-0}" = 1 ]; then echo PRIVATE_UI_GATE_FINISHED; exit 0; fi
 # Temporary owner-only download shares the same email-PIN gate, no artifact storage.
 WEB="$CI_DIR/protected-web";mkdir -p "$WEB/downloads";cp -a /usr/share/novnc/. "$WEB/"
 name=$(basename "$ISO");ln -s "$ISO" "$WEB/downloads/$name"

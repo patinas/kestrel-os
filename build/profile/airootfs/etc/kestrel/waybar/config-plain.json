@@ -62,9 +62,13 @@
   "margin-left": 8,
   "margin-right": 8,
   "custom/launcher": {
-    "format": "\ue000",
+    "format": "{}",
     "tooltip-format": "Launcher",
-    "on-click": "kestrel-launcher"
+    "exec": "kestrel-shelf-launcher watch",
+    "return-type": "json",
+    "exec-on-event": false,
+    "on-click": "kestrel-shelf-launcher press",
+    "on-click-release": "kestrel-shelf-launcher release {x} {y}"
   },
   "custom/mail": {
     "format": "\ue002",

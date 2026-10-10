@@ -5,6 +5,7 @@ mkdir -p "$B"
 rsync -a --delete --exclude out --exclude work --exclude cache "$REPO/build/" "$B/"
 # Test observer is injected only into the disposable browser test copy, never the repo profile.
 if [ "${KESTREL_UI_PROBE:-0}" = 1 ]; then
+ install -Dm755 "$REPO/build/tests/ci/test-media-player.py" "$B/profile/airootfs/usr/local/lib/kestrel-ci/test-media-player.py"
  install -Dm755 "$REPO/build/tests/ci/guest-ui-probe.py" "$B/profile/airootfs/usr/local/lib/kestrel-ci/guest-ui-probe.py"
  mkdir -p "$B/profile/airootfs/etc/systemd/system/multi-user.target.wants"
  cat > "$B/profile/airootfs/etc/systemd/system/kestrel-ci-ui-probe.service" <<'SERVICE'
