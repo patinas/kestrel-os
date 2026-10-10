@@ -9,3 +9,12 @@ Terms: https://www.google.com/chrome/terms/ and https://policies.google.com/term
 For installed writable-home systems, run `kestrel-chrome-setup --update` to fetch and verify a fresh package, then restart the session. Automatic security updates are not implemented; this is an alpha limitation. Fresh live boots fetch the current stable package.
 
 Release remains draft until Chrome and interaction tests pass. Earlier Chromium test results do not establish Chrome results. A/B health now checks Chrome processes and needs retesting.
+
+## Profile defaults
+
+`kestrel-browser` seeds the Kestrel Chrome profile before launch, only while Chrome is not running:
+
+- `vertical_tabs.enabled=true` once, on a fresh profile. Chrome's own setting (right-click the tab strip, "Show Tabs Vertically") switches back and the choice is kept. Source: https://blog.google/products-and-platforms/products/chrome/new-chrome-productivity-features/ . The pref name was read from the installed Chrome 154 binary and checked by rendering it.
+- `browser.custom_chrome_frame=false` on every start (Chrome's "Use system title bar and borders"). Chrome then draws no close button of its own and the Kestrel title bar's X is the only one. Before this the window showed two.
+
+`build/tests/ci/chrome-profile.sh` runs the shipped script against real Chrome under Xvfb and checks the persisted prefs, the rendered vertical strip and that a later start keeps the user's choice. Limit: Xvfb has no Wayland compositor, so the double X itself is not reproduced there; only the setting that removes it is verified. The VM run must show one X.

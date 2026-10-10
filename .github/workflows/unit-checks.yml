@@ -28,3 +28,5 @@ jobs:
         run: build/tests/ci/lock-bridge.sh
       - name: Advanced state regression
         run: build/tests/ci/advanced-state.sh
+      - name: Chrome profile defaults (vertical tabs, single close button)
+        run: build/tests/ci/chrome-profile.sh

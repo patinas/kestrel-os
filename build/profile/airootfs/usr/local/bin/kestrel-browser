@@ -1,4 +1,23 @@
 #!/usr/bin/env bash
 DEBUG=()
 if [ -e /dev/virtio-ports/kestrel-ci-check ]; then DEBUG=(--remote-debugging-port=9222 --remote-allow-origins=http://localhost); fi
+# Seed Chrome profile defaults before launch (only while Chrome is not running, or it would overwrite them).
+# - browser.custom_chrome_frame=false: Chrome uses the system title bar, so the window shows ONE close button
+#   (the Kestrel/labwc one). Enforced on every start.
+# - vertical_tabs.enabled=true: vertical tab strip, set once on a fresh profile only; the user can switch back.
+if ! pgrep -u "$(id -u)" -x chrome >/dev/null 2>&1; then
+python3 - "$HOME/.config/kestrel-chrome" <<'PY' || true
+import json,sys
+from pathlib import Path
+d=Path(sys.argv[1])/'Default';d.mkdir(parents=True,exist_ok=True);f=d/'Preferences'
+try:p=json.loads(f.read_text())
+except Exception:p={}
+if not isinstance(p,dict):p={}
+p.setdefault('browser',{})['custom_chrome_frame']=False
+marker=Path(sys.argv[1])/'.kestrel-vertical-tabs-seeded'
+if not marker.exists():
+ p.setdefault('vertical_tabs',{})['enabled']=True;marker.write_text('1')
+f.write_text(json.dumps(p))
+PY
+fi
 exec "$HOME/.local/share/kestrel/chrome/current/opt/google/chrome/chrome" "${DEBUG[@]}" --no-first-run --no-default-browser-check --ozone-platform=wayland --user-data-dir="$HOME/.config/kestrel-chrome" --homepage=https://www.google.com --start-maximized "${1:-https://www.google.com}"
