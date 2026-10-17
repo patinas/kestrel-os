@@ -33,7 +33,6 @@ append_opts(){ sed -i '/^options /s/$/ console=tty0 console=ttyS0 kestrel.test-j
 do_update(){ # do_update <extra options for the new entry>
   local d=/var/tmp/kestrel-update; rm -rf $d; mkdir -p $d
   /usr/local/lib/kestrel/make-test-update.sh "$KEY" $d > $d/make.log 2>&1 || { tail -n 30 $d/make.log; fail "make-test-update failed"; }
-  export KESTREL_ALLOW_VM_UPDATE=yes
   kestrel-update $d/root.tar.zst $d/root.tar.zst.minisig || fail "signed update failed"
   local e; e=$(ls "$ENT"/kestrel-*+3.conf); [ "$(echo "$e" | wc -l)" = 1 ] || fail "expected exactly one armed entry"
   append_opts "$e" "$1"
@@ -60,7 +59,6 @@ p="$d/root.tar.zst.minisig"; l=open(p).read().split("\n")
 s=l[1]; i=10; l[1]=s[:i]+("B" if s[i]=="A" else "A")+s[i+1:]; open(p,"w").write("\n".join(l))
 PY
    before=$(sha256sum $ENT/*.conf | sha256sum); uuid=$(blkid -s UUID -o value /dev/disk/by-label/rootB)
-   export KESTREL_ALLOW_VM_UPDATE=yes
    say "CI_DIAGNOSTIC signature files and updater"
    ls -l "$d" /usr/local/bin/kestrel-update /usr/local/lib/kestrel/update.sh > /dev/ttyS0 2>&1 || fail "signature files/updater listing failed"
    rc=0

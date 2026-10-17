@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kestrel A/B updater, VM-ONLY. Usage: update.sh root.tar.zst root.tar.zst.minisig
+# Kestrel A/B updater. Usage: update.sh root.tar.zst root.tar.zst.minisig
 # Verifies the signature, determines the ACTIVE slot from the kernel cmdline, checks the inactive slot's
 # device is on the same disk as the ESP, writes it, and arms a 3-try boot of the new slot (boot assessment).
 set -Eeuo pipefail
@@ -7,7 +7,6 @@ set -Eeuo pipefail
 need_root
 IMG=${1:?root.tar.zst}; SIG=${2:?signature .minisig}
 PUB=${KESTREL_UPDATE_PUB:-/etc/kestrel/update.pub}
-[ "${KESTREL_ALLOW_VM_UPDATE:-}" = yes ] || die "set KESTREL_ALLOW_VM_UPDATE=yes (VM-only)"
 command -v minisign >/dev/null || die "minisign not installed"
 [ -f "$PUB" ] || die "no public key at $PUB"
 minisign -Vm "$IMG" -p "$PUB" -x "$SIG" >/dev/null || die "signature verification FAILED; refusing"
@@ -25,7 +24,7 @@ ACTDEV=$(blkid -L "root$ACT"); NEWDEV=$(blkid -L "root$NEW"); ESPDEV=$(blkid -L 
 [ "$NEWDEV" != "$ACTDEV" ] || die "target equals active slot"
 D1=$(lsblk -no PKNAME "$NEWDEV"); D2=$(lsblk -no PKNAME "$ESPDEV"); D3=$(lsblk -no PKNAME "$ACTDEV")
 [ "$D1" = "$D2" ] && [ "$D1" = "$D3" ] || die "slots and ESP are not on the same disk"
-is_vm_disk "/dev/$D1" || die "/dev/$D1 is not a VM/loop disk; refusing"
+echo "update target: disk /dev/$D1 (slots and ESP verified on the same disk)" >&2
 findmnt -n "$NEWDEV" >/dev/null && die "inactive slot is mounted; refusing"
 W=$(mktemp -d)
 cleanup(){ set +e; umount "$W/new" 2>/dev/null; umount "$W/esp" 2>/dev/null; rm -rf "$W"; }  # on failure the target slot has no boot entry, so the old slot stays the default

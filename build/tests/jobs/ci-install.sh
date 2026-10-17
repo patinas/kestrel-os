@@ -9,7 +9,7 @@ systemctl start NetworkManager
 for i in {1..60}; do getent hosts geo.mirror.pkgbuild.com && break; sleep 2; done
 getent hosts geo.mirror.pkgbuild.com
 sleep 20
-export KESTREL_ALLOW_VM_INSTALL=yes KESTREL_CONFIRM='ERASE /dev/vda'
+export KESTREL_CONFIRM='ERASE /dev/vda'
 export KESTREL_SRC_OVERLAY=$S/profile/airootfs KESTREL_PACMAN_CONF=$S/profile/pacman.conf
 export KESTREL_GAME_LAUNCHERS=$(cat "$S/ci-launchers")
 export KESTREL_UPDATE_PUB=$S/out/test-keys/test.pub

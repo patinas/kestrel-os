@@ -6,7 +6,6 @@ journalctl -b --no-pager -u kestrel-health.service -u systemd-bless-boot.service
 cat /proc/cmdline
 mkdir -p /var/tmp/kestrel-update
 bash /usr/local/lib/kestrel/make-test-update.sh /run/kestrel-test/out/test-keys/test.key /var/tmp/kestrel-update
-export KESTREL_ALLOW_VM_UPDATE=yes
 # A corrupted detached signature must be rejected before slot or entry writes.
 cp /var/tmp/kestrel-update/root.tar.zst.minisig /var/tmp/kestrel-update/bad.minisig
 sed -i '2s/./A/10' /var/tmp/kestrel-update/bad.minisig

@@ -1,16 +1,30 @@
 #!/usr/bin/env bash
-# Kestrel installer, VM-ONLY. Usage: install.sh /dev/vdX   (run as root in the live ISO)
+# Kestrel installer. Usage: install.sh [/dev/DISK]   (run as root in the live ISO)
+# With no argument and an interactive terminal, lists candidate disks and asks which to use.
 # GPT: 1 ESP 512M (kernels per slot: /A, /B) | 2 rootA 12G | 3 rootB 12G | 4 kdata (/var, /home, rest of disk)
-# Env: KESTREL_ROOT_GIB (default 12), KESTREL_UPDATE_PUB (path to a TEST-ONLY minisign public key to install)
+# Env: KESTREL_ROOT_GIB (default 12), KESTREL_UPDATE_PUB (path to a TEST-ONLY minisign public key to install),
+#      KESTREL_CONFIRM (non-interactive confirmation; must be exactly "ERASE /dev/DISK")
 set -Eeuo pipefail
 . "$(dirname "$0")/lib.sh"
 need_root
-DEV=${1:?usage: install.sh /dev/vdX}
-[ "${KESTREL_ALLOW_VM_INSTALL:-}" = yes ] || die "set KESTREL_ALLOW_VM_INSTALL=yes (VM-only installer)"
-is_vm_disk "$DEV" || die "$DEV is not a recognised VM/loop disk; refusing"
-[ "$(basename "$DEV")" != "$(running_disk)" ] || die "$DEV holds the running system; refusing"
-if lsblk -no MOUNTPOINTS "$DEV" | grep -q .; then die "$DEV has mounted partitions; refusing"; fi
-[ "${KESTREL_CONFIRM:-}" = "ERASE $DEV" ] || die "set KESTREL_CONFIRM='ERASE $DEV' to confirm"
+DEV=${1:-}
+if [ -z "$DEV" ]; then
+  [ -t 0 ] || die "usage: install.sh /dev/DISK (no disk argument and no interactive terminal)"
+  DEV=$(select_disk) || die "no disk selected"
+fi
+check_target_disk "$DEV"
+EXPECT="ERASE $DEV"
+echo "WARNING: ALL data on $DEV will be erased. Current contents:" >&2
+lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINTS "$DEV" >&2 || true
+if [ -n "${KESTREL_CONFIRM:-}" ]; then
+  [ "$KESTREL_CONFIRM" = "$EXPECT" ] || die "KESTREL_CONFIRM must be exactly '$EXPECT'"
+elif [ -t 0 ]; then
+  printf 'Type %s to confirm: ' "$EXPECT" >&2
+  read -r CONFIRM
+  [ "$CONFIRM" = "$EXPECT" ] || die "confirmation did not match; nothing was written"
+else
+  die "non-interactive run: set KESTREL_CONFIRM='$EXPECT' to confirm"
+fi
 SRC=${KESTREL_SRC_OVERLAY:-/}            # live root providing /usr/local, shell, services
 W=$(mktemp -d); T=$W/target
 cleanup(){ set +e; umount "$W/esp" 2>/dev/null; umount "$W/kd" 2>/dev/null; umount -R "$W/mnt" 2>/dev/null; umount -R "$T" 2>/dev/null; umount -l "$T" 2>/dev/null; rm -rf "$W"; }

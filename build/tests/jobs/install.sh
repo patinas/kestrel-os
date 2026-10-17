@@ -4,7 +4,7 @@ exec >/dev/ttyS0 2>&1
 systemctl start NetworkManager
 for i in {1..30}; do getent hosts geo.mirror.pkgbuild.com && break; sleep 2; done
 sleep 20
-export KESTREL_ALLOW_VM_INSTALL=yes KESTREL_CONFIRM='ERASE /dev/vda'
+export KESTREL_CONFIRM='ERASE /dev/vda'
 export KESTREL_SRC_OVERLAY=/run/kestrelshare/profile/airootfs
 export KESTREL_PACMAN_CONF=/run/kestrelshare/profile/pacman.conf
 export KESTREL_UPDATE_PUB=/run/kestrelshare/out/test-keys/test.pub
