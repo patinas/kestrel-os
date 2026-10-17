@@ -10,7 +10,7 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 350
     env:
       KESTREL_CI_ALLOW_TCG: false
     steps:
@@ -25,6 +25,14 @@ jobs:
           build/tests/ci/06-iso-boot.sh
       - name: Verify single file or split parts
         run: build/tests/ci/07-split.sh
+      - name: Prepare VM inputs
+        run: build/tests/ci/02-prepare.sh
+      - name: Install to disposable qcow2 exactly as a real user (no test overlay or test kernel args)
+        env:
+          JOB: ci-install-plain.sh
+        run: build/tests/ci/03-install.sh
+      - name: Boot the installed disk over UEFI and capture shell screenshots
+        run: build/tests/ci/09-install-evidence.sh
       - name: Stage draft pre-release (no Actions artifact storage)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,12 +47,13 @@ jobs:
           fi
           tag="alpha-$(date -u +%Y%m%d)-${GITHUB_RUN_ID}"
           cat > "$CI_DIR/notes.md" <<NOTES
-          Experimental x86_64 UEFI live alpha. Not tested on real hardware. Do not install on an internal disk; the installer retains VM-only guards.
+          Experimental x86_64 UEFI live and install alpha. Not tested on real hardware. The installer erases one selected internal disk after disk selection and a typed erase confirmation; every selected disk is wiped completely.
           Source: $GITHUB_SHA
           Build and verification: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           $NOTE_DL
+          Proven on this exact source in QEMU/KVM UEFI VMs only: live boot, full-disk install, installed boot to the shell (screenshots attached: iso-*.png live, install-*.png installed). A/B updates with signed images and rollback are proven by the vm-test workflow on the same source. Real hardware, GPU, Wi-Fi, Bluetooth and audio are not certified.
           UI is a browser shell with external Search/Mail/Video/Games shortcuts, not built-in native apps. Gaming, GPU, ARM, browser interaction and hardware compatibility are not certified.
           NOTES
           cat "$CI_DIR/delivery/SHA256SUMS.iso" >> "$CI_DIR/notes.md"
-          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "Kestrel OS alpha (UEFI live test)" --notes-file "$CI_DIR/notes.md" "${ASSETS[@]}" "$CI_DIR"/delivery/SHA256SUMS.* "$CI_DIR"/vm/iso-*.png
+          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "Kestrel OS alpha (UEFI live + install test)" --notes-file "$CI_DIR/notes.md" "${ASSETS[@]}" "$CI_DIR"/delivery/SHA256SUMS.* "$CI_DIR"/vm/iso-*.png "$CI_DIR"/vm/install-*.png
           echo "Draft tag: $tag" >> "$GITHUB_STEP_SUMMARY"
