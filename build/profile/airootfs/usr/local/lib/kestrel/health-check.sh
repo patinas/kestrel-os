@@ -13,9 +13,9 @@ find_pid(){ pgrep -u "$SESSION_USER" -x -o "$1" 2>/dev/null; }
 comp= cli=
 t=0
 while [ $t -lt $WAITMAX ]; do
-  for c in cage gamescope; do p=$(find_pid $c) && [ -n "$p" ] && { comp=$p; compn=$c; break; }; done
+  for c in labwc cage gamescope; do p=$(find_pid $c) && [ -n "$p" ] && { comp=$p; compn=$c; break; }; done
   if [ -n "$comp" ]; then
-    case $compn in cage) names="chrome";; gamescope) names="steam";; esac
+    case $compn in labwc|cage) names="chrome";; gamescope) names="steam";; esac
     for n in $names; do p=$(find_pid $n) && [ -n "$p" ] && { cli=$p; clin=$n; break; }; done
   fi
   [ -n "$comp" ] && [ -n "$cli" ] && break
