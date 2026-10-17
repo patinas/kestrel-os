@@ -67,7 +67,7 @@ PCONF=${KESTREL_PACMAN_CONF:-/etc/pacman.conf}
 grep -Eq '^\[multilib\]' "$PCONF" || die "$PCONF has no [multilib] section"
 grep -Eq '^SigLevel *= *Required' "$PCONF" || die "$PCONF does not require package signatures"
 ! grep -Eqi '^SigLevel.*(Never|TrustAll)' "$PCONF" || die "$PCONF weakens signature checks"
-for f in usr/local/lib/kestrel/health-check.sh usr/local/lib/kestrel/update.sh usr/local/lib/kestrel/lib.sh etc/systemd/system/kestrel-health.service usr/share/kestrel/shell/index.html; do
+for f in usr/local/lib/kestrel/health-check.sh usr/local/lib/kestrel/update.sh usr/local/lib/kestrel/lib.sh etc/systemd/system/kestrel-health.service usr/share/kestrel/shell/index.html etc/kestrel/labwc/rc.xml etc/kestrel/labwc/autostart etc/kestrel/waybar/config.json; do
   [ -e "$SRC/$f" ] || die "overlay file missing: $SRC/$f"
 done
 if [ -n "${KESTREL_UPDATE_PUB:-}" ]; then [ -r "$KESTREL_UPDATE_PUB" ] || die "KESTREL_UPDATE_PUB not readable"; fi
@@ -94,7 +94,7 @@ USED=$(df --output=pcent "$T" | tail -1 | tr -dc 0-9)
 echo "root slot usage after install: ${USED}% of ${ROOT_GIB} GiB"
 [ "$USED" -lt 85 ] || die "installed root uses ${USED}% of the slot; raise KESTREL_ROOT_GIB"
 # 2. Kestrel overlay: shell, scripts, services, user
-for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/sudoers.d etc/pam.d/kestrel-sudo etc/os-release etc/hostname etc/skel; do
+for p in usr/local/bin usr/local/lib/kestrel usr/share/kestrel etc/kestrel etc/opt/chrome etc/chromium etc/modprobe.d/kestrel-nvidia.conf etc/sudoers.d etc/pam.d/kestrel-sudo etc/os-release etc/hostname etc/skel; do
   [ -e "$SRC/$p" ] && { mkdir -p "$T/$(dirname "$p")"; cp -a "$SRC/$p" "$T/$(dirname "$p")/"; }
 done
 find "$T/usr/local/bin" -maxdepth 1 -type f -name "kestrel-*" -exec chmod 755 {} +
