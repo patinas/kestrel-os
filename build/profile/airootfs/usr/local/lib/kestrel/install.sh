@@ -90,6 +90,9 @@ mkdir -p "$T/usr/share/kestrel"
 printf "%s\n" "$GAMES" > "$T/usr/share/kestrel/game-launchers.selected"
 arch-chroot "$T" pacman -Qq > "$T/usr/share/kestrel/packages.actual.txt"
 cp "$PCONF" "$T/etc/pacman.conf"; cp /etc/pacman.d/mirrorlist "$T/etc/pacman.d/mirrorlist"
+# Root is read-only once installed, so NetworkManager cannot write /etc/resolv.conf there.
+# Point it at NM's runtime file on tmpfs (standard NM symlink mode), or DNS never works on the installed system.
+ln -sfn /run/NetworkManager/resolv.conf "$T/etc/resolv.conf"
 USED=$(df --output=pcent "$T" | tail -1 | tr -dc 0-9)
 echo "root slot usage after install: ${USED}% of ${ROOT_GIB} GiB"
 [ "$USED" -lt 85 ] || die "installed root uses ${USED}% of the slot; raise KESTREL_ROOT_GIB"
