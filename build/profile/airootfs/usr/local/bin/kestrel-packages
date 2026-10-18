@@ -10,6 +10,11 @@ fi
 D=/var/lib/kestrel/devroot
 if [ ! -x "$D/usr/bin/pacman" ]; then
   echo 'Preparing writable Arch development container. Packages stay here, not in Kestrel root.'
+  # First boot can race NetworkManager/DHCP; wait up to 60s for DNS before pacstrap.
+  host=$(awk -F= '/^Server/{print $2; exit}' /etc/pacman.d/mirrorlist 2>/dev/null | sed 's|.*//||; s|/.*||')
+  host=${host:-geo.mirror.pkgbuild.com}
+  ok=; for i in $(seq 30); do getent hosts "$host" >/dev/null && { ok=1; break; }; sleep 2; done
+  [ -n "$ok" ] || { echo "No network: cannot resolve $host" >&2; exit 1; }
   mkdir -p "$D"
   pacstrap -c -C /etc/pacman.conf "$D" base
   cp /etc/pacman.conf "$D/etc/pacman.conf"
