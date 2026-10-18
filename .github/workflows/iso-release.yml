@@ -55,5 +55,17 @@ jobs:
           UI is a browser shell with external Search/Mail/Video/Games shortcuts, not built-in native apps. Gaming, GPU, ARM, browser interaction and hardware compatibility are not certified.
           NOTES
           cat "$CI_DIR/delivery/SHA256SUMS.iso" >> "$CI_DIR/notes.md"
-          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "Kestrel OS alpha (UEFI live + install test)" --notes-file "$CI_DIR/notes.md" "${ASSETS[@]}" "$CI_DIR"/delivery/SHA256SUMS.* "$CI_DIR"/vm/iso-*.png "$CI_DIR"/vm/install-*.png
+          # Create the draft first, then upload each asset with retries: a transient 404 from the upload
+          # endpoint must not strand a half-uploaded draft (run 39101912995).
+          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "Kestrel OS alpha (UEFI live + install test)" --notes-file "$CI_DIR/notes.md"
+          for f in "${ASSETS[@]}" "$CI_DIR"/delivery/SHA256SUMS.* "$CI_DIR"/vm/iso-*.png "$CI_DIR"/vm/install-*.png; do
+            base=$(basename "$f")
+            for attempt in 1 2 3 4; do
+              gh release upload "$tag" "$f" && break
+              if gh release view "$tag" --json assets --jq '.assets[].name' | grep -qx "$base"; then break; fi
+              echo "upload of $base failed (attempt $attempt); pausing before retry"
+              sleep $((attempt*20))
+            done
+            gh release view "$tag" --json assets --jq '.assets[].name' | grep -qx "$base" || { echo "::error::asset missing after retries: $base"; exit 1; }
+          done
           echo "Draft tag: $tag" >> "$GITHUB_STEP_SUMMARY"
