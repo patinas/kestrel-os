@@ -19,10 +19,17 @@ What the image ships:
 - The launcher lists Flatpak apps next to Chrome PWAs (any desktop entry
   whose Exec starts with `/usr/bin/flatpak run `).
 - polkit rule `/etc/polkit-1/rules.d/50-kestrel-flatpak.rules` lets the
-  desktop user (wheel) install, update and remove Flatpaks without a
-  password. Installs live in `/var/lib/flatpak` (system) or
+  desktop user (wheel) install, update and remove apps/runtimes and
+  refresh metadata without a password. It is an explicit action
+  allow-list (flatpak's system-helper policy action IDs), not a
+  wildcard: remote add/change, bundle installs, downgrades, repo/config
+  changes and overrides still demand root, so the Flathub-only remote
+  allow-list cannot be widened without Advanced sudo. User-scope
+  installs (`flatpak install --user ...`) need no polkit at all.
+  Installs live in `/var/lib/flatpak` (system) or
   `~/.local/share/flatpak` (user); both sit on the persistent kdata
-  partition, so apps survive A/B system updates. The read-only root is
+  partition (install.sh: `LABEL=kdata /var ext4`, `/var/home` bind to
+  `/home`), so apps survive A/B system updates. The read-only root is
   never touched.
 
 Installing an app today (Advanced terminal):

@@ -38,6 +38,12 @@ if rule.is_file():
  body=rule.read_text()
  check('polkit rule matches Flatpak actions','org.freedesktop.Flatpak.' in body)
  check('polkit rule scoped to wheel','isInGroup("wheel")' in body)
+ code=re.sub(r'/\*.*?\*/','',body,flags=re.S)  # strip comments: exclusions apply to rule logic
+ check('polkit rule has no wildcard','indexOf("org.freedesktop.Flatpak.' not in code)
+ for aid in ('app-install','runtime-install','app-update','runtime-update','app-uninstall','runtime-uninstall','appstream-update','metadata-update'):
+  check(f'polkit allows {aid}',f'"org.freedesktop.Flatpak.{aid}"' in code)
+ for aid in ('configure-remote','modify-repo','install-bundle','app-downgrade','runtime-downgrade','configure"','update-remote','override'):
+  check(f'polkit excludes {aid}',aid not in code)
 
 print(f'{len(fails)} failures',flush=True)
 sys.exit(1 if fails else 0)

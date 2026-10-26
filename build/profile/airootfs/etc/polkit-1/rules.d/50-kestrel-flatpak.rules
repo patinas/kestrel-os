@@ -1,9 +1,24 @@
 /* Flatpak is Kestrel's sanctioned native-app path: the desktop user (wheel)
-   may install/update/remove Flatpaks without a password. Installs stay in
-   /var/lib/flatpak or the user's home; the read-only A/B root is untouched. */
+   may install, update and remove apps/runtimes and refresh repo metadata
+   without a password. Explicit action allow-list, no wildcard: adding or
+   changing remotes, installing from bundle files, downgrades, repo/config
+   changes and overrides still demand root (Advanced sudo), so the
+   Flathub-only allow-list cannot be widened without it.
+   Action IDs per flatpak system-helper/org.freedesktop.Flatpak.policy.in. */
 polkit.addRule(function(action, subject) {
-    if (action.id.indexOf("org.freedesktop.Flatpak.") === 0 &&
-        subject.isInGroup("wheel")) {
-        return polkit.Result.YES;
+    if (!subject.isInGroup("wheel")) {
+        return polkit.Result.NOT_HANDLED;
     }
+    switch (action.id) {
+        case "org.freedesktop.Flatpak.app-install":
+        case "org.freedesktop.Flatpak.runtime-install":
+        case "org.freedesktop.Flatpak.app-update":
+        case "org.freedesktop.Flatpak.runtime-update":
+        case "org.freedesktop.Flatpak.app-uninstall":
+        case "org.freedesktop.Flatpak.runtime-uninstall":
+        case "org.freedesktop.Flatpak.appstream-update":
+        case "org.freedesktop.Flatpak.metadata-update":
+            return polkit.Result.YES;
+    }
+    return polkit.Result.NOT_HANDLED;
 });
