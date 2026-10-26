@@ -28,6 +28,8 @@ jobs:
         run: build/tests/ci/lock-bridge.sh
       - name: Advanced state regression
         run: build/tests/ci/advanced-state.sh
+      - name: Flatpak support static checks
+        run: python3 build/tests/ci/flatpak-static-test.py
       - name: Chrome profile defaults (vertical tabs, single close button)
         run: build/tests/ci/chrome-profile.sh
       - name: Upload Chrome screenshot
