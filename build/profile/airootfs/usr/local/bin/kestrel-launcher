@@ -15,9 +15,13 @@ class Launcher(Gtk.Window):
   self.items=[]
   basics=[('Browser','web-browser',['kestrel-browser']),('Mail','mail-unread',['kestrel-browser','https://mail.google.com']),('Video','video-x-generic',['kestrel-browser','https://www.youtube.com']),('Settings','preferences-system',['kestrel-browser','http://127.0.0.1:8765/#settings']),('Terminal (advanced)','utilities-terminal',['kestrel-terminal'])]
   for name,icon,args in basics:self.add_app(name,icon,lambda a=args:subprocess.Popen(a))
-  # Chrome-created desktop entries retain their app-id/standalone-window command.
   for app in Gio.AppInfo.get_all():
-   if app.should_show() and app.get_id().startswith('chrome-') and '--app-id=' in (app.get_commandline() or ''):self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
+   cmd=app.get_commandline() or ''
+   if not app.should_show():continue
+   # Chrome-created desktop entries retain their app-id/standalone-window command.
+   if app.get_id().startswith('chrome-') and '--app-id=' in cmd:self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
+   # Flatpak apps export desktop files whose Exec is /usr/bin/flatpak run ...
+   elif cmd.startswith('/usr/bin/flatpak run '):self.add_app(app.get_display_name(),app.get_icon(),lambda a=app:a.launch([],None))
   self.search.connect('search-changed',lambda _:self.refilter());self.refilter()
   self.show_all();self.unmaximize();self.resize(640,480);self.search.grab_focus()
  def add_app(self,name,icon,fn):

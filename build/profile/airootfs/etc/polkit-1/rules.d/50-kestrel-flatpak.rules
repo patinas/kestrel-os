@@ -1,0 +1,9 @@
+/* Flatpak is Kestrel's sanctioned native-app path: the desktop user (wheel)
+   may install/update/remove Flatpaks without a password. Installs stay in
+   /var/lib/flatpak or the user's home; the read-only A/B root is untouched. */
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.Flatpak.") === 0 &&
+        subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+    }
+});

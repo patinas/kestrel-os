@@ -1,0 +1,34 @@
+# Flatpak on Kestrel OS
+
+Flatpak is the only native-app install path for users (the read-only A/B
+root never changes; `pacman` stays behind the Advanced toggle as a
+containerised dev tool only).
+
+What the image ships:
+
+- `flatpak`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` and
+  `xdg-desktop-portal-wlr` in `build/profile/packages.x86_64`.
+- Flathub as the single allow-listed remote, preconfigured via the
+  canonical `/etc/flatpak/remotes.d/flathub.flatpakrepo` drop-in fetched
+  from https://flathub.org/repo/flathub.flatpakrepo (includes Flathub's
+  GPG key, so installs verify out of the box).
+- `XDG_DATA_DIRS` in `kestrel-session` includes the system and user
+  Flatpak exports, so Flatpak apps' desktop files and icons are visible
+  to the shell. `XDG_CURRENT_DESKTOP=wlroots` selects the wlr portal for
+  screencast/screenshot and the gtk portal for everything else.
+- The launcher lists Flatpak apps next to Chrome PWAs (any desktop entry
+  whose Exec starts with `/usr/bin/flatpak run `).
+- polkit rule `/etc/polkit-1/rules.d/50-kestrel-flatpak.rules` lets the
+  desktop user (wheel) install, update and remove Flatpaks without a
+  password. Installs live in `/var/lib/flatpak` (system) or
+  `~/.local/share/flatpak` (user); both sit on the persistent kdata
+  partition, so apps survive A/B system updates. The read-only root is
+  never touched.
+
+Installing an app today (Advanced terminal):
+
+    flatpak install flathub org.example.App
+
+The new app appears in the launcher the next time it opens. A graphical
+software store is roadmap work; the OS support above is the foundation
+it will build on.

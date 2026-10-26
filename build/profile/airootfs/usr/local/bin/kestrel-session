@@ -1,6 +1,10 @@
 #!/bin/sh
 # Kestrel session launcher (replaces milestone 1 version): windowed desktop by default, gaming mode if requested.
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+# Flatpak apps: their desktop files and icons live in the exports dirs.
+export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+# Portal backend selection: screencast/screenshot via wlr, everything else via gtk.
+export XDG_CURRENT_DESKTOP=wlroots
 export WLR_NO_HARDWARE_CURSORS=1
 if [ -n "$(systemd-detect-virt --vm 2>/dev/null | grep -v none)" ]; then
   export WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1

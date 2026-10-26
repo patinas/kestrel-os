@@ -21,7 +21,10 @@ reboot. Advanced users can unlock it on purpose, with a clear warning.
    directory and downloads).
 5. **Sandboxed apps.** Native apps come only as Flatpaks from an allow-listed
    remote, with portals for files, camera and screen sharing. No pacman for
-   users.
+   users. Implemented: Flathub is preconfigured as the only remote
+   (/etc/flatpak/remotes.d), portals route screencast/screenshot to wlr and
+   the rest to gtk, and a polkit rule lets the desktop user manage Flatpaks
+   without a password. See docs/FLATPAK.md.
 6. **Automatic updates.** systemd-sysupdate downloads into the other slot in
    the background. Reboot applies it. A failed boot rolls back automatically.
    Updates can't be turned off in normal mode, only postponed.

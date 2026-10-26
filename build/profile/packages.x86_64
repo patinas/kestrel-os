@@ -115,3 +115,7 @@ mesa-utils
 vulkan-icd-loader
 pciutils
 python-pywayland
+flatpak
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
