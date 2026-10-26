@@ -15,6 +15,7 @@ dosfstools
 e2fsprogs
 egl-wayland
 expat
+flatpak
 fontconfig
 foot
 freetype2
@@ -93,6 +94,9 @@ wireplumber
 wl-clipboard
 wlopm
 wofi
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
 xdg-utils
 xf86-input-libinput
 xorg-xwayland
