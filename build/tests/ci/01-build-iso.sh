@@ -20,6 +20,10 @@ WantedBy=multi-user.target
 SERVICE
  ln -s ../kestrel-ci-ui-probe.service "$B/profile/airootfs/etc/systemd/system/multi-user.target.wants/kestrel-ci-ui-probe.service"
 fi
+# CI-only Flatpak smoke script, injected only into the disposable candidate copy.
+if [ "${KESTREL_FLATPAK_SMOKE:-0}" = 1 ]; then
+ install -Dm755 "$REPO/build/tests/ci/flatpak-smoke-guest.sh" "$B/profile/airootfs/usr/local/lib/kestrel-ci/flatpak-smoke.sh"
+fi
 # Normalise modes without following symlinks (regular files only).
 find "$B/profile/airootfs/usr/local/bin" "$B/profile/airootfs/usr/local/lib/kestrel" -type f -exec chmod 755 {} +
 find "$B/scripts" "$B/tests" -type f -name '*.sh' -exec chmod 755 {} +

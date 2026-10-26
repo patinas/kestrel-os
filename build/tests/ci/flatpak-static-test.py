@@ -45,5 +45,15 @@ if rule.is_file():
  for aid in ('configure-remote','modify-repo','install-bundle','app-downgrade','runtime-downgrade','configure"','update-remote','override'):
   check(f'polkit excludes {aid}',aid not in code)
 
+cand=(R.parent/'.github/workflows/iso-candidate.yml').read_text()
+check('candidate runs flatpak smoke step','08-flatpak-smoke.sh' in cand)
+check('candidate sets KESTREL_FLATPAK_SMOKE','KESTREL_FLATPAK_SMOKE' in cand)
+check('guest smoke script exists',(R/'tests/ci/flatpak-smoke-guest.sh').is_file())
+check('smoke driver exists',(R/'tests/ci/flatpak-evidence.py').is_file())
+check('smoke host step exists',(R/'tests/ci/08-flatpak-smoke.sh').is_file())
+inj=(R/'tests/ci/01-build-iso.sh').read_text()
+check('build injects guest script CI-only','KESTREL_FLATPAK_SMOKE' in inj and 'kestrel-ci/flatpak-smoke.sh' in inj)
+check('guest script not in repo profile',not (R/'profile/airootfs/usr/local/lib/kestrel-ci').exists())
+
 print(f'{len(fails)} failures',flush=True)
 sys.exit(1 if fails else 0)

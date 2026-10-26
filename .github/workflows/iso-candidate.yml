@@ -13,6 +13,7 @@ jobs:
     timeout-minutes: 90
     env:
       KESTREL_CI_ALLOW_TCG: false
+      KESTREL_FLATPAK_SMOKE: '1'
     steps:
       - uses: actions/checkout@v4
       - name: Host setup
@@ -25,3 +26,7 @@ jobs:
           build/tests/ci/06-iso-boot.sh
       - name: Split and verify delivery parts (runner-local only)
         run: build/tests/ci/07-split.sh
+      - name: Flatpak runtime smoke in the booted ISO (runner-local evidence)
+        run: |
+          sudo apt-get install -y --no-install-recommends imagemagick
+          build/tests/ci/08-flatpak-smoke.sh

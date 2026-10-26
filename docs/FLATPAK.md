@@ -12,6 +12,13 @@ What the image ships:
   canonical `/etc/flatpak/remotes.d/flathub.flatpakrepo` drop-in fetched
   from https://flathub.org/repo/flathub.flatpakrepo (includes Flathub's
   GPG key, so installs verify out of the box).
+
+  Scope note: the allow-list is enforced at system scope (remote changes
+  there need root). Flatpak's user-scope installation lives in the user's
+  own home and is theirs to control, like any file they own; a user can
+  always `flatpak --user remote-add` for themselves. "Flathub only" is a
+  system-scope guarantee, not a claim that the user cannot add personal
+  remotes.
 - `XDG_DATA_DIRS` in `kestrel-session` includes the system and user
   Flatpak exports, so Flatpak apps' desktop files and icons are visible
   to the shell. `XDG_CURRENT_DESKTOP=wlroots` selects the wlr portal for
