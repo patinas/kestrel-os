@@ -18,7 +18,12 @@ def text(t):
   elif c.isupper():key('shift',c.lower())
   else:key(keys.get(c,c))
 def shot(n):cmd('screendump',{'filename':str(v/('flatpak-'+n+'.ppm'))})
-cmd('qmp_capabilities')
+cmd('qmp_capabilities');shot('chrome-terms')
+# Chrome terms gate: kestrel-session runs chrome-setup before labwc, so the
+# desktop never starts until the terms are accepted. Owner accepted Google's
+# terms in authenticated WhatsApp Oct4 12:40:56 ("Ja", verified from channel
+# history, +4523261420). This test types into a disposable guest only.
+text('ACCEPT');key('ret')
 # Session + network readiness: the guest shell server reports chrome_running only
 # after first-boot Chrome download, so Flathub is reachable by then too.
 ready=False

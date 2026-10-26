@@ -20,6 +20,7 @@ sleep 150
 rc=0
 python3 "$REPO/build/tests/ci/flatpak-evidence.py" "$VM" || rc=$?
 kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
+shopt -s nullglob
 for image in "$VM"/flatpak-*.ppm; do
  name=$(basename "$image" .ppm)
  convert "$image" "$VM/$name.png"
