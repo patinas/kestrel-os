@@ -13,7 +13,7 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -drive if=pflash,format=raw,file="$VM/FLATPAK_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
  -device virtio-serial-pci -chardev null,id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check \
- -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765 -device virtio-net,netdev=n -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent -display none \
+ -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765,hostfwd=tcp:127.0.0.1:18766-:8766 -device virtio-net,netdev=n -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent -display none \
  -serial "file:$VM/flatpak-serial.log" -qmp "unix:$VM/flatpak-qmp.sock,server=on,wait=off" &
 pid=$!
 trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT
@@ -23,7 +23,7 @@ python3 "$REPO/build/tests/ci/flatpak-evidence.py" "$VM" || rc=$?
 # Machine verdict: pull the guest smoke log over the CI-only shell-server
 # endpoint while the VM is still up. A fetch failure is a CI failure.
 guestlog="$VM/flatpak-smoke-guest.log"
-if ! curl -sf -H 'Host: 127.0.0.1:8765' http://127.0.0.1:18765/ci-flatpak-log -o "$guestlog"; then
+if ! curl -sf http://127.0.0.1:18766/ci-flatpak-log -o "$guestlog"; then
  echo 'CI FAILURE: guest smoke log fetch failed (endpoint missing, VM dead or smoke never ran)'
  rc=1
 fi

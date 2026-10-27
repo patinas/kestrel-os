@@ -44,6 +44,26 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
 fi
 # Verdict into the log for the host machine gate, then full-screen for the visual gate.
 both "SMOKE_RESULT=$V"
+# CI-only log export. The host fetches the smoke log over a QEMU hostfwd to
+# guest port 8766 (forwarded as 127.0.0.1:18766). Port 8765 is the kestrel
+# lock/settings server and has no CI endpoint; serving here keeps the CI
+# surface inside this CI-injected script. Started only after SMOKE_RESULT is
+# written, so a fetched log always carries a verdict line.
+nohup python3 -c '
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        data = open("/tmp/flatpak-smoke.log", "rb").read()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+    def log_message(self, *a):
+        pass
+HTTPServer(("0.0.0.0", 8766), H).serve_forever()
+' >/dev/null 2>&1 &
+sleep 1
 clear
 echo "SMOKE_RESULT=$V"
 echo "full log: $out"
