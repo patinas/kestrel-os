@@ -46,11 +46,24 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
   # run in a row).
   LW=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^WAYLAND_DISPLAY=//p' | head -1)
   LX=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^XDG_RUNTIME_DIR=//p' | head -1)
-  both "labwc session env: WAYLAND_DISPLAY=${LW:-unset} XDG_RUNTIME_DIR=${LX:-unset}"
-  ls -l "${LX:-/run/user/$(id -u)}"/wayland-* 2>&1 | tee -a "$out"
-  if [ -z "$LW" ] || [ -z "$LX" ]; then
-    V='FAIL launch-env'
-    both 'launch: FAILED (compositor env incomplete; refusing to guess a display)'
+  both "labwc exec env: WAYLAND_DISPLAY=${LW:-unset} XDG_RUNTIME_DIR=${LX:-unset}"
+  # /proc/<labwc>/environ is exec-time env only; kestrel-session starts labwc
+  # without WAYLAND_DISPLAY (run 40466502343 proved: environ unset while the
+  # socket exists), so the compositor cannot name its own socket this way.
+  # The socket file itself is observed state: use it when exactly one
+  # non-lock wayland socket exists in the runtime dir, else fail honestly.
+  [ -n "$LX" ] || LX=/run/user/$(id -u)
+  ls -l "$LX"/wayland-* 2>&1 | tee -a "$out"
+  SOCKS=$(find "$LX" -maxdepth 1 -type s -name 'wayland-*' 2>/dev/null)
+  if [ -z "$LW" ]; then
+    case $(printf '%s\n' "$SOCKS" | grep -c .) in
+      1) LW=$(basename "$SOCKS"); both "wayland display from observed single socket: $LW";;
+      *) V='FAIL launch-env'; both "launch: FAILED (no unique wayland socket in $LX; refusing to guess)";;
+    esac
+  fi
+  if [ -z "$LX" ] || [ -z "$LW" ] || [ ! -S "$LX/$LW" ]; then
+    [ "$V" = PASS ] && V='FAIL launch-env'
+    both "launch: FAILED (cannot establish display from observed state: XDG_RUNTIME_DIR=${LX:-unset} WAYLAND_DISPLAY=${LW:-unset})"
   else
     env XDG_RUNTIME_DIR="$LX" WAYLAND_DISPLAY="$LW" \
       flatpak run org.gnome.Calculator >>"$out" 2>&1 &
