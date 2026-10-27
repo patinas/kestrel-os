@@ -39,21 +39,39 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
 ' 2>&1) || V='FAIL launcher-enum'
   both "$enum"
   both '-- launching calculator into the running labwc session --'
-  # Env comes from the compositor itself, not hardcoded: run 40461708408
-  # proved WAYLAND_DISPLAY=wayland-1 + XDG_RUNTIME_DIR=/run/user/1000 wrong
-  # for this session (Gtk-WARNING: Failed to open display, no window in the
-  # app screenshot for the third run in a row).
+  # Env comes from the compositor itself, never a guessed fallback: run
+  # 40461708408 proved hardcoded XDG_RUNTIME_DIR=/run/user/1000
+  # WAYLAND_DISPLAY=wayland-1 wrong for this labwc session (Gtk-WARNING:
+  # Failed to open display, no window in the app screenshot for the third
+  # run in a row).
   LW=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^WAYLAND_DISPLAY=//p' | head -1)
   LX=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^XDG_RUNTIME_DIR=//p' | head -1)
   both "labwc session env: WAYLAND_DISPLAY=${LW:-unset} XDG_RUNTIME_DIR=${LX:-unset}"
-  ls -l "${LX:-/run/user/1000}"/wayland-* 2>&1 | tee -a "$out"
-  env XDG_RUNTIME_DIR="${LX:-/run/user/1000}" WAYLAND_DISPLAY="${LW:-wayland-1}" \
-    flatpak run org.gnome.Calculator >>"$out" 2>&1 &
-  sleep 25
-  if pgrep -f gnome-calculator >/dev/null 2>&1; then
-    both 'launch: calculator process alive 25s after flatpak run'
+  ls -l "${LX:-/run/user/$(id -u)}"/wayland-* 2>&1 | tee -a "$out"
+  if [ -z "$LW" ] || [ -z "$LX" ]; then
+    V='FAIL launch-env'
+    both 'launch: FAILED (compositor env incomplete; refusing to guess a display)'
   else
-    V='FAIL launch'; both 'launch: FAILED (no gnome-calculator process 25s after flatpak run)'
+    env XDG_RUNTIME_DIR="$LX" WAYLAND_DISPLAY="$LW" \
+      flatpak run org.gnome.Calculator >>"$out" 2>&1 &
+    sleep 25
+    if pgrep -f gnome-calculator >/dev/null 2>&1; then
+      both 'launch: calculator process alive 25s after flatpak run'
+    else
+      V='FAIL launch'; both 'launch: FAILED (no gnome-calculator process 25s after flatpak run)'
+    fi
+    # Rendered-window assertion through the compositor toplevel list (the
+    # wlr-foreign-toplevel protocol the session taskbar already uses). A
+    # live process alone does not prove a window; the app screenshot
+    # remains the pixel gate on top of this.
+    WINS=$(XDG_RUNTIME_DIR="$LX" kestrel-taskbar status 2>&1) && {
+      both "taskbar toplevels: $WINS"
+      if printf '%s' "$WINS" | grep -qi calculator; then
+        both 'window: calculator toplevel present (compositor-registered)'
+      else
+        V='FAIL window'; both 'window: FAILED (no calculator toplevel in taskbar status)'
+      fi
+    } || both "window: taskbar status unavailable ($WINS); pixel gate only"
   fi
 fi
 # Verdict into the log for the host machine gate, then full-screen for the visual gate.
