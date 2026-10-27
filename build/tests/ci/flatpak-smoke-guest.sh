@@ -89,19 +89,10 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
 fi
 # Verdict into the log for the host machine gate, then full-screen for the visual gate.
 both "SMOKE_RESULT=$V"
-# CI-only export + self-diagnosis. Two independent channels, because which one
-# is viable in this guest is itself the open question (run 40450347589 got
-# connection-reset on 8765 and nothing on 8766):
-#  A. the named virtio port, host side captured to a file (no networking);
-#  B. a tiny HTTP server on guest :8766 (hostfwd 127.0.0.1:18766).
-# The diagnostic lines go to the log AND the verdict screen, so the screenshot
-# evidence channel answers the mechanism question either way.
-if [ -e /dev/virtio-ports/kestrel-ci-check ]; then
-  CIPORT=present
-else
-  CIPORT=MISSING
-fi
-both "ci-port: $CIPORT"
+# CI-only export. Single channel: a tiny HTTP server on guest :8766 (hostfwd
+# 127.0.0.1:18766). The virtio CI console was dropped after failing its
+# guest->host write in every run that exercised it ("ci-port: write failed",
+# last seen run 40470957816) while :8766 carried the log every time.
 nohup python3 -c '
 from http.server import BaseHTTPRequestHandler, HTTPServer
 class H(BaseHTTPRequestHandler):
@@ -119,11 +110,7 @@ HTTPServer(("0.0.0.0", 8766), H).serve_forever()
 sleep 1
 LISTEN=$(ss -tln 2>/dev/null | grep -E ':(8765|8766) ' || true)
 both "ci-listeners: ${LISTEN:-none}"
-if [ "$CIPORT" = present ]; then
-  timeout 20 cat "$out" > /dev/virtio-ports/kestrel-ci-check 2>/dev/null     && both "ci-port: log written" || both "ci-port: write failed"
-fi
 clear
 echo "SMOKE_RESULT=$V"
 echo "full log: $out"
-echo "ci-port: $CIPORT"
 echo "ci-listeners: ${LISTEN:-none}"
