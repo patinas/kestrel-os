@@ -20,6 +20,12 @@ sleep 150
 rc=0
 python3 "$REPO/build/tests/ci/flatpak-evidence.py" "$VM" || rc=$?
 kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
+# The guest serial console is the only record of first boot (chrome-setup
+# prompt, Chrome download progress or errors). Dump it so a failure is
+# diagnosable from the step log instead of needing a rerun.
+echo '--- flatpak-serial.log (tail 200 lines) ---'
+tail -n 200 "$VM/flatpak-serial.log" 2>/dev/null || echo '(no serial log captured)'
+echo '--- end flatpak-serial.log ---'
 shopt -s nullglob
 for image in "$VM"/flatpak-*.ppm; do
  name=$(basename "$image" .ppm)

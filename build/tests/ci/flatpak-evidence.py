@@ -23,11 +23,12 @@ cmd('qmp_capabilities');shot('chrome-terms')
 # desktop never starts until the terms are accepted. Owner accepted Google's
 # terms in authenticated WhatsApp Oct4 12:40:56 ("Ja", verified from channel
 # history, +4523261420). This test types into a disposable guest only.
-text('ACCEPT');key('ret')
+text('ACCEPT');key('ret');time.sleep(2);shot('chrome-terms-accepted')
 # Session + network readiness: the guest shell server reports chrome_running only
 # after first-boot Chrome download, so Flathub is reachable by then too.
 ready=False
-for _ in range(180):
+for i in range(180):
+ if i==90:shot('accept-download')
  try:
   req=urllib.request.Request('http://127.0.0.1:18765/status',headers={'Host':'127.0.0.1:8765'})
   with urllib.request.urlopen(req,timeout=20) as r: state=json.load(r)
