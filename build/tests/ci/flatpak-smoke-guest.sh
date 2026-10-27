@@ -39,8 +39,22 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
 ' 2>&1) || V='FAIL launcher-enum'
   both "$enum"
   both '-- launching calculator into the running labwc session --'
-  XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-1 flatpak run org.gnome.Calculator >>"$out" 2>&1 &
+  # Env comes from the compositor itself, not hardcoded: run 40461708408
+  # proved WAYLAND_DISPLAY=wayland-1 + XDG_RUNTIME_DIR=/run/user/1000 wrong
+  # for this session (Gtk-WARNING: Failed to open display, no window in the
+  # app screenshot for the third run in a row).
+  LW=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^WAYLAND_DISPLAY=//p' | head -1)
+  LX=$(tr '\0' '\n' < "/proc/$lpid/environ" | sed -n 's/^XDG_RUNTIME_DIR=//p' | head -1)
+  both "labwc session env: WAYLAND_DISPLAY=${LW:-unset} XDG_RUNTIME_DIR=${LX:-unset}"
+  ls -l "${LX:-/run/user/1000}"/wayland-* 2>&1 | tee -a "$out"
+  env XDG_RUNTIME_DIR="${LX:-/run/user/1000}" WAYLAND_DISPLAY="${LW:-wayland-1}" \
+    flatpak run org.gnome.Calculator >>"$out" 2>&1 &
   sleep 25
+  if pgrep -f gnome-calculator >/dev/null 2>&1; then
+    both 'launch: calculator process alive 25s after flatpak run'
+  else
+    V='FAIL launch'; both 'launch: FAILED (no gnome-calculator process 25s after flatpak run)'
+  fi
 fi
 # Verdict into the log for the host machine gate, then full-screen for the visual gate.
 both "SMOKE_RESULT=$V"
