@@ -50,4 +50,5 @@ key('ctrl','alt','f1');time.sleep(8);shot('flatpak-app')
 key('meta_l','spc');time.sleep(6);shot('flatpak-launcher');key('esc');time.sleep(2)
 # Back to the console verdict for a final capture.
 key('ctrl','alt','f2');time.sleep(4);shot('smoke-verdict-final')
-cmd('quit')
+# VM stays up: 08-flatpak-smoke.sh fetches the guest log (virtio/:8766) AFTER this
+# script returns, then kills the VM itself. Quitting here raced the fetch.
