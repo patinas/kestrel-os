@@ -20,6 +20,13 @@ trap 'kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true' EXIT
 sleep 150
 rc=0
 python3 "$REPO/build/tests/ci/flatpak-evidence.py" "$VM" || rc=$?
+# Machine verdict: pull the guest smoke log over the CI-only shell-server
+# endpoint while the VM is still up. A fetch failure is a CI failure.
+guestlog="$VM/flatpak-smoke-guest.log"
+if ! curl -sf -H 'Host: 127.0.0.1:8765' http://127.0.0.1:18765/ci-flatpak-log -o "$guestlog"; then
+ echo 'CI FAILURE: guest smoke log fetch failed (endpoint missing, VM dead or smoke never ran)'
+ rc=1
+fi
 kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
 # The guest serial console is the only record of first boot (chrome-setup
 # prompt, Chrome download progress or errors). Dump it so a failure is
@@ -35,7 +42,22 @@ for image in "$VM"/flatpak-*.ppm; do
  base64 -w 100 "$VM/$name.png"
  echo "FLATPAK_EVIDENCE_END $name.png"
 done
-# Visual gate: SMOKE_RESULT=PASS must be visible, plus calculator window and
-# launcher grid pixels, before runtime support is claimed.
-echo 'Flatpak smoke screenshots captured. Visual inspection required before reporting runtime support.' | tee -a "$GITHUB_STEP_SUMMARY"
+echo '--- flatpak-smoke guest log ---'
+cat "$guestlog" 2>/dev/null || echo '(no guest log captured)'
+echo '--- end guest log ---'
+# Machine gate 1: evidence must exist (lost evidence fails CI).
+if [ ! -s "$VM/flatpak-smoke-verdict-final.png" ]; then
+ echo 'CI FAILURE: verdict screenshot evidence missing'
+ rc=1
+fi
+# Machine gate 2: the guest verdict must be an explicit PASS; a guest FAIL or
+# a missing verdict line fails CI. Both gates run AFTER artifact capture above.
+if ! grep -qx 'SMOKE_RESULT=PASS' "$guestlog" 2>/dev/null; then
+ echo 'CI FAILURE: guest verdict is not SMOKE_RESULT=PASS'
+ rc=1
+fi
+# Visual gate (additional, not a replacement): SMOKE_RESULT=PASS must be
+# visible, plus calculator window and launcher grid pixels, before runtime
+# support is claimed.
+echo 'Flatpak smoke machine gates checked. Visual inspection remains required before reporting runtime support.' | tee -a "$GITHUB_STEP_SUMMARY"
 exit "$rc"

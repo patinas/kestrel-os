@@ -42,6 +42,8 @@ assert any("calculator" in h.lower() for h in hits), "calculator not visible to 
   XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-1 flatpak run org.gnome.Calculator >>"$out" 2>&1 &
   sleep 25
 fi
+# Verdict into the log for the host machine gate, then full-screen for the visual gate.
+both "SMOKE_RESULT=$V"
 clear
 echo "SMOKE_RESULT=$V"
 echo "full log: $out"

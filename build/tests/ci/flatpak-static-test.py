@@ -62,6 +62,18 @@ check('smoke host step exists',(R/'tests/ci/08-flatpak-smoke.sh').is_file())
 inj=(R/'tests/ci/01-build-iso.sh').read_text()
 check('build injects guest script CI-only','KESTREL_FLATPAK_SMOKE' in inj and 'kestrel-ci/flatpak-smoke.sh' in inj)
 check('guest script not in repo profile',not (R/'profile/airootfs/usr/local/lib/kestrel-ci').exists())
+host=R/'tests/ci/08-flatpak-smoke.sh'
+body=host.read_text()
+check('host step fetches guest smoke log via CI endpoint','ci-flatpak-log' in body)
+check('host step fails CI on guest verdict != PASS',"grep -qx 'SMOKE_RESULT=PASS'" in body)
+check('host step fails CI on missing verdict screenshot','flatpak-smoke-verdict-final.png' in body and 'evidence missing' in body)
+check('host step keeps visual inspection as additional gate','Visual inspection remains required' in body)
+gs=(R/'tests/ci/flatpak-smoke-guest.sh').read_text()
+check('guest script writes verdict into the log','both "SMOKE_RESULT=$V"' in gs)
+srv=R/'profile/airootfs/usr/local/bin/kestrel-shell-server'
+sbody=srv.read_text()
+check('shell server exposes CI-gated smoke log endpoint',"/ci-flatpak-log' and CI_PORT" in sbody)
+check('shell server CI gate derives from the virtio port',"CI_PORT=Path('/dev/virtio-ports/kestrel-ci-check').exists()" in sbody)
 
 print(f'{len(fails)} failures',flush=True)
 sys.exit(1 if fails else 0)
