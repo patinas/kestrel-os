@@ -35,7 +35,9 @@ def status():
   _n[0]=1;_t.sleep(2);open('%s','w').write('')
  return r
 """%sys.argv[3]
-s=s.replace("# Disposable CI guest only",hook+"# Disposable CI guest only",1)
+anchor="# Disposable CI guest only: QEMU exposes"
+assert s.count(anchor)==1, "advanced-state: hook anchor missing or not unique in kestrel-shell-server"
+s=s.replace(anchor,hook+anchor,1)
 s=s.replace("ORIGIN='http://127.0.0.1:8765'","ORIGIN='http://127.0.0.1:8765'",1)
 open(sys.argv[2],'w').write(s)
 PY
