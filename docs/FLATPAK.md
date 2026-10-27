@@ -22,7 +22,9 @@ What the image ships:
 - `XDG_DATA_DIRS` in `kestrel-session` includes the system and user
   Flatpak exports, so Flatpak apps' desktop files and icons are visible
   to the shell. `XDG_CURRENT_DESKTOP=wlroots` selects the wlr portal for
-  screencast/screenshot and the gtk portal for everything else.
+  screencast/screenshot and the gtk portal for everything else, via the
+  `/usr/share/xdg-desktop-portal/wlroots-portals.conf` drop-in shipped in the
+  image (default=gtk; ScreenCast and Screenshot=wlr).
 - The launcher lists Flatpak apps next to Chrome PWAs (any desktop entry
   whose Exec starts with `/usr/bin/flatpak run `).
 - polkit rule `/etc/polkit-1/rules.d/50-kestrel-flatpak.rules` lets the

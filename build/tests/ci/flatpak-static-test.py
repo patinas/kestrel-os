@@ -28,6 +28,14 @@ check('session XDG_DATA_DIRS has user flatpak exports','$HOME/.local/share/flatp
 check('session XDG_DATA_DIRS keeps defaults',"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" in sess)
 check('session sets XDG_CURRENT_DESKTOP=wlroots','export XDG_CURRENT_DESKTOP=wlroots' in sess)
 
+pc=R/'profile/airootfs/usr/share/xdg-desktop-portal/wlroots-portals.conf'
+check('wlroots-portals.conf present (backend routing for XDG_CURRENT_DESKTOP=wlroots)',pc.is_file())
+if pc.is_file():
+ body=pc.read_text()
+ check('wlroots-portals.conf defaults to gtk','default=gtk' in body)
+ check('wlroots-portals.conf routes screencast to wlr','org.freedesktop.impl.portal.ScreenCast=wlr' in body)
+ check('wlroots-portals.conf routes screenshot to wlr','org.freedesktop.impl.portal.Screenshot=wlr' in body)
+
 launcher=(R/'profile/airootfs/usr/local/bin/kestrel-launcher').read_text()
 check('launcher lists flatpak apps',"cmd.startswith('/usr/bin/flatpak run ')" in launcher)
 check('launcher keeps chrome PWA filter',"'--app-id=' in cmd" in launcher)
