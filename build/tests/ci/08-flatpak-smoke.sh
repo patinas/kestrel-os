@@ -12,7 +12,7 @@ qemu-system-x86_64 -machine q35,accel=kvm -cpu max -m 8192 -smp 4 \
  -drive if=pflash,format=raw,readonly=on,file="$code" \
  -drive if=pflash,format=raw,file="$VM/FLATPAK_VARS.fd" \
  -cdrom "$ISO" -boot d -vga virtio -device virtio-rng-pci \
- -device virtio-serial-pci -chardev "file:$VM/ci-console.log",id=ci -device virtserialport,chardev=ci,name=kestrel-ci-check \
+ -device virtio-serial-pci -chardev "file,path=$VM/ci-console.log,id=ci" -device virtserialport,chardev=ci,name=kestrel-ci-check \
  -netdev user,id=n,hostfwd=tcp:127.0.0.1:18765-:8765,hostfwd=tcp:127.0.0.1:18766-:8766 -device virtio-net,netdev=n -device ich9-intel-hda -audiodev driver=none,id=silent -device hda-duplex,audiodev=silent -display none \
  -serial "file:$VM/flatpak-serial.log" -qmp "unix:$VM/flatpak-qmp.sock,server=on,wait=off" &
 pid=$!
